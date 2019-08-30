@@ -1,4 +1,5 @@
-* implement print
-* error checking
+* implement `marc print` subcommand
+* error checking/recovery
 * debug/verbose flag
-* field fetcher
+* `marc field` command for fetching subfields
+* refactor such that each subcommand doesn't need to do its own thread/memmory management

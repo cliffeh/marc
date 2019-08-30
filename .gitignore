@@ -56,3 +56,6 @@ marc
 
 # memory profiling reports
 *.valgrind
+
+# ide files
+.vscode
