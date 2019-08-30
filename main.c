@@ -68,14 +68,32 @@ void *action_validate(void *vargp)
         fprintf(outfile, "%s: %i/%i valid records\n", infiles[pos], validateCounts[pos][0], validateCounts[pos][1]);
         pthread_mutex_unlock(&outfile_lock);
     }
-
-    return 0;
 }
 
 void *action_print(void *vargp)
 {
+    while (1)
+    {
+        pthread_mutex_lock(&infilePos_lock);
+        if (infilePos == infileLen)
+        {
+            pthread_mutex_unlock(&infilePos_lock);
+            return 0;
+        }
 
-    return 0;
+        FILE *in = fopen(infiles[infilePos++], "rb");
+        pthread_mutex_unlock(&infilePos_lock);
+
+        marcrec rec;
+        while (marcrec_read(&rec, in) != 0)
+        {
+            pthread_mutex_lock(&outfile_lock);
+            marcrec_print(&rec, outfile);
+            pthread_mutex_unlock(&outfile_lock);
+        }
+
+        fclose(in);
+    }
 }
 
 void usage_and_exit(int code, const char *fmt, ...)

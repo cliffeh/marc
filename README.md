@@ -21,7 +21,7 @@ OPTIONS:
   -t, --threads NUM  run using NUM threads (default: 8)
   ```
 ## About
-In a previous life I worked for the office of research at a non-profit that provided services to libraries. Some of what we did involved writing small, efficient C programs that would troll through bibliographic records and tease out interesting bits of information. I recently got an "itch" to revisit that, so I wrote this little C library with some nice functions for processing MARC records. There's also a command-line tool `marc` that exposes (at present) a validation function (more to come...see [TODO.md](TODO.md).)
+In a previous life I worked for the office of research at a non-profit that provided services to libraries. Some of what we did involved writing small, efficient C programs that would troll through bibliographic records and tease out interesting bits of information. I recently got an "itch" to revisit that, so I wrote this little C library with some nice functions for processing MARC records. There's also a command-line tool `marc` that exposes a couple of functions (print, validate...more to come...see [TODO.md](TODO.md).)
 
 ## References
 * [MARC-21 documentation](http://www.loc.gov/marc/bibliographic/)
