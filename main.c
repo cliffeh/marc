@@ -48,8 +48,8 @@ void *action_validate(void *vargp)
 
         int pos = infilePos;
 
-        // fprintf(stderr, "opening file: %s\n", infiles[infilePos]);
-        FILE *in = fopen(infiles[infilePos++], "rb");
+        FILE *in = (strcmp("-", infiles[infilePos]) == 0) ? stdin : fopen(infiles[infilePos], "rb");
+        infilePos++;
         pthread_mutex_unlock(&infilePos_lock);
 
         marcrec rec;
@@ -81,7 +81,8 @@ void *action_print(void *vargp)
             return 0;
         }
 
-        FILE *in = fopen(infiles[infilePos++], "rb");
+        FILE *in = (strcmp("-", infiles[infilePos]) == 0) ? stdin : fopen(infiles[infilePos], "rb");
+        infilePos++;
         pthread_mutex_unlock(&infilePos_lock);
 
         marcrec rec;
