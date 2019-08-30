@@ -7,9 +7,6 @@
 
 #define DEFAULT_NTHREADS 8
 
-#define ACTION_PRINT 1
-#define ACTION_VALIDATE 2
-
 #define USAGE                                                                                       \
     "usage: marc ACTION [OPTIONS] | marc [-h|--help]\n"                                             \
     "\n"                                                                                            \
@@ -27,7 +24,8 @@
 typedef struct arglist
 {
     char **infiles, *outfile;
-    int action, nThreads, infilePos;
+    int nThreads, infilePos;
+    void *(*action)(void *);
 } arglist;
 
 /* global state */
@@ -39,9 +37,11 @@ int **validateCounts;
 
 void *action_validate(void *vargp)
 {
-    while(1) {
+    while (1)
+    {
         pthread_mutex_lock(&infilePos_lock);
-        if(infilePos == infileLen) {
+        if (infilePos == infileLen)
+        {
             pthread_mutex_unlock(&infilePos_lock);
             return 0;
         }
@@ -53,7 +53,8 @@ void *action_validate(void *vargp)
         pthread_mutex_unlock(&infilePos_lock);
 
         marcrec rec;
-        while(marcrec_read(&rec, in) != 0) {
+        while (marcrec_read(&rec, in) != 0)
+        {
             if (marcrec_validate(&rec) == 0)
             {
                 validateCounts[pos][0]++;
@@ -66,7 +67,6 @@ void *action_validate(void *vargp)
         pthread_mutex_lock(&outfile_lock);
         fprintf(outfile, "%s: %i/%i valid records\n", infiles[pos], validateCounts[pos][0], validateCounts[pos][1]);
         pthread_mutex_unlock(&outfile_lock);
-
     }
 
     return 0;
@@ -146,13 +146,13 @@ int main(int argc, char *argv[])
             {
                 if (args.action)
                     usage_and_exit(1, "multiple actions specified", argv[i - 1]);
-                args.action = ACTION_PRINT;
+                args.action = action_print;
             }
             else if (strcmp("validate", argv[i]) == 0)
             {
                 if (args.action)
                     usage_and_exit(1, "multiple actions specified", argv[i - 1]);
-                args.action = ACTION_VALIDATE;
+                args.action = action_validate;
             }
         }
     }
@@ -166,56 +166,36 @@ int main(int argc, char *argv[])
     infileLen = (args.infilePos == 0) ? 1 : args.infilePos;
     outfile = (!args.outfile || (strcmp("-", args.outfile) == 0)) ? stdout : fopen(args.outfile, "w");
 
+    // initialize threads & locks
     pthread_t *threads = calloc(args.nThreads, sizeof(pthread_t));
     pthread_mutex_init(&infilePos_lock, 0);
     pthread_mutex_init(&outfile_lock, 0);
 
-    switch (args.action)
+    // initialize counters
+    validateCounts = calloc(infileLen, sizeof(int *));
+    for (int i = 0; i < infileLen; i++)
     {
-    case ACTION_PRINT:
-    {
-        fprintf(stderr, "unimplemented\n");
+        validateCounts[i] = calloc(2, sizeof(int));
     }
-    break;
-    case ACTION_VALIDATE:
+
+    // start 'em up
+    for (int i = 0; i < args.nThreads; i++)
     {
-        validateCounts = calloc(infileLen, sizeof(int *));
-        for (int i = 0; i < infileLen; i++)
-        {
-            validateCounts[i] = calloc(2, sizeof(int));
-        }
-
-        for(int i = 0; i < args.nThreads; i++) {
-            pthread_create(&threads[i], 0, action_validate, 0);
-        }
-
-        for(int i = 0; i < args.nThreads; i++) {
-            // fprintf(stderr, "joining thread %i\n", i);
-            pthread_join(threads[i], 0);
-        }
-
-        int totals[2] = { 0, 0 };
-        for(int i = 0; i < infileLen; i++) {
-            totals[0] += validateCounts[i][0];
-            totals[1] += validateCounts[i][1];
-        }
-        fprintf(outfile, "TOTAL: %i/%i valid records\n", totals[0], totals[1]);
-        
-        for (int i = 0; i < infileLen; i++)
-        {
-            free(validateCounts[i]);
-        }
-        free(validateCounts);
+        pthread_create(&threads[i], 0, args.action, 0);
     }
-    break;
-    default:
+
+    // wait for 'em to finish
+    for (int i = 0; i < args.nThreads; i++)
     {
-        // this shouldn't happen...
-        usage_and_exit(1, "invalid action specified");
-    }
+        pthread_join(threads[i], 0);
     }
 
     // cleanup
+    for (int i = 0; i < infileLen; i++)
+    {
+        free(validateCounts[i]);
+    }
+    free(validateCounts);
     free(threads);
 
     return 0;
