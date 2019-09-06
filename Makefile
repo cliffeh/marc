@@ -1,4 +1,4 @@
-DATA="~/data/BooksAll.2016.part43.utf8"
+DATA=~/data/BooksAll.2016.part43.utf8
 
 CFLAGS=-g -Wall
 
