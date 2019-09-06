@@ -216,6 +216,7 @@ int main(int argc, char *argv[])
     }
     free(validateCounts);
     free(threads);
+    free(args.infiles);
 
     return 0;
 }
