@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <pthread.h>
+#include <errno.h>
 #include "marc.h"
 
 #define DEFAULT_NTHREADS 8
@@ -29,72 +30,81 @@ typedef struct arglist
 } arglist;
 
 /* global state */
-pthread_mutex_t infilePos_lock, outfile_lock;
+pthread_mutex_t infilePos_lock, outfile_lock, stderr_lock;
 char **infiles;
 int infilePos, infileLen;
 FILE *outfile;
 int **validateCounts;
 
+int get_file_position()
+{
+    int pos = 0;
+    pthread_mutex_lock(&infilePos_lock);
+    pos = infilePos++;
+    pthread_mutex_unlock(&infilePos_lock);
+    return pos;
+}
+
 void *action_validate(void *vargp)
 {
-    while (1)
+    int pos;
+    while ((pos = get_file_position()) < infileLen)
     {
-        pthread_mutex_lock(&infilePos_lock);
-        if (infilePos == infileLen)
+        FILE *in = (strcmp("-", infiles[pos]) == 0) ? stdin : fopen(infiles[pos], "rb");
+        if (!in)
         {
-            pthread_mutex_unlock(&infilePos_lock);
-            return 0;
+            pthread_mutex_lock(&stderr_lock);
+            fprintf(stderr, "warning: couldn't open file '%s': %s\n", infiles[pos], strerror(errno));
+            pthread_mutex_unlock(&stderr_lock);
         }
-
-        int pos = infilePos;
-
-        FILE *in = (strcmp("-", infiles[infilePos]) == 0) ? stdin : fopen(infiles[infilePos], "rb");
-        infilePos++;
-        pthread_mutex_unlock(&infilePos_lock);
-
-        marcrec rec;
-        while (marcrec_read(&rec, in) != 0)
+        else
         {
-            if (marcrec_validate(&rec) == 0)
+            marcrec rec;
+            while (marcrec_read(&rec, in) != 0)
             {
-                validateCounts[pos][0]++;
+                if (marcrec_validate(&rec) == 0)
+                {
+                    validateCounts[pos][0]++;
+                }
+                validateCounts[pos][1]++;
             }
-            validateCounts[pos][1]++;
+
+            fclose(in);
+
+            pthread_mutex_lock(&outfile_lock);
+            fprintf(outfile, "%s: %i/%i valid records\n", infiles[pos], validateCounts[pos][0], validateCounts[pos][1]);
+            pthread_mutex_unlock(&outfile_lock);
         }
-
-        fclose(in);
-
-        pthread_mutex_lock(&outfile_lock);
-        fprintf(outfile, "%s: %i/%i valid records\n", infiles[pos], validateCounts[pos][0], validateCounts[pos][1]);
-        pthread_mutex_unlock(&outfile_lock);
     }
+    return 0;
 }
 
 void *action_print(void *vargp)
 {
-    while (1)
+    int pos;
+    while ((pos = get_file_position()) < infileLen)
     {
-        pthread_mutex_lock(&infilePos_lock);
-        if (infilePos == infileLen)
+        FILE *in = (strcmp("-", infiles[pos]) == 0) ? stdin : fopen(infiles[pos], "rb");
+        if (!in)
         {
-            pthread_mutex_unlock(&infilePos_lock);
-            return 0;
+            pthread_mutex_lock(&stderr_lock);
+            fprintf(stderr, "warning: couldn't open file '%s': %s\n", infiles[pos], strerror(errno));
+            pthread_mutex_unlock(&stderr_lock);
         }
-
-        FILE *in = (strcmp("-", infiles[infilePos]) == 0) ? stdin : fopen(infiles[infilePos], "rb");
-        infilePos++;
-        pthread_mutex_unlock(&infilePos_lock);
-
-        marcrec rec;
-        while (marcrec_read(&rec, in) != 0)
+        else
         {
-            pthread_mutex_lock(&outfile_lock);
-            marcrec_print(&rec, outfile);
-            pthread_mutex_unlock(&outfile_lock);
-        }
+            marcrec rec;
+            while (marcrec_read(&rec, in) != 0)
+            {
+                pthread_mutex_lock(&outfile_lock);
+                marcrec_print(&rec, outfile);
+                pthread_mutex_unlock(&outfile_lock);
+            }
 
-        fclose(in);
+            fclose(in);
+        }
     }
+    return 0;
 }
 
 void usage_and_exit(int code, const char *fmt, ...)
@@ -124,8 +134,6 @@ int main(int argc, char *argv[])
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
 
-    // fprintf(stderr, USAGE, DEFAULT_NTHREADS);
-    // int nThreads = DEFAULT_NTHREADS, action = 0;
     // parse args
     for (int i = 1; i < argc; i++)
     {
