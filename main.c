@@ -8,25 +8,24 @@
 
 #define DEFAULT_NTHREADS 8
 
-#define USAGE                                                                                       \
-    "usage: marc ACTION [OPTIONS] | marc [-h|--help]\n"                                             \
-    "\n"                                                                                            \
-    "ACTIONS:\n"                                                                                    \
-    "  help      print a brief help message and exit\n"                                             \
-    "  print     pretty-print marc records\n"                                                       \
-    "  validate  validate marc records for correctness (default action)\n"                          \
-    "\n"                                                                                            \
-    "OPTIONS:\n"                                                                                    \
-    "  -h, --help         print a brief help message and exit\n"                                    \
-    "  -i, --input  FILE  read input from FILE; can be specified multiple times (default: stdin)\n" \
-    "  -o, --output FILE  write output to FILE (default: stdout)\n"                                 \
+#define USAGE                                                              \
+    "usage: marc ACTION [OPTIONS] [FILES] | marc [-h|--help]\n"            \
+    "\n"                                                                   \
+    "ACTIONS:\n"                                                           \
+    "  help      print a brief help message and exit\n"                    \
+    "  print     pretty-print marc records\n"                              \
+    "  validate  validate marc records for correctness (default action)\n" \
+    "\n"                                                                   \
+    "OPTIONS:\n"                                                           \
+    "  -h, --help         print a brief help message and exit\n"           \
+    "  -o, --output FILE  write output to FILE (default: stdout)\n"        \
     "  -t, --threads NUM  run using NUM threads (default: %i)\n"
 
 typedef struct arglist
 {
     char **infiles, *outfile;
     int nThreads, infilePos;
-    void *(*action)(void *);
+    void *(*action)(FILE *, int);
 } arglist;
 
 /* global state */
@@ -45,8 +44,9 @@ int get_file_position()
     return pos;
 }
 
-void *action_validate(void *vargp)
+void *action_many_files(void *vargp)
 {
+    void *(*action)(FILE *, int) = vargp;
     int pos;
     while ((pos = get_file_position()) < infileLen)
     {
@@ -59,51 +59,39 @@ void *action_validate(void *vargp)
         }
         else
         {
-            marcrec rec;
-            while (marcrec_read(&rec, in) != 0)
-            {
-                if (marcrec_validate(&rec) == 0)
-                {
-                    validateCounts[pos][0]++;
-                }
-                validateCounts[pos][1]++;
-            }
-
+            action(in, pos);
             fclose(in);
-
-            pthread_mutex_lock(&outfile_lock);
-            fprintf(outfile, "%s: %i/%i valid records\n", infiles[pos], validateCounts[pos][0], validateCounts[pos][1]);
-            pthread_mutex_unlock(&outfile_lock);
         }
     }
+
     return 0;
 }
 
-void *action_print(void *vargp)
+void *action_validate(FILE *in, int pos)
 {
-    int pos;
-    while ((pos = get_file_position()) < infileLen)
+    marcrec rec;
+    while (marcrec_read(&rec, in) != 0)
     {
-        FILE *in = (strcmp("-", infiles[pos]) == 0) ? stdin : fopen(infiles[pos], "rb");
-        if (!in)
+        if (marcrec_validate(&rec) == 0)
         {
-            pthread_mutex_lock(&stderr_lock);
-            fprintf(stderr, "warning: couldn't open file '%s': %s\n", infiles[pos], strerror(errno));
-            pthread_mutex_unlock(&stderr_lock);
+            validateCounts[pos][0]++;
         }
-        else
-        {
-            marcrec rec;
-            while (marcrec_read(&rec, in) != 0)
-            {
-                pthread_mutex_lock(&outfile_lock);
-                marcrec_print(&rec, outfile);
-                pthread_mutex_unlock(&outfile_lock);
-            }
-
-            fclose(in);
-        }
+        validateCounts[pos][1]++;
     }
+
+    return 0;
+}
+
+void *action_print(FILE *in, int pos)
+{
+    marcrec rec;
+    while (marcrec_read(&rec, in) != 0)
+    {
+        pthread_mutex_lock(&outfile_lock);
+        marcrec_print(&rec, outfile);
+        pthread_mutex_unlock(&outfile_lock);
+    }
+
     return 0;
 }
 
@@ -126,26 +114,43 @@ int main(int argc, char *argv[])
 {
     arglist args;
 
-    // maximum possible number of input files is effectively argc/2
-    args.infiles = calloc(argc / 2, sizeof(char *));
+    // maximum possible number of input files is argc-2
+    args.infiles = calloc(argc - 2, sizeof(char *));
     args.infilePos = 0;
     args.infiles[0] = "-";
     args.outfile = 0;
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
 
+    if (argc == 1)
+    {
+        usage_and_exit(1, "no action specified\n");
+    }
+
+    // parse action
+    if (strcmp("help", argv[1]) == 0)
+    {
+        usage_and_exit(0, 0);
+    }
+    else if (strcmp("print", argv[1]) == 0)
+    {
+        args.action = action_print;
+    }
+    else if (strcmp("validate", argv[1]) == 0)
+    {
+        args.action = action_validate;
+    }
+    else
+    {
+        usage_and_exit(1, "unrecognized/unimplemented action '%s'", argv[1]);
+    }
+
     // parse args
-    for (int i = 1; i < argc; i++)
+    for (int i = 2; i < argc; i++)
     {
         if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0)
         {
             usage_and_exit(0, 0);
-        }
-        else if (strcmp("-i", argv[i]) == 0 || strcmp("--input", argv[i]) == 0)
-        {
-            if (i + 1 >= argc)
-                usage_and_exit(1, "%s requires an argument", argv[i]);
-            args.infiles[args.infilePos++] = argv[++i];
         }
         else if (strcmp("-o", argv[i]) == 0 || strcmp("--output", argv[i]) == 0)
         {
@@ -164,29 +169,10 @@ int main(int argc, char *argv[])
                 usage_and_exit(1, "%s requires an argument greater than 0", argv[i - 1]);
         }
         else
-        { // actions!
-            if (strcmp("help", argv[i]) == 0)
-            {
-                usage_and_exit(0, 0);
-            }
-            else if (strcmp("print", argv[i]) == 0)
-            {
-                if (args.action)
-                    usage_and_exit(1, "multiple actions specified", argv[i - 1]);
-                args.action = action_print;
-            }
-            else if (strcmp("validate", argv[i]) == 0)
-            {
-                if (args.action)
-                    usage_and_exit(1, "multiple actions specified", argv[i - 1]);
-                args.action = action_validate;
-            }
+        {
+            args.infiles[args.infilePos++] = argv[i];
         }
     }
-
-    // TODO maybe have a default action?
-    if (!args.action)
-        usage_and_exit(1, "no action specified");
 
     infiles = args.infiles;
     infilePos = 0;
@@ -208,7 +194,7 @@ int main(int argc, char *argv[])
     // start 'em up
     for (int i = 0; i < args.nThreads; i++)
     {
-        pthread_create(&threads[i], 0, args.action, 0);
+        pthread_create(&threads[i], 0, action_many_files, args.action);
     }
 
     // wait for 'em to finish
