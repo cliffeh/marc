@@ -12,7 +12,7 @@ marc: marc.o util.o main.o
 marc.valgrind: marc
 	valgrind \
 		--leak-check=full --log-file=$@ \
-		./$< validate -i $(DATA) \
+		./$< validate $(DATA) \
 		> /dev/null 2>&1
 
 clean:
