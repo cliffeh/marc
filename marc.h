@@ -21,8 +21,8 @@ marcrec *marcrec_read(marcrec *rec, FILE *in);
 int marcrec_validate(const marcrec *rec);
 void marcrec_walk_fields(const marcrec *rec, void (*f)(const char *, const char *, int, void *), void *arg);
 void marcrec_print(const marcrec *rec, FILE *out);
-int marcrec_get_fields(char **dest, const marcrec *rec, const char *tag, const char *subfields);
-int marcrec_get_field_utf8(wchar_t **dest, const marcrec *rec, const char *tag, const char *subfields);
+int marcrec_get_fields(char *dest[], const marcrec *rec, const char *tag, const char *subfields);
+int marcrec_get_fields_utf8(wchar_t *dest, const marcrec *rec, const char *tag, const char *subfields);
 
 // marcrec_walk_fields callbacks
 void marc_print_field(const char *dir_entry, const char *data, int nbytes, void *outPtr);

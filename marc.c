@@ -78,7 +78,8 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
   // print the tag
   fwprintf(out, L"  %.*s: ", 3, dir_entry);
 
-  wchar_t buf[99999];
+  // 4-digit field length means a max size of 9999
+  wchar_t buf[10000];
   int len = mbstowcs(buf, data, nbytes);
 
   for (wchar_t *p = buf; *p != FIELD_TERMINATOR && (p-buf) < len; p++)
@@ -94,13 +95,13 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
   fwprintf(out, L"\n");
 }
 
-int marcrec_get_fields(char **dest, const marcrec *rec, const char *tag, const char *subfields)
+int marcrec_get_fields(char *dest[], const marcrec *rec, const char *tag, const char *subfields)
 {
   // TODO implement!
   return 0;
 }
 
-int marcrec_get_field_utf8(wchar_t **dest, const marcrec *rec, const char *tag, const char *subfields)
+int marcrec_get_field_utf8(wchar_t *dest, const marcrec *rec, const char *tag, const char *subfields)
 {
   // TODO implement!
   return 0;

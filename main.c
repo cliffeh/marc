@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <errno.h>
+#include <wchar.h>
 #include "marc.h"
 
 #define DEFAULT_NTHREADS 8
@@ -92,6 +93,33 @@ void *action_print(FILE *in, int pos)
         pthread_mutex_unlock(&outfile_lock);
     }
 
+    return 0;
+}
+
+void *action_print_fields(FILE *in, int pos)
+{
+    // marcrec rec;
+    // 100 seems like a reasonable upper bound for the number of fields,
+    // 9999 is maximum field length (4 digits)
+    /*
+    wchar_t buf[100][10000];
+    while (marcrec_read(&rec, in) != 0)
+    {
+        for (int i = 0; i < fieldLen; i++)
+        {
+            int count = marcrec_get_field_utf8(buf, &rec, fields[i], fields[i] + 3);
+            if (count > 0)
+            {
+                pthread_mutex_lock(&outfile_lock);
+                for (int j = 0; j < count; j++)
+                {
+                    fwprintf(outfile, L"%s\n", buf[j]);
+                }
+                pthread_mutex_unlock(&outfile_lock);
+            }
+        }
+    }
+    */
     return 0;
 }
 
