@@ -23,15 +23,15 @@
 
 typedef struct arglist
 {
-    char **infiles, *outfile;
-    int nThreads, infilePos;
+    char **infiles, *outfile, **fields;
+    int nThreads, infilePos, fieldPos;
     void *(*action)(FILE *, int);
 } arglist;
 
 /* global state */
 pthread_mutex_t infilePos_lock, outfile_lock, stderr_lock;
-char **infiles;
-int infilePos, infileLen;
+char **infiles, **fields;
+int infilePos, infileLen, fieldLen;
 FILE *outfile;
 int **validateCounts;
 
@@ -121,6 +121,8 @@ int main(int argc, char *argv[])
     args.outfile = 0;
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
+    // a resonable heuristic for the max # of possible fields is argc/2
+    args.fields = calloc(argc / 2, sizeof(char *));
 
     if (argc == 1)
     {
@@ -152,6 +154,14 @@ int main(int argc, char *argv[])
         {
             usage_and_exit(0, 0);
         }
+        else if (strcmp("-f", argv[i]) == 0 || strcmp("--field", argv[i]) == 0)
+        {
+            if (i + 1 >= argc)
+                usage_and_exit(1, "%s requires an argument", argv[i]);
+            if (strlen(argv[++i]) < 3)
+                usage_and_exit(1, "%s is not a valid tag", argv[i]);
+            args.fields[args.fieldPos++] = argv[i];
+        }
         else if (strcmp("-o", argv[i]) == 0 || strcmp("--output", argv[i]) == 0)
         {
             if (i + 1 >= argc)
@@ -178,6 +188,8 @@ int main(int argc, char *argv[])
     infilePos = 0;
     infileLen = (args.infilePos == 0) ? 1 : args.infilePos;
     outfile = (!args.outfile || (strcmp("-", args.outfile) == 0)) ? stdout : fopen(args.outfile, "w");
+    fields = args.fields;
+    fieldLen = args.fieldPos;
 
     // initialize threads & locks
     pthread_t *threads = calloc(args.nThreads, sizeof(pthread_t));
@@ -211,6 +223,7 @@ int main(int argc, char *argv[])
     free(validateCounts);
     free(threads);
     free(args.infiles);
+    free(args.fields);
 
     return 0;
 }
