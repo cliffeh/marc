@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <pthread.h>
 #include <errno.h>
-#include <wchar.h>
 #include "marc.h"
 
 #define DEFAULT_NTHREADS 8
@@ -24,15 +23,15 @@
 
 typedef struct arglist
 {
-    char **infiles, *outfile, **fields;
-    int nThreads, infilePos, fieldPos;
+    char **infiles, *outfile;
+    int nThreads, infilePos;
     void *(*action)(FILE *, int);
 } arglist;
 
 /* global state */
 pthread_mutex_t infilePos_lock, outfile_lock, stderr_lock;
-char **infiles, **fields;
-int infilePos, infileLen, fieldLen;
+char **infiles;
+int infilePos, infileLen;
 FILE *outfile;
 int **validateCounts;
 
@@ -96,33 +95,6 @@ void *action_print(FILE *in, int pos)
     return 0;
 }
 
-void *action_print_fields(FILE *in, int pos)
-{
-    // marcrec rec;
-    // 100 seems like a reasonable upper bound for the number of fields,
-    // 9999 is maximum field length (4 digits)
-    /*
-    wchar_t buf[100][10000];
-    while (marcrec_read(&rec, in) != 0)
-    {
-        for (int i = 0; i < fieldLen; i++)
-        {
-            int count = marcrec_get_field_utf8(buf, &rec, fields[i], fields[i] + 3);
-            if (count > 0)
-            {
-                pthread_mutex_lock(&outfile_lock);
-                for (int j = 0; j < count; j++)
-                {
-                    fwprintf(outfile, L"%s\n", buf[j]);
-                }
-                pthread_mutex_unlock(&outfile_lock);
-            }
-        }
-    }
-    */
-    return 0;
-}
-
 void usage_and_exit(int code, const char *fmt, ...)
 {
     if (code)
@@ -149,8 +121,6 @@ int main(int argc, char *argv[])
     args.outfile = 0;
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
-    // a resonable heuristic for the max # of possible fields is argc/2
-    args.fields = calloc(argc / 2, sizeof(char *));
 
     if (argc == 1)
     {
@@ -182,14 +152,6 @@ int main(int argc, char *argv[])
         {
             usage_and_exit(0, 0);
         }
-        else if (strcmp("-f", argv[i]) == 0 || strcmp("--field", argv[i]) == 0)
-        {
-            if (i + 1 >= argc)
-                usage_and_exit(1, "%s requires an argument", argv[i]);
-            if (strlen(argv[++i]) < 3)
-                usage_and_exit(1, "%s is not a valid tag", argv[i]);
-            args.fields[args.fieldPos++] = argv[i];
-        }
         else if (strcmp("-o", argv[i]) == 0 || strcmp("--output", argv[i]) == 0)
         {
             if (i + 1 >= argc)
@@ -216,8 +178,6 @@ int main(int argc, char *argv[])
     infilePos = 0;
     infileLen = (args.infilePos == 0) ? 1 : args.infilePos;
     outfile = (!args.outfile || (strcmp("-", args.outfile) == 0)) ? stdout : fopen(args.outfile, "w");
-    fields = args.fields;
-    fieldLen = args.fieldPos;
 
     // initialize threads & locks
     pthread_t *threads = calloc(args.nThreads, sizeof(pthread_t));
@@ -251,7 +211,6 @@ int main(int argc, char *argv[])
     free(validateCounts);
     free(threads);
     free(args.infiles);
-    free(args.fields);
 
     return 0;
 }

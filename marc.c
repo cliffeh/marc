@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <wchar.h>
+#include <locale.h>
 #include "marc.h"
 #include "util.h"
 
@@ -44,31 +44,32 @@ int marcrec_validate(const marcrec *rec)
   if (rec->raw[rec->base_address - 1] != FIELD_TERMINATOR)
     r |= MISSING_FIELD_TERMINATOR;
 
-  marcrec_walk_fields(rec, marc_validate_field, (void*)&r);
+  marcrec_walk_fields(rec, marc_validate_field, (void *)&r);
   return r;
 }
 
 void marc_validate_field(const char *dir_entry, const char *data, int nbytes, void *retPtr)
 {
   int *r = (int *)retPtr;
-  if(data[nbytes-1] != FIELD_TERMINATOR) *r |= MISSING_FIELD_TERMINATOR;
+  if (data[nbytes - 1] != FIELD_TERMINATOR)
+    *r |= MISSING_FIELD_TERMINATOR;
 }
 
 void marcrec_print(const marcrec *rec, FILE *out)
 {
-  fwprintf(out, L"length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
-           rec->length, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
-  fwprintf(out, L"character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
-           rec->raw[10], rec->raw[11], rec->raw[12]);
-  fwprintf(out, L"base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
-           rec->base_address, rec->raw[17], rec->raw[18]);
-  fwprintf(out, L"multipart resource record level: %c | length of the length-of-field portion: %c\n",
-           rec->raw[19], rec->raw[20]);
-  fwprintf(out, L"length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
-           rec->raw[21], rec->raw[22]);
+  fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
+          rec->length, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
+  fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
+          rec->raw[10], rec->raw[11], rec->raw[12]);
+  fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
+          rec->base_address, rec->raw[17], rec->raw[18]);
+  fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
+          rec->raw[19], rec->raw[20]);
+  fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
+          rec->raw[21], rec->raw[22]);
 
-  fwprintf(out, L"variable-length fields:\n");
-  marcrec_walk_fields(rec, marc_print_field, (void*)out);
+  fprintf(out, "variable-length fields:\n");
+  marcrec_walk_fields(rec, marc_print_field, (void *)out);
 }
 
 void marc_print_field(const char *dir_entry, const char *data, int nbytes, void *outPtr)
@@ -76,21 +77,35 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
   FILE *out = (FILE *)outPtr;
 
   // print the tag
-  fwprintf(out, L"  %.*s: ", 3, dir_entry);
+  fprintf(out, "  %.*s: ", 3, dir_entry);
 
   // 4-digit field length means a max size of 9999
-  wchar_t buf[10000];
-  int len = mbstowcs(buf, data, nbytes);
+  char buf[10000], *p = buf;
 
-  for (wchar_t *p = buf; *p != FIELD_TERMINATOR && (p-buf) < len; p++)
+  for (int i = 0; i < nbytes; i++)
   {
-    switch(*p) 
+    switch (data[i])
     {
-      // replace subfield delimiters with a human-readable format
-      case SUBFIELD_DELIMITER: fwprintf(out, L" $%c: ", *(++p)); break;
-      default: fwprintf(out, L"%c", *p);
+    // replace subfield delimiters with a human-readable format
+    case SUBFIELD_DELIMITER:
+    {
+      *p++ = ' ';
+      *p++ = '$';
+      *p++ = data[++i];
+      *p++ = ':';
+      *p++ = ' ';
+    }
+    break;
+    case FIELD_TERMINATOR:
+    { /* do not print */
+    }
+    break;
+    default:
+      *p++ = data[i];
     }
   }
 
-  fwprintf(out, L"\n");
+  *p = 0;
+
+  fprintf(out, "%s\n", buf);
 }
