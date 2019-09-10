@@ -94,15 +94,3 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
 
   fwprintf(out, L"\n");
 }
-
-int marcrec_get_fields(char *dest[], const marcrec *rec, const char *tag, const char *subfields)
-{
-  // TODO implement!
-  return 0;
-}
-
-int marcrec_get_field_utf8(wchar_t *dest, const marcrec *rec, const char *tag, const char *subfields)
-{
-  // TODO implement!
-  return 0;
-}
