@@ -97,7 +97,7 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
     }
     break;
     case FIELD_TERMINATOR:
-    { /* do not print */
+    { // do not print
     }
     break;
     default:
