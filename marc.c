@@ -16,9 +16,6 @@ marcrec *marcrec_read(marcrec *rec, FILE *in)
   // length of leader + directory
   rec->base_address = char_to_int(rec->raw + 12, 5);
 
-  // it's handy to know the number of fields, and it's inexpensive to compute
-  rec->field_count = (rec->base_address - 1) / 12;
-
   // read the remainder of the record
   fread(rec->raw + 24, sizeof(char), rec->length - 24, in);
 

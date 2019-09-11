@@ -11,7 +11,7 @@
 #define MISSING_RECORD_TERMINATOR (1<<1)
 
 typedef struct marcrec {
-  int length, base_address, field_count;
+  int length, base_address;
   // MARC record length is represented as 5 digits, with 
   // 99999 being the maximum possible length
   char raw[99999];
