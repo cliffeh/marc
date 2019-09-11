@@ -25,7 +25,7 @@ typedef struct arglist
 {
     char **infiles, *outfile;
     int nThreads, infilePos;
-    void *(*action)(FILE *, int);
+    void *(*action)(marcrec *, int);
 } arglist;
 
 /* global state */
@@ -46,7 +46,7 @@ int get_file_position()
 
 void *action_many_files(void *vargp)
 {
-    void *(*action)(FILE *, int) = vargp;
+    void *(*action)(marcrec *, int) = vargp;
     int pos;
     while ((pos = get_file_position()) < infileLen)
     {
@@ -59,7 +59,12 @@ void *action_many_files(void *vargp)
         }
         else
         {
-            action(in, pos);
+            marcrec rec;
+            marcfield fields[10000];
+            while (marcrec_read(&rec, fields, in) != 0)
+            {
+                action(&rec, pos);
+            }
             fclose(in);
         }
     }
@@ -67,32 +72,23 @@ void *action_many_files(void *vargp)
     return 0;
 }
 
-void *action_validate(FILE *in, int pos)
+void *action_validate(marcrec *rec, int pos)
 {
-    marcrec rec;
-    marcfield fields[10000];
-    while (marcrec_read(&rec, fields, in) != 0)
+
+    if (marcrec_validate(rec) == 0)
     {
-        if (marcrec_validate(&rec) == 0)
-        {
-            validateCounts[pos][0]++;
-        }
-        validateCounts[pos][1]++;
+        validateCounts[pos][0]++;
     }
+    validateCounts[pos][1]++;
 
     return 0;
 }
 
-void *action_print(FILE *in, int pos)
+void *action_print(marcrec *rec, int pos)
 {
-    marcrec rec;
-    marcfield fields[10000];
-    while (marcrec_read(&rec, fields, in) != 0)
-    {
-        pthread_mutex_lock(&outfile_lock);
-        marcrec_print(&rec, outfile);
-        pthread_mutex_unlock(&outfile_lock);
-    }
+    pthread_mutex_lock(&outfile_lock);
+    marcrec_print(rec, outfile);
+    pthread_mutex_unlock(&outfile_lock);
 
     return 0;
 }
