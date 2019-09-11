@@ -5,3 +5,4 @@
 * check for "-" being specified multiple times
 * multiple output files
 * MARCXML output?
+* cpu/time efficiency vs memory efficiency?
