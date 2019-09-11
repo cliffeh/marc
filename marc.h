@@ -27,9 +27,11 @@ marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in);
 int marcrec_validate(marcrec *rec);
 void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg);
 void marcrec_print(marcrec *rec, FILE *out);
+void marcfield_humanize(const marcfield *field, char *dest);
+int marcfield_match_field(marcfield *field, char *fieldSpec, char *dest);
 
 // marcrec_walk_fields callbacks
-void marc_print_field(const marcfield *, void *outPtr);
-void marc_validate_field(const marcfield *, void *retPtr);
+void marc_print_field(const marcfield *field, void *outPtr);
+void marc_validate_field(const marcfield *field, void *retPtr);
 
 #endif

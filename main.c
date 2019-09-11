@@ -13,24 +13,36 @@
     "\n"                                                                   \
     "ACTIONS:\n"                                                           \
     "  help      print a brief help message and exit\n"                    \
-    "  print     pretty-print marc records\n"                              \
+    "  print     print marc records in a human-readable format\n"          \
     "  validate  validate marc records for correctness (default action)\n" \
     "\n"                                                                   \
     "OPTIONS:\n"                                                           \
     "  -h, --help         print a brief help message and exit\n"           \
+    "  -f, --field SPEC   only output fields according to SPEC\n"          \
     "  -o, --output FILE  write output to FILE (default: stdout)\n"        \
-    "  -t, --threads NUM  run using NUM threads (default: %i)\n"
+    "  -t, --threads NUM  run using NUM threads (default: %i)\n"           \
+    "Examples:\n\n"                                                        \
+    "  # validate records\n"                                               \
+    "  marc validate foo.marc\n\n"                                         \
+    "  # print all records\n"                                              \
+    "  marc print foo.marc\n\n"                                            \
+    "  # print out the full 245 field of all records\n"                    \
+    "  marc print --field 245 foo.marc\n\n"                                \
+    "  # print out the 245a subfield of all records\n"                     \
+    "  marc print --field 245a foo.marc\n\n"                               \
+    "  # print out the 245 field (subfields a and b, space-delimited)\n"   \
+    "  marc print --field 245ab foo.marc\n"     
 
 typedef struct arglist
 {
-    char **infiles, *outfile;
+    char **infiles, *outfile, *fieldSpec;
     int nThreads, infilePos;
     void *(*action)(marcrec *, int);
 } arglist;
 
 /* global state */
 pthread_mutex_t infilePos_lock, outfile_lock, stderr_lock;
-char **infiles;
+char **infiles, *fieldSpec;
 int infilePos, infileLen;
 FILE *outfile;
 int **validateCounts;
@@ -86,9 +98,25 @@ void *action_validate(marcrec *rec, int pos)
 
 void *action_print(marcrec *rec, int pos)
 {
-    pthread_mutex_lock(&outfile_lock);
-    marcrec_print(rec, outfile);
-    pthread_mutex_unlock(&outfile_lock);
+    if (!fieldSpec)
+    {
+        pthread_mutex_lock(&outfile_lock);
+        marcrec_print(rec, outfile);
+        pthread_mutex_unlock(&outfile_lock);
+    }
+    else
+    {
+        char buf[99999];
+        for (int i = 0; i < rec->field_count; i++)
+        {
+            if (marcfield_match_field(&rec->fields[i], fieldSpec, buf) != 0)
+            {
+                pthread_mutex_lock(&outfile_lock);
+                fprintf(outfile, "%s\n", buf);
+                pthread_mutex_unlock(&outfile_lock);
+            }
+        }
+    }
 
     return 0;
 }
@@ -119,6 +147,7 @@ int main(int argc, char *argv[])
     args.outfile = 0;
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
+    args.fieldSpec = 0;
 
     if (argc == 1)
     {
@@ -150,6 +179,16 @@ int main(int argc, char *argv[])
         {
             usage_and_exit(0, 0);
         }
+        else if (strcmp("-f", argv[i]) == 0 || strcmp("--field", argv[i]) == 0)
+        {
+            if (i + 1 >= argc)
+                usage_and_exit(1, "%s requires an argument", argv[i]);
+            if (args.fieldSpec)
+                usage_and_exit(1, "%s can only be specified once", argv[i]);
+            if (strlen(argv[i + 1]) < 3)
+                usage_and_exit(1, "invalid field specified: %s", argv[i + 1]);
+            args.fieldSpec = argv[++i];
+        }
         else if (strcmp("-o", argv[i]) == 0 || strcmp("--output", argv[i]) == 0)
         {
             if (i + 1 >= argc)
@@ -176,6 +215,7 @@ int main(int argc, char *argv[])
     infilePos = 0;
     infileLen = (args.infilePos == 0) ? 1 : args.infilePos;
     outfile = (!args.outfile || (strcmp("-", args.outfile) == 0)) ? stdout : fopen(args.outfile, "w");
+    fieldSpec = args.fieldSpec;
 
     // initialize threads & locks
     pthread_t *threads = calloc(args.nThreads, sizeof(pthread_t));

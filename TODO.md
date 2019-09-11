@@ -1,8 +1,9 @@
 * error checking/recovery
 * debug/verbose flag
-* `marc field` command for fetching subfields
 * unit testing
 * check for "-" being specified multiple times
 * multiple output files
 * MARCXML output?
 * cpu/time efficiency vs memory efficiency?
+* better doc for fieldspec
+* better doc around options/examples
