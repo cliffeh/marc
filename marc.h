@@ -10,20 +10,26 @@
 #define MISSING_FIELD_TERMINATOR  (1<<0)
 #define MISSING_RECORD_TERMINATOR (1<<1)
 
+typedef struct marcfield {
+  char *directory_entry, *data;
+  int len;
+} marcfield;
+
 typedef struct marcrec {
-  int length, base_address;
+  int length, base_address, field_count;
   // MARC record length is represented as 5 digits, with 
   // 99999 being the maximum possible length
   char raw[99999];
+  marcfield *fields;
 } marcrec;
 
-marcrec *marcrec_read(marcrec *rec, FILE *in);
-int marcrec_validate(const marcrec *rec);
-void marcrec_walk_fields(const marcrec *rec, void (*f)(const char *, const char *, int, void *), void *arg);
-void marcrec_print(const marcrec *rec, FILE *out);
+marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in);
+int marcrec_validate(marcrec *rec);
+void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg);
+void marcrec_print(marcrec *rec, FILE *out);
 
 // marcrec_walk_fields callbacks
-void marc_print_field(const char *dir_entry, const char *data, int nbytes, void *outPtr);
-void marc_validate_field(const char *dir_entry, const char *data, int nbytes, void *retPtr);
+void marc_print_field(const marcfield *, void *outPtr);
+void marc_validate_field(const marcfield *, void *retPtr);
 
 #endif

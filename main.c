@@ -70,7 +70,8 @@ void *action_many_files(void *vargp)
 void *action_validate(FILE *in, int pos)
 {
     marcrec rec;
-    while (marcrec_read(&rec, in) != 0)
+    marcfield fields[10000];
+    while (marcrec_read(&rec, fields, in) != 0)
     {
         if (marcrec_validate(&rec) == 0)
         {
@@ -85,7 +86,8 @@ void *action_validate(FILE *in, int pos)
 void *action_print(FILE *in, int pos)
 {
     marcrec rec;
-    while (marcrec_read(&rec, in) != 0)
+    marcfield fields[10000];
+    while (marcrec_read(&rec, fields, in) != 0)
     {
         pthread_mutex_lock(&outfile_lock);
         marcrec_print(&rec, outfile);

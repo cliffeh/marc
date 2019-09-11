@@ -5,7 +5,18 @@
 #include "marc.h"
 #include "util.h"
 
-marcrec *marcrec_read(marcrec *rec, FILE *in)
+static marcfield *marcrec_process_fields(marcrec *rec, marcfield *fields)
+{
+  for (int i = 0; i < rec->field_count; i++)
+  {
+    fields[i].directory_entry = rec->raw + 24 + i * 12;
+    fields[i].len = char_to_int(fields[i].directory_entry + 3, 4);
+    fields[i].data = rec->raw + rec->base_address + char_to_int(fields[i].directory_entry + 7, 5);
+  }
+  return fields;
+}
+
+marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in)
 {
   if (fread(rec->raw, sizeof(char), 24, in) == 0)
     return 0;
@@ -16,24 +27,28 @@ marcrec *marcrec_read(marcrec *rec, FILE *in)
   // length of leader + directory
   rec->base_address = char_to_int(rec->raw + 12, 5);
 
+  // compute the number of fields based on directory size
+  rec->field_count = (rec->base_address - 24 - 1) / 12;
+
   // read the remainder of the record
   fread(rec->raw + 24, sizeof(char), rec->length - 24, in);
+
+  // if we've been given storage for fields, assume that we want them to be processed
+  rec->fields = fields ? marcrec_process_fields(rec, fields) : 0;
 
   return rec;
 }
 
-void marcrec_walk_fields(const marcrec *rec, void (*f)(const char *, const char *, int, void *), void *arg)
+void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg)
 {
-  for (int i = 24; i < rec->base_address - 1; i += 12)
-  {
-    int len = char_to_int(rec->raw + i + 3, 4);
-    int pos = char_to_int(rec->raw + i + 7, 5);
-
-    f(rec->raw + i, rec->raw + rec->base_address + pos, len, arg);
+  // 1000 fields seems like a reasonable upper bound
+  marcfield buf[1000], *fields = rec->fields ? rec->fields : marcrec_process_fields(rec, buf); 
+  for(int i = 0; i < rec->field_count; i++) {
+    f(&fields[i], arg);
   }
 }
 
-int marcrec_validate(const marcrec *rec)
+int marcrec_validate(marcrec *rec)
 {
   int r = 0;
   if (rec->raw[rec->length - 1] != RECORD_TERMINATOR)
@@ -45,14 +60,14 @@ int marcrec_validate(const marcrec *rec)
   return r;
 }
 
-void marc_validate_field(const char *dir_entry, const char *data, int nbytes, void *retPtr)
+void marc_validate_field(const marcfield *field, void *retPtr)
 {
   int *r = (int *)retPtr;
-  if (data[nbytes - 1] != FIELD_TERMINATOR)
+  if (field->data[field->len - 1] != FIELD_TERMINATOR)
     *r |= MISSING_FIELD_TERMINATOR;
 }
 
-void marcrec_print(const marcrec *rec, FILE *out)
+void marcrec_print(marcrec *rec, FILE *out)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
           rec->length, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
@@ -69,26 +84,26 @@ void marcrec_print(const marcrec *rec, FILE *out)
   marcrec_walk_fields(rec, marc_print_field, (void *)out);
 }
 
-void marc_print_field(const char *dir_entry, const char *data, int nbytes, void *outPtr)
+void marc_print_field(const marcfield *field, void *outPtr)
 {
   FILE *out = (FILE *)outPtr;
 
   // print the tag
-  fprintf(out, "  %.*s: ", 3, dir_entry);
+  fprintf(out, "  %.*s: ", 3, field->directory_entry);
 
   // 4-digit field length means a max size of 9999
   char buf[10000], *p = buf;
 
-  for (int i = 0; i < nbytes; i++)
+  for (int i = 0; i < field->len; i++)
   {
-    switch (data[i])
+    switch (field->data[i])
     {
     // replace subfield delimiters with a human-readable format
     case SUBFIELD_DELIMITER:
     {
       *p++ = ' ';
       *p++ = '$';
-      *p++ = data[++i];
+      *p++ = field->data[++i];
       *p++ = ':';
       *p++ = ' ';
     }
@@ -98,7 +113,7 @@ void marc_print_field(const char *dir_entry, const char *data, int nbytes, void 
     }
     break;
     default:
-      *p++ = data[i];
+      *p++ = field->data[i];
     }
   }
 
