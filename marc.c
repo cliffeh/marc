@@ -39,6 +39,11 @@ marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in)
   return rec;
 }
 
+void marcrec_dump(marcrec *rec, FILE *out)
+{
+  fwrite(rec->raw, sizeof(char), rec->length, out);
+}
+
 void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg)
 {
   // 1000 fields seems like a reasonable upper bound

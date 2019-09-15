@@ -13,6 +13,7 @@
     "\n"                                                                   \
     "ACTIONS:\n"                                                           \
     "  help      print a brief help message and exit\n"                    \
+    "  dump      dump records in their original format\n"                  \
     "  print     print marc records in a human-readable format\n"          \
     "  validate  validate marc records for correctness (default action)\n" \
     "\n"                                                                   \
@@ -31,7 +32,7 @@
     "  # print out the 245a subfield of all records\n"                     \
     "  marc print --field 245a foo.marc\n\n"                               \
     "  # print out the 245 field (subfields a and b, space-delimited)\n"   \
-    "  marc print --field 245ab foo.marc\n"     
+    "  marc print --field 245ab foo.marc\n"
 
 typedef struct arglist
 {
@@ -80,6 +81,15 @@ void *action_many_files(void *vargp)
             fclose(in);
         }
     }
+
+    return 0;
+}
+
+void *action_dump(marcrec *rec, int pos)
+{
+    pthread_mutex_lock(&outfile_lock);
+    marcrec_dump(rec, outfile);
+    pthread_mutex_unlock(&outfile_lock);
 
     return 0;
 }
@@ -158,6 +168,10 @@ int main(int argc, char *argv[])
     if (strcmp("help", argv[1]) == 0)
     {
         usage_and_exit(0, 0);
+    }
+    else if (strcmp("dump", argv[1]) == 0)
+    {
+        args.action = action_dump;
     }
     else if (strcmp("print", argv[1]) == 0)
     {
