@@ -8,3 +8,4 @@
 * better doc for fieldspec
 * better doc around options/examples
 * support for processing records from a buffer (as opposed to reading them in directly)
+* support for multiple ordered actions (e.g., validate-and-print)
