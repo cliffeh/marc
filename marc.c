@@ -39,7 +39,7 @@ marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in)
   return rec;
 }
 
-void marcrec_dump(marcrec *rec, FILE *out)
+void marcrec_dump(const marcrec *rec, FILE *out)
 {
   fwrite(rec->raw, sizeof(char), rec->length, out);
 }
