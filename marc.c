@@ -83,7 +83,6 @@ void marcrec_print(marcrec *rec, FILE *out)
   fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
           rec->raw[21], rec->raw[22]);
 
-  fprintf(out, "variable-length fields:\n");
   marcrec_walk_fields(rec, marc_print_field, (void *)out);
 }
 
