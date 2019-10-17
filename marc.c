@@ -13,25 +13,40 @@ static marcfield *marcrec_process_fields(marcrec *rec, marcfield *fields)
   return fields;
 }
 
-marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in)
+char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int length)
 {
-  if (fread(rec->raw, sizeof(char), 24, in) == 0)
-    return 0;
+  // you're mine now!
+  rec->raw = buf;
 
   // total length of record
-  rec->length = char_to_int(rec->raw, 5);
+  rec->length = (length == 0) ? char_to_int(buf, 5) : length;
 
   // length of leader + directory
-  rec->base_address = char_to_int(rec->raw + 12, 5);
+  rec->base_address = char_to_int(buf + 12, 5);
 
   // compute the number of fields based on directory size
   rec->field_count = (rec->base_address - 24 - 1) / 12;
 
-  // read the remainder of the record
-  fread(rec->raw + 24, sizeof(char), rec->length - 24, in);
-
   // if we've been given storage for fields, assume that we want them to be processed
   rec->fields = fields ? marcrec_process_fields(rec, fields) : 0;
+
+  // return a pointer to the "rest" of the buffer (if any)
+  return buf+rec->length;
+}
+
+marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
+{
+  if (fread(buf, sizeof(char), 24, in) == 0)
+    return 0;
+  
+  // total length of record
+  int length = char_to_int(buf, 5);
+
+  // read the remainder of the record
+  fread(buf + 24, sizeof(char), length - 24, in);
+
+  // process the rest of the record
+  marcrec_from_buffer(rec, buf, fields, length);
 
   return rec;
 }

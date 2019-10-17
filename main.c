@@ -21,6 +21,7 @@
     "  -h, --help         print a brief help message and exit\n"           \
     "  -f, --field SPEC   only output fields according to SPEC\n"          \
     "  -o, --output FILE  write output to FILE (default: stdout)\n"        \
+    "  -r, --read-full    read entire file(s) before processing\n"         \
     "  -t, --threads NUM  run using NUM threads (default: %i)\n"           \
     "Examples:\n\n"                                                        \
     "  # validate records\n"                                               \
@@ -37,7 +38,7 @@
 typedef struct arglist
 {
     char **infiles, *outfile, *fieldSpec;
-    int nThreads, infilePos;
+    int nThreads, infilePos, readFull;
     void *(*action)(marcrec *, int);
 } arglist;
 
@@ -47,6 +48,7 @@ char **infiles, *fieldSpec;
 int infilePos, infileLen;
 FILE *outfile;
 int **validateCounts;
+int readFull;
 
 int get_file_position()
 {
@@ -74,10 +76,30 @@ void *action_many_files(void *vargp)
         {
             marcrec rec;
             marcfield fields[10000];
-            while (marcrec_read(&rec, fields, in) != 0)
+            char *buf, *p;
+            if (readFull == 0)
             {
-                action(&rec, pos);
+                buf = malloc(99999);
+                while (marcrec_read(&rec, buf, fields, in) != 0)
+                {
+                    action(&rec, pos);
+                }
             }
+            else
+            {
+                fseek(in, 0, SEEK_END);
+                long fsize = ftell(in);
+                fseek(in, 0, SEEK_SET);
+
+                buf = malloc(fsize + 1);
+                fread(buf, 1, fsize, in);
+
+                for (p = marcrec_from_buffer(&rec, buf, fields, 0); *p; p = marcrec_from_buffer(&rec, p, fields, 0))
+                {
+                    action(&rec, pos);
+                }
+            }
+            free(buf);
             fclose(in);
         }
     }
@@ -158,6 +180,7 @@ int main(int argc, char *argv[])
     args.nThreads = DEFAULT_NTHREADS;
     args.action = 0;
     args.fieldSpec = 0;
+    args.readFull = 0;
 
     if (argc == 1)
     {
@@ -211,6 +234,10 @@ int main(int argc, char *argv[])
                 usage_and_exit(1, "%s can only be specified once", argv[i]);
             args.outfile = argv[++i];
         }
+        else if (strcmp("-r", argv[i]) == 0 || strcmp("--read-full", argv[i]) == 0)
+        {
+            args.readFull = 1;
+        }
         else if (strcmp("-t", argv[i]) == 0 || strcmp("--threads", argv[i]) == 0)
         {
             if (i + 1 >= argc)
@@ -230,6 +257,7 @@ int main(int argc, char *argv[])
     infileLen = (args.infilePos == 0) ? 1 : args.infilePos;
     outfile = (!args.outfile || (strcmp("-", args.outfile) == 0)) ? stdout : fopen(args.outfile, "w");
     fieldSpec = args.fieldSpec;
+    readFull = args.readFull;
 
     // initialize threads & locks
     pthread_t *threads = calloc(args.nThreads, sizeof(pthread_t));

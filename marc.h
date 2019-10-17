@@ -17,13 +17,12 @@ typedef struct marcfield {
 
 typedef struct marcrec {
   int length, base_address, field_count;
-  // MARC record length is represented as 5 digits, with 
-  // 99999 being the maximum possible length
-  char raw[99999];
+  char *raw;
   marcfield *fields;
 } marcrec;
 
-marcrec *marcrec_read(marcrec *rec, marcfield *fields, FILE *in);
+char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int length);
+marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in);
 void marcrec_dump(const marcrec *rec, FILE *out);
 int marcrec_validate(marcrec *rec);
 void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg);
