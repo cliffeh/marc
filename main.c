@@ -170,6 +170,11 @@ void usage_and_exit(int code, const char *fmt, ...)
 
 int main(int argc, char *argv[])
 {
+    if (argc == 1)
+    {
+        usage_and_exit(1, "no action specified\n");
+    }
+
     arglist args;
 
     // maximum possible number of input files is argc-2
@@ -181,11 +186,6 @@ int main(int argc, char *argv[])
     args.action = 0;
     args.fieldSpec = 0;
     args.readFull = 0;
-
-    if (argc == 1)
-    {
-        usage_and_exit(1, "no action specified\n");
-    }
 
     // parse action
     if (strcmp("help", argv[1]) == 0)
