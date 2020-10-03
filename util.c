@@ -11,11 +11,11 @@ int char_to_int(const char *s, int len)
     return n;
 }
 
-int contains_char(char *s, char c)
+int contains_char(const char *s, char c)
 {
-    for (char *p = s; *p; p++)
+    for (; *s; s++)
     {
-        if (*p == c)
+        if (*s == c)
             return 1;
     }
     return 0;
