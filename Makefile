@@ -5,6 +5,7 @@ VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
 CFLAGS=-g -Wall
 
 BINARIES=marc-validate marc-dump
+VALGRINDS=$(patsubst %,%.valgrind,$(BINARIES))
 
 all: $(BINARIES)
 
@@ -13,23 +14,8 @@ $(BINARIES): %: util.o marc.o main.o %.o
 
 valgrind: $(VALGRINDS)
 
-marc-validate.valgrind: marc
-	valgrind \
-		--leak-check=full --log-file=$@ \
-		./$< validate --threads $(THREADS) $(DATA) \
-		> /dev/null 2>&1
-
-marc-print.valgrind: marc
-	valgrind \
-		--leak-check=full --log-file=$@ \
-		./$< print --threads $(THREADS) $(DATA) \
-		> /dev/null 2>&1
-
-marc-print-field.valgrind: marc
-	valgrind \
-		--leak-check=full --log-file=$@ \
-		./$< print --field 245a --threads $(THREADS) $(DATA) \
-		> /dev/null 2>&1
+$(VALGRINDS): %.valgrind: %
+	valgrind --leak-check=full --log-file=$@ ./$< $(DATA) > /dev/null 2>&1
 
 clean:
 	rm -f *.o *.valgrind
