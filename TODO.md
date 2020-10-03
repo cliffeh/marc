@@ -5,3 +5,4 @@
 * cpu/time efficiency vs memory efficiency?
 * better doc for fieldspec
 * better doc around options/examples
+* max width/formatting?

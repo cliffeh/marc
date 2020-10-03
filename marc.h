@@ -64,6 +64,13 @@ void marcrec_write(FILE *out, const marcrec *rec, int pretty);
  */
 int marcrec_validate(const marcrec *rec);
 
-int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec);
+/**
+ * @brief find a particular field or value in a marc record
+ *
+ * @param rec the record to find the field/value in
+ * @param fieldSpec the field/value you're looking for (TODO define this more explicitly)
+ * @return const char* a pointer to the field field/value, or 0 if it wasn't found
+ */
+const char *marcrec_find(const marcrec *rec, const char *fieldSpec);
 
 #endif

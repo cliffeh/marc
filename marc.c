@@ -12,45 +12,27 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
-static void marcfield_humanize(char *dest, const marcfield *field)
+static void marcfield_pretty_print(FILE *out, const marcfield *field)
 {
-  char *p = dest;
+  // print the tag
+  fprintf(out, "\t%.*s\t", 3, field->directory_entry);
+
   for (int i = 0; i < field->len; i++)
   {
     switch (field->data[i])
     {
-    // replace subfield delimiters with a human-readable format
-    case SUBFIELD_DELIMITER:
-    {
-      *p++ = ' ';
-      *p++ = '$';
-      *p++ = field->data[++i];
-      *p++ = ':';
-      *p++ = ' ';
-    }
-    break;
-    case FIELD_TERMINATOR:
-    { // do not print
-    }
-    break;
-    default:
-      *p++ = field->data[i];
+      case FIELD_TERMINATOR:
+      { // do not print
+      } break;
+      case SUBFIELD_DELIMITER:
+      {
+        fprintf(out, "$");
+      } break;
+      default:
+        fprintf(out, "%c", field->data[i]);
     }
   }
-
-  *p = 0;
-}
-
-static void marcfield_pretty_print(FILE *out, const marcfield *field)
-{
-  // print the tag
-  fprintf(out, "  %.*s: ", 3, field->directory_entry);
-
-  // 4-digit field length means a max size of 9999
-  char buf[10000];
-  marcfield_humanize(buf, field);
-
-  fprintf(out, "%s\n", buf);
+  fprintf(out, "\n");
 }
 
 static void marcrec_pretty_print(FILE *out, const marcrec *rec)
@@ -137,45 +119,8 @@ int marcrec_validate(const marcrec *rec)
   return r;
 }
 
-int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec)
+const char *marcrec_find(const marcrec *rec, const char *fieldSpec)
 {
-  const char *de = field->directory_entry, *fs = fieldSpec, *p;
-  char *d = dest;
-
-  // check to see whether the tag matches
-  if (*de++ != *fs++ || *de++ != *fs++ || *de++ != *fs++)
-    return 0;
-
-  // no subfields specified; we want the whole shebang
-  if (!*fs)
-  {
-    marcfield_humanize(dest, field);
-    return 1;
-  }
-
-  // we're looking for specific subfield(s)
-  int write = 0, count = 0;
-  for (p = field->data; (p - field->data) < field->len; p++)
-  {
-    if (*p == SUBFIELD_DELIMITER)
-    { // state change
-      if (contains_char(fs, *(++p)) == 0)
-      {
-        write = 0;
-      }
-      else
-      {
-        if (count++)
-          *d++ = ' '; // space-delimit if we get multiple matches
-        p++; // skip over the subfield code
-        write = 1;
-      }
-    }
-    if (write)
-      *d++ = *p;
-  }
-
-  *d = 0;
-
-  return count;
+  // UNIMPLEMENTED
+  return 0;
 }
