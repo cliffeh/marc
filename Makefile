@@ -5,9 +5,13 @@ VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
 
 CFLAGS=-g -Wall
 
-BINARIES=marc
+BINARIES=marc-validate
+BIN_OBJ=$(patsubst %, %.o, $(BINARIES))
 
 all: $(BINARIES)
+
+$(BINARIES): %: util.o marc.o %.c
+	$(CC) $(CFLAGS) -o $@ $^
 
 marc: marc.o util.o main.o
 	$(CC) $(CFLAGS) -o $@ $^ -lpthread

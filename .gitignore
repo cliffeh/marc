@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 # compiled executables
-marc
+marc-validate
 
 # memory profiling reports
 *.valgrind
