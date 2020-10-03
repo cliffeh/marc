@@ -21,8 +21,9 @@ typedef struct marcrec {
   marcfield *fields;
 } marcrec;
 
-char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len);
-marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in);
+int marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in);
+int marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len);
+
 void marcrec_dump(const marcrec *rec, FILE *out);
 int marcrec_validate(marcrec *rec);
 void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg);

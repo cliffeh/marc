@@ -13,7 +13,7 @@ static marcfield *marcrec_process_fields(marcrec *rec, marcfield *fields)
   return fields;
 }
 
-char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
+int marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
 {
   // you're mine now!
   rec->raw = buf;
@@ -31,24 +31,24 @@ char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
   rec->fields = fields ? marcrec_process_fields(rec, fields) : 0;
 
   // return a pointer to the "rest" of the buffer (if any)
-  return buf+rec->len;
+  return rec->len;
 }
 
-marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
+int marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
 {
-  if (fread(buf, sizeof(char), 24, in) == 0)
-    return 0;
+  int n = fread(buf, sizeof(char), 24, in);
+  if(n == 0) return 0;
+  if(n < 24) return -1;
   
   // total length of record
   int len = char_to_int(buf, 5);
 
   // read the remainder of the record
-  fread(buf + 24, sizeof(char), len - 24, in);
+  n = fread(buf + 24, sizeof(char), len - 24, in);
+  if(n < (len-24)) return -1;
 
   // process the rest of the record
-  marcrec_from_buffer(rec, buf, fields, len);
-
-  return rec;
+  return marcrec_from_buffer(rec, buf, fields, len);
 }
 
 void marcrec_dump(const marcrec *rec, FILE *out)
