@@ -66,5 +66,4 @@ int marcrec_validate(const marcrec *rec);
 
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec);
 
-
 #endif
