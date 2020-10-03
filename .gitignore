@@ -53,6 +53,7 @@ dkms.conf
 
 # compiled executables
 marc-dump
+marc-print
 marc-validate
 
 # memory profiling reports

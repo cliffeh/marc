@@ -1,10 +1,8 @@
-# a valid file containing marc records (or a symlink to one)
+# a file/symlink containing valid marc records
 DATA=./testfile.marc
-VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
-
 CFLAGS=-g -Wall
 
-BINARIES=marc-validate marc-dump
+BINARIES=marc-validate marc-dump marc-print
 VALGRINDS=$(patsubst %,%.valgrind,$(BINARIES))
 
 all: $(BINARIES)
