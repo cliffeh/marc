@@ -12,6 +12,35 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
+static void marcfield_humanize(char *dest, const marcfield *field)
+{
+  char *p = dest;
+  for (int i = 0; i < field->len; i++)
+  {
+    switch (field->data[i])
+    {
+    // replace subfield delimiters with a human-readable format
+    case SUBFIELD_DELIMITER:
+    {
+      *p++ = ' ';
+      *p++ = '$';
+      *p++ = field->data[++i];
+      *p++ = ':';
+      *p++ = ' ';
+    }
+    break;
+    case FIELD_TERMINATOR:
+    { // do not print
+    }
+    break;
+    default:
+      *p++ = field->data[i];
+    }
+  }
+
+  *p = 0;
+}
+
 static void marcfield_pretty_print(FILE *out, const marcfield *field)
 {
   // print the tag
@@ -107,37 +136,6 @@ int marcrec_validate(const marcrec *rec)
 
   return r;
 }
-
-void marcfield_humanize(char *dest, const marcfield *field)
-{
-  char *p = dest;
-  for (int i = 0; i < field->len; i++)
-  {
-    switch (field->data[i])
-    {
-    // replace subfield delimiters with a human-readable format
-    case SUBFIELD_DELIMITER:
-    {
-      *p++ = ' ';
-      *p++ = '$';
-      *p++ = field->data[++i];
-      *p++ = ':';
-      *p++ = ' ';
-    }
-    break;
-    case FIELD_TERMINATOR:
-    { // do not print
-    }
-    break;
-    default:
-      *p++ = field->data[i];
-    }
-  }
-
-  *p = 0;
-}
-
-
 
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec)
 {

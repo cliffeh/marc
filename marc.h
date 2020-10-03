@@ -64,7 +64,6 @@ void marcrec_write(FILE *out, const marcrec *rec, int pretty);
  */
 int marcrec_validate(const marcrec *rec);
 
-void marcfield_humanize(char *dest, const marcfield *field);
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec);
 
 
