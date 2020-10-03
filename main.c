@@ -76,11 +76,12 @@ void *action_many_files(void *vargp)
         {
             marcrec rec;
             marcfield fields[10000];
+            rec.fields = fields;
             char *buf;
             if (readFull == 0)
             {
                 buf = malloc(99999);
-                while (marcrec_read(&rec, buf, fields, in) != 0)
+                while (marcrec_read(&rec, buf, in) != 0)
                 {
                     action(&rec, pos);
                 }
@@ -94,7 +95,7 @@ void *action_many_files(void *vargp)
                 buf = malloc(fsize + 1);
                 fread(buf, 1, fsize, in);
 
-                while(marcrec_from_buffer(&rec, buf, fields, 0) > 0)
+                while(marcrec_from_buffer(&rec, buf, 0) > 0)
                 {
                     action(&rec, pos);
                 }

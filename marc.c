@@ -2,18 +2,17 @@
 #include "marc.h"
 #include "util.h"
 
-static marcfield *marcrec_process_fields(marcrec *rec, marcfield *fields)
+static void marcrec_process_fields(marcrec *rec)
 {
   for (int i = 0; i < rec->field_count; i++)
   {
-    fields[i].directory_entry = rec->raw + 24 + i * 12;
-    fields[i].len = char_to_int(fields[i].directory_entry + 3, 4);
-    fields[i].data = rec->raw + rec->base_address + char_to_int(fields[i].directory_entry + 7, 5);
+    rec->fields[i].directory_entry = rec->raw + 24 + i * 12;
+    rec->fields[i].len = char_to_int(rec->fields[i].directory_entry + 3, 4);
+    rec->fields[i].data = rec->raw + rec->base_address + char_to_int(rec->fields[i].directory_entry + 7, 5);
   }
-  return fields;
 }
 
-int marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
+int marcrec_from_buffer(marcrec *rec, char *buf, int len)
 {
   // you're mine now!
   rec->raw = buf;
@@ -28,13 +27,13 @@ int marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
   rec->field_count = (rec->base_address - 24 - 1) / 12;
 
   // if we've been given storage for fields, assume that we want them to be processed
-  rec->fields = fields ? marcrec_process_fields(rec, fields) : 0;
+  if(rec->fields) marcrec_process_fields(rec);
 
   // return a pointer to the "rest" of the buffer (if any)
   return rec->len;
 }
 
-int marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
+int marcrec_read(marcrec *rec, char *buf, FILE *in)
 {
   int n = fread(buf, sizeof(char), 24, in);
   if(n == 0) return 0;
@@ -48,7 +47,7 @@ int marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
   if(n < (len-24)) return -1;
 
   // process the rest of the record
-  return marcrec_from_buffer(rec, buf, fields, len);
+  return marcrec_from_buffer(rec, buf, len);
 }
 
 void marcrec_dump(const marcrec *rec, FILE *out)
@@ -56,13 +55,11 @@ void marcrec_dump(const marcrec *rec, FILE *out)
   fwrite(rec->raw, sizeof(char), rec->len, out);
 }
 
-void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg)
+void marcrec_walk_fields(marcrec *rec, void (*callback)(const marcfield *, void *), void *arg)
 {
-  // 1000 fields seems like a reasonable upper bound
-  marcfield buf[1000], *fields = rec->fields ? rec->fields : marcrec_process_fields(rec, buf);
   for (int i = 0; i < rec->field_count; i++)
   {
-    f(&fields[i], arg);
+    callback(&rec->fields[i], arg);
   }
 }
 
