@@ -4,7 +4,7 @@ VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
 
 CFLAGS=-g -Wall
 
-BINARIES=marc-validate
+BINARIES=marc-validate marc-dump
 
 all: $(BINARIES)
 

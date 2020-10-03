@@ -52,6 +52,7 @@ Mkfile.old
 dkms.conf
 
 # compiled executables
+marc-dump
 marc-validate
 
 # memory profiling reports
