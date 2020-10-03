@@ -16,12 +16,12 @@ typedef struct marcfield {
 } marcfield;
 
 typedef struct marcrec {
-  int length, base_address, field_count;
+  int len, base_address, field_count;
   char *raw;
   marcfield *fields;
 } marcrec;
 
-char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int length);
+char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len);
 marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in);
 void marcrec_dump(const marcrec *rec, FILE *out);
 int marcrec_validate(marcrec *rec);

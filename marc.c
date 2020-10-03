@@ -13,13 +13,13 @@ static marcfield *marcrec_process_fields(marcrec *rec, marcfield *fields)
   return fields;
 }
 
-char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int length)
+char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int len)
 {
   // you're mine now!
   rec->raw = buf;
 
   // total length of record
-  rec->length = (length == 0) ? char_to_int(buf, 5) : length;
+  rec->len = (len == 0) ? char_to_int(buf, 5) : len;
 
   // length of leader + directory
   rec->base_address = char_to_int(buf + 12, 5);
@@ -31,7 +31,7 @@ char *marcrec_from_buffer(marcrec *rec, char *buf, marcfield *fields, int length
   rec->fields = fields ? marcrec_process_fields(rec, fields) : 0;
 
   // return a pointer to the "rest" of the buffer (if any)
-  return buf+rec->length;
+  return buf+rec->len;
 }
 
 marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
@@ -40,20 +40,20 @@ marcrec *marcrec_read(marcrec *rec, char *buf, marcfield *fields, FILE *in)
     return 0;
   
   // total length of record
-  int length = char_to_int(buf, 5);
+  int len = char_to_int(buf, 5);
 
   // read the remainder of the record
-  fread(buf + 24, sizeof(char), length - 24, in);
+  fread(buf + 24, sizeof(char), len - 24, in);
 
   // process the rest of the record
-  marcrec_from_buffer(rec, buf, fields, length);
+  marcrec_from_buffer(rec, buf, fields, len);
 
   return rec;
 }
 
 void marcrec_dump(const marcrec *rec, FILE *out)
 {
-  fwrite(rec->raw, sizeof(char), rec->length, out);
+  fwrite(rec->raw, sizeof(char), rec->len, out);
 }
 
 void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), void *arg)
@@ -69,7 +69,7 @@ void marcrec_walk_fields(marcrec *rec, void (*f)(const marcfield *, void *), voi
 int marcrec_validate(marcrec *rec)
 {
   int r = 0;
-  if (rec->raw[rec->length - 1] != RECORD_TERMINATOR)
+  if (rec->raw[rec->len - 1] != RECORD_TERMINATOR)
     r |= MISSING_RECORD_TERMINATOR;
   if (rec->raw[rec->base_address - 1] != FIELD_TERMINATOR)
     r |= MISSING_FIELD_TERMINATOR;
@@ -88,7 +88,7 @@ void marc_validate_field(const marcfield *field, void *retPtr)
 void marcrec_print(marcrec *rec, FILE *out)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
-          rec->length, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
+          rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
   fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
           rec->raw[10], rec->raw[11], rec->raw[12]);
   fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
