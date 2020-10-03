@@ -63,13 +63,9 @@ void marcrec_write(FILE *out, const marcrec *rec, int pretty);
  * @return int 0 if the marc record has all the appropriate field/record terminators; otherwise non-zero
  */
 int marcrec_validate(const marcrec *rec);
-void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg);
 
 void marcfield_humanize(char *dest, const marcfield *field);
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec);
 
-// marcrec_walk_fields callbacks
-void marc_print_field(const marcfield *field, void *outPtr);
-void marc_validate_field(const marcfield *field, void *retPtr);
 
 #endif

@@ -12,6 +12,18 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
+static void marcfield_pretty_print(FILE *out, const marcfield *field)
+{
+  // print the tag
+  fprintf(out, "  %.*s: ", 3, field->directory_entry);
+
+  // 4-digit field length means a max size of 9999
+  char buf[10000];
+  marcfield_humanize(buf, field);
+
+  fprintf(out, "%s\n", buf);
+}
+
 static void marcrec_pretty_print(FILE *out, const marcrec *rec)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
@@ -25,7 +37,9 @@ static void marcrec_pretty_print(FILE *out, const marcrec *rec)
   fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
           rec->raw[21], rec->raw[22]);
 
-  marcrec_walk_fields(rec, marc_print_field, (void *)out);
+  for(int i = 0; i < rec->field_count; i++) {
+    marcfield_pretty_print(out, &rec->fields[i]);
+  }
 }
 
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
@@ -74,12 +88,9 @@ void marcrec_write(FILE *out, const marcrec *rec, int pretty)
     marcrec_pretty_print(out, rec);
 }
 
-void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg)
+static int marcfield_validate(const marcfield *field)
 {
-  for (int i = 0; i < rec->field_count; i++)
-  {
-    callback(&rec->fields[i], arg);
-  }
+  return (field->data[field->len - 1] == FIELD_TERMINATOR) ? 0 : MISSING_FIELD_TERMINATOR;
 }
 
 int marcrec_validate(const marcrec *rec)
@@ -90,18 +101,12 @@ int marcrec_validate(const marcrec *rec)
   if (rec->raw[rec->base_address - 1] != FIELD_TERMINATOR)
     r |= MISSING_FIELD_TERMINATOR;
 
-  marcrec_walk_fields(rec, marc_validate_field, (void *)&r);
+  for(int i = 0; i < rec->field_count; i++) {
+    r |= marcfield_validate(&rec->fields[i]);
+  }
+
   return r;
 }
-
-void marc_validate_field(const marcfield *field, void *retPtr)
-{
-  int *r = (int *)retPtr;
-  if (field->data[field->len - 1] != FIELD_TERMINATOR)
-    *r |= MISSING_FIELD_TERMINATOR;
-}
-
-
 
 void marcfield_humanize(char *dest, const marcfield *field)
 {
@@ -132,19 +137,7 @@ void marcfield_humanize(char *dest, const marcfield *field)
   *p = 0;
 }
 
-void marc_print_field(const marcfield *field, void *outPtr)
-{
-  FILE *out = (FILE *)outPtr;
 
-  // print the tag
-  fprintf(out, "  %.*s: ", 3, field->directory_entry);
-
-  // 4-digit field length means a max size of 9999
-  char buf[10000];
-  marcfield_humanize(buf, field);
-
-  fprintf(out, "%s\n", buf);
-}
 
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec)
 {

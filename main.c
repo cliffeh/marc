@@ -119,7 +119,7 @@ void *action_dump(marcrec *rec, int pos)
 
 void *action_validate(marcrec *rec, int pos)
 {
-
+    // TODO really need to output the result of this somewhere...
     if (marcrec_validate(rec) == 0)
     {
         validateCounts[pos][0]++;
