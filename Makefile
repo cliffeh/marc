@@ -15,6 +15,9 @@ valgrind: $(VALGRINDS)
 $(VALGRINDS): %.valgrind: %
 	valgrind --leak-check=full --log-file=$@ ./$< $(DATA) > /dev/null 2>&1
 
+test: marc-dump
+	./marc-dump < $(DATA) | diff $(DATA) - && echo "basic dump test passed"
+
 clean:
 	rm -f *.o *.valgrind
 
