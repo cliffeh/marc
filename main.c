@@ -142,7 +142,7 @@ void *action_print(marcrec *rec, int pos)
         char buf[99999];
         for (int i = 0; i < rec->field_count; i++)
         {
-            if (marcfield_match_field(&rec->fields[i], fieldSpec, buf) != 0)
+            if (marcfield_match_field(buf, &rec->fields[i], fieldSpec) != 0)
             {
                 pthread_mutex_lock(&outfile_lock);
                 fprintf(outfile, "%s\n", buf);

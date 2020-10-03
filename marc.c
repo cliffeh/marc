@@ -12,7 +12,7 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
-int marcrec_from_buffer(marcrec *rec, char *buf, int len)
+int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
 {
   // you're mine now!
   rec->raw = buf;
@@ -141,9 +141,10 @@ void marc_print_field(const marcfield *field, void *outPtr)
   fprintf(out, "%s\n", buf);
 }
 
-int marcfield_match_field(marcfield *field, char *fieldSpec, char *dest)
+int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec)
 {
-  char *de = field->directory_entry, *fs = fieldSpec, *d = dest, *p;
+  const char *de = field->directory_entry, *fs = fieldSpec, *p;
+  char *d = dest;
 
   // check to see whether the tag matches
   if (*de++ != *fs++ || *de++ != *fs++ || *de++ != *fs++)
