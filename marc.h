@@ -56,6 +56,12 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
  */
 void marcrec_write(FILE *out, const marcrec *rec, int pretty);
 
+/**
+ * @brief validate a marc record
+ *
+ * @param rec the record to validate
+ * @return int 0 if the marc record has all the appropriate field/record terminators; otherwise non-zero
+ */
 int marcrec_validate(const marcrec *rec);
 void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg);
 
