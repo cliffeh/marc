@@ -1,20 +1,15 @@
 # a valid file containing marc records (or a symlink to one)
 DATA=./testfile.marc
-THREADS=1
 VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
 
 CFLAGS=-g -Wall
 
 BINARIES=marc-validate
-BIN_OBJ=$(patsubst %, %.o, $(BINARIES))
 
 all: $(BINARIES)
 
-$(BINARIES): %: util.o marc.o %.c
+$(BINARIES): %: util.o marc.o main.o %.o
 	$(CC) $(CFLAGS) -o $@ $^
-
-marc: marc.o util.o main.o
-	$(CC) $(CFLAGS) -o $@ $^ -lpthread
 
 valgrind: $(VALGRINDS)
 
