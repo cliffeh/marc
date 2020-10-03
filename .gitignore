@@ -53,6 +53,7 @@ dkms.conf
 
 # compiled executables
 marc-dump
+marc-leaders
 marc-print
 marc-validate
 

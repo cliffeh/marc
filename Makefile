@@ -2,7 +2,7 @@
 DATA=./testfile.marc
 CFLAGS=-g -Wall
 
-BINARIES=marc-validate marc-dump marc-print
+BINARIES=marc-validate marc-dump marc-print marc-leaders
 VALGRINDS=$(patsubst %,%.valgrind,$(BINARIES))
 
 all: $(BINARIES)
