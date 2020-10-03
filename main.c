@@ -134,7 +134,7 @@ void *action_print(marcrec *rec, int pos)
     if (!fieldSpec)
     {
         pthread_mutex_lock(&outfile_lock);
-        marcrec_print(rec, outfile);
+        marcrec_print(outfile, rec);
         pthread_mutex_unlock(&outfile_lock);
     }
     else

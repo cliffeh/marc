@@ -55,7 +55,7 @@ void marcrec_dump(FILE *out, const marcrec *rec)
   fwrite(rec->raw, sizeof(char), rec->len, out);
 }
 
-void marcrec_walk_fields(marcrec *rec, void (*callback)(const marcfield *, void *), void *arg)
+void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg)
 {
   for (int i = 0; i < rec->field_count; i++)
   {
@@ -63,7 +63,7 @@ void marcrec_walk_fields(marcrec *rec, void (*callback)(const marcfield *, void 
   }
 }
 
-int marcrec_validate(marcrec *rec)
+int marcrec_validate(const marcrec *rec)
 {
   int r = 0;
   if (rec->raw[rec->len - 1] != RECORD_TERMINATOR)
@@ -82,7 +82,7 @@ void marc_validate_field(const marcfield *field, void *retPtr)
     *r |= MISSING_FIELD_TERMINATOR;
 }
 
-void marcrec_print(marcrec *rec, FILE *out)
+void marcrec_print(FILE *out, const marcrec *rec)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
           rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
@@ -98,7 +98,7 @@ void marcrec_print(marcrec *rec, FILE *out)
   marcrec_walk_fields(rec, marc_print_field, (void *)out);
 }
 
-void marcfield_humanize(const marcfield *field, char *dest)
+void marcfield_humanize(char *dest, const marcfield *field)
 {
   char *p = dest;
   for (int i = 0; i < field->len; i++)
@@ -136,7 +136,7 @@ void marc_print_field(const marcfield *field, void *outPtr)
 
   // 4-digit field length means a max size of 9999
   char buf[10000];
-  marcfield_humanize(field, buf);
+  marcfield_humanize(buf, field);
 
   fprintf(out, "%s\n", buf);
 }
@@ -153,7 +153,7 @@ int marcfield_match_field(char *dest, const marcfield *field, const char *fieldS
   // no subfields specified; we want the whole shebang
   if (!*fs)
   {
-    marcfield_humanize(field, dest);
+    marcfield_humanize(dest, field);
     return 1;
   }
 
