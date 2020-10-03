@@ -47,10 +47,18 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in);
  */
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
 
-void marcrec_dump(FILE *out, const marcrec *rec);
+/**
+ * @brief write a marc record to a file
+ *
+ * @param out the file to write to
+ * @param rec the marc record to write
+ * @param pretty if 0, write in marc binary format; else write in a human-readable format
+ */
+void marcrec_write(FILE *out, const marcrec *rec, int pretty);
+
 int marcrec_validate(const marcrec *rec);
 void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg);
-void marcrec_print(FILE *out, const marcrec *rec);
+
 void marcfield_humanize(char *dest, const marcfield *field);
 int marcfield_match_field(char *dest, const marcfield *field, const char *fieldSpec);
 

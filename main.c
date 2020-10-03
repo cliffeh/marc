@@ -111,7 +111,7 @@ void *action_many_files(void *vargp)
 void *action_dump(marcrec *rec, int pos)
 {
     pthread_mutex_lock(&outfile_lock);
-    marcrec_dump(outfile, rec);
+    marcrec_write(outfile, rec, /* pretty = */ 0);
     pthread_mutex_unlock(&outfile_lock);
 
     return 0;
@@ -134,7 +134,7 @@ void *action_print(marcrec *rec, int pos)
     if (!fieldSpec)
     {
         pthread_mutex_lock(&outfile_lock);
-        marcrec_print(outfile, rec);
+        marcrec_write(outfile, rec, /* pretty = */ 1);
         pthread_mutex_unlock(&outfile_lock);
     }
     else

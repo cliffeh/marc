@@ -12,6 +12,22 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
+static void marcrec_pretty_print(FILE *out, const marcrec *rec)
+{
+  fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
+          rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
+  fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
+          rec->raw[10], rec->raw[11], rec->raw[12]);
+  fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
+          rec->base_address, rec->raw[17], rec->raw[18]);
+  fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
+          rec->raw[19], rec->raw[20]);
+  fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
+          rec->raw[21], rec->raw[22]);
+
+  marcrec_walk_fields(rec, marc_print_field, (void *)out);
+}
+
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
 {
   // you're mine now!
@@ -50,9 +66,12 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   return marcrec_from_buffer(rec, buf, len);
 }
 
-void marcrec_dump(FILE *out, const marcrec *rec)
+void marcrec_write(FILE *out, const marcrec *rec, int pretty)
 {
-  fwrite(rec->raw, sizeof(char), rec->len, out);
+  if(pretty == 0)
+    fwrite(rec->raw, sizeof(char), rec->len, out);
+  else
+    marcrec_pretty_print(out, rec);
 }
 
 void marcrec_walk_fields(const marcrec *rec, void (*callback)(const marcfield *, void *), void *arg)
@@ -82,21 +101,7 @@ void marc_validate_field(const marcfield *field, void *retPtr)
     *r |= MISSING_FIELD_TERMINATOR;
 }
 
-void marcrec_print(FILE *out, const marcrec *rec)
-{
-  fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
-          rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
-  fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
-          rec->raw[10], rec->raw[11], rec->raw[12]);
-  fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
-          rec->base_address, rec->raw[17], rec->raw[18]);
-  fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
-          rec->raw[19], rec->raw[20]);
-  fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
-          rec->raw[21], rec->raw[22]);
 
-  marcrec_walk_fields(rec, marc_print_field, (void *)out);
-}
 
 void marcfield_humanize(char *dest, const marcfield *field)
 {
