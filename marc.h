@@ -47,7 +47,7 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in);
  */
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
 
-void marcrec_dump(const marcrec *rec, FILE *out);
+void marcrec_dump(FILE *out, const marcrec *rec);
 int marcrec_validate(marcrec *rec);
 void marcrec_walk_fields(marcrec *rec, void (*callback)(const marcfield *, void *), void *arg);
 void marcrec_print(marcrec *rec, FILE *out);

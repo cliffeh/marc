@@ -111,7 +111,7 @@ void *action_many_files(void *vargp)
 void *action_dump(marcrec *rec, int pos)
 {
     pthread_mutex_lock(&outfile_lock);
-    marcrec_dump(rec, outfile);
+    marcrec_dump(outfile, rec);
     pthread_mutex_unlock(&outfile_lock);
 
     return 0;

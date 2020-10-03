@@ -50,7 +50,7 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   return marcrec_from_buffer(rec, buf, len);
 }
 
-void marcrec_dump(const marcrec *rec, FILE *out)
+void marcrec_dump(FILE *out, const marcrec *rec)
 {
   fwrite(rec->raw, sizeof(char), rec->len, out);
 }
