@@ -1,4 +1,5 @@
-DATA=~/data/BooksAll.2016.part43.utf8
+# a valid file containing marc records (or a symlink to one)
+DATA=./testfile.marc
 THREADS=1
 VALGRINDS=marc-validate.valgrind marc-print.valgrind marc-print-field.valgrind
 
