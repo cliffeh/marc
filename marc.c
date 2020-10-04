@@ -118,9 +118,3 @@ int marcrec_validate(const marcrec *rec)
 
   return r;
 }
-
-const char *marcrec_find(const marcrec *rec, const char *fieldSpec)
-{
-  // UNIMPLEMENTED
-  return 0;
-}

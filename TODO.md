@@ -6,3 +6,4 @@
 * better doc for fieldspec
 * better doc around options/examples
 * max width/formatting?
+* implement some field find/search functionality
