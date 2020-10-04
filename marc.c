@@ -64,10 +64,13 @@ static void marcrec_pretty_print(FILE *out, const marcrec *rec)
 
 void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec)
 {
-  if(!spec) {
+  // if nothing in particular has been specified we'll print out the whole thing
+  if (!spec || spec->count == 0)
+  {
     marcrec_pretty_print(out, rec);
-  } else {
-    // TODO
+  }
+  else
+  {
   }
 }
 
