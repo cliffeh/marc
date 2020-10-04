@@ -60,18 +60,16 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
  * @param out the file to write to
  * @param rec the marc record to write
  * @param spec the specification of the fields to write; if null, write the entire record
- * @return int non-zero if an error was encountered
  */
-int marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs);
+void marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs);
 
 /**
  * @brief write a marc record to a file
  *
  * @param out the file to write to
  * @param rec the marc record to write
- * @return int non-zero if an error was encountered
  */
-int marcrec_write(FILE *out, const marcrec *rec);
+void marcrec_write(FILE *out, const marcrec *rec);
 
 /**
  * @brief validate a marc record
