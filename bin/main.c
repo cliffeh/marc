@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    free(filenames);
     free(rec->fields);
     free(rec);
 }
