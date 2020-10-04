@@ -11,7 +11,8 @@
 #define MISSING_RECORD_TERMINATOR (1 << 1)
 
 typedef struct fieldspec {
-  const char *field, *subfields;
+  int count;
+  char **spec;
 } fieldspec;
 
 typedef struct marcfield
@@ -54,13 +55,21 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in);
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
 
 /**
+ * @brief print a marc record or some subset of its fields in a human-readable format
+ * 
+ * @param out the file to write to
+ * @param rec the marc record to write
+ * @param spec the specification of the fields to write; if null, write the entire record
+ */
+void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec);
+
+/**
  * @brief write a marc record to a file
  *
  * @param out the file to write to
  * @param rec the marc record to write
- * @param pretty if 0, write in marc binary format; else write in a human-readable format
  */
-void marcrec_write(FILE *out, const marcrec *rec, int pretty);
+void marcrec_write(FILE *out, const marcrec *rec);
 
 /**
  * @brief validate a marc record

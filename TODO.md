@@ -4,8 +4,7 @@
 * MARCXML/JSON output?
 * cpu/time efficiency vs memory efficiency?
 * better doc for fieldspec
-* better doc around options/examples
 * max width/formatting?
 * implement some field find/search functionality
 * versioning
-* command line flags
+* --debug flag

@@ -3,8 +3,11 @@
 #include <string.h>
 #include "../marc.h"
 
-int __marc_main_limit = -1;      // process all records by default
-fieldspec __marc_main_fieldspec; // process all fields by default
+/* process all records by default */
+int __marc_main_limit = -1;
+
+/* process all fields by default */
+fieldspec __marc_main_fieldspec;
 
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
 extern const char *specific_usage;
@@ -26,9 +29,13 @@ int main(int argc, char *argv[])
     // 1000 seems like a reasonable upper bound
     rec->fields = malloc(sizeof(marcfield) * 1000);
 
-    // process command line args
-    char **filenames = calloc(argc, sizeof(char *));
     int file_count = 0;
+    char **filenames = calloc(argc, sizeof(char *));
+
+    __marc_main_fieldspec.count = 0;
+    __marc_main_fieldspec.spec = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
+
+    // process command line args
     for (int i = 1; i < argc; i++)
     {
         if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0)
@@ -36,14 +43,16 @@ int main(int argc, char *argv[])
             fprintf(stdout, USAGE, argv[0], specific_usage);
             exit(0);
         }
-        /*
         else if (strcmp("--field", argv[i]) == 0 || strcmp("-f", argv[i]) == 0)
         {
-            if(i+1 >= argc) {
+            if (i + 1 >= argc)
+            {
                 fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
                 exit(1);
             }
-        }*/
+            i++;
+            __marc_main_fieldspec.spec[__marc_main_fieldspec.count++] = argv[i];
+        }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
         {
             if (i + 1 >= argc)
@@ -51,10 +60,11 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
                 exit(1);
             }
-            __marc_main_limit = atoi(argv[++i]);
+            i++;
+            __marc_main_limit = atoi(argv[i]);
         }
-        else
-        { // we'll assume it's a filename
+        else // we'll assume it's a filename
+        {
             filenames[file_count++] = argv[i];
         }
     }
@@ -74,6 +84,7 @@ int main(int argc, char *argv[])
     }
 
     free(filenames);
+    free(__marc_main_fieldspec.spec);
     free(rec->fields);
     free(rec);
 }
