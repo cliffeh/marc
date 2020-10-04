@@ -2,20 +2,22 @@
 #define __MARC_H 1
 
 // terminator constants
-#define FIELD_TERMINATOR   0x1e
-#define RECORD_TERMINATOR  0x1d
+#define FIELD_TERMINATOR 0x1e
+#define RECORD_TERMINATOR 0x1d
 #define SUBFIELD_DELIMITER 0x1f
 
 // error constants
-#define MISSING_FIELD_TERMINATOR  (1<<0)
-#define MISSING_RECORD_TERMINATOR (1<<1)
+#define MISSING_FIELD_TERMINATOR (1 << 0)
+#define MISSING_RECORD_TERMINATOR (1 << 1)
 
-typedef struct marcfield {
+typedef struct marcfield
+{
   const char *directory_entry, *data;
   int len;
 } marcfield;
 
-typedef struct marcrec {
+typedef struct marcrec
+{
   int len, base_address, field_count;
   const char *raw;
   marcfield *fields;
