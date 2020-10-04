@@ -7,3 +7,5 @@
 * better doc around options/examples
 * max width/formatting?
 * implement some field find/search functionality
+* versioning
+* command line flags
