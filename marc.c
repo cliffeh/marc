@@ -43,7 +43,7 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
   fprintf(out, "\n");
 }
 
-void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec)
+static void marcrec_pretty_print(FILE *out, const marcrec *rec)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
           rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
@@ -59,6 +59,15 @@ void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec)
   for (int i = 0; i < rec->field_count; i++)
   {
     marcfield_pretty_print(out, &rec->fields[i]);
+  }
+}
+
+void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec)
+{
+  if(!spec) {
+    marcrec_pretty_print(out, rec);
+  } else {
+    // TODO
   }
 }
 
