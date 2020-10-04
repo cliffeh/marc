@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "../marc.h"
 
-void print_result(FILE *out, FILE *in, marcrec *rec, const char *arg)
+const char *specific_usage = "validate marc records";
+
+void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
 {
     char buf[99999];
     int count = 0, valid = 0;
@@ -11,5 +13,5 @@ void print_result(FILE *out, FILE *in, marcrec *rec, const char *arg)
         if (marcrec_validate(rec) == 0)
             valid++;
     }
-    fprintf(out, "%s: %i of %i valid\n", arg, valid, count);
+    fprintf(out, "%s: %i of %i valid\n", filename, valid, count);
 }

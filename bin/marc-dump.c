@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "../marc.h"
 
-void print_result(FILE *out, FILE *in, marcrec *rec, const char *arg)
+const char *specific_usage = "dump marc records in marc format";
+
+void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
 {
     char buf[99999];
     while (marcrec_read(rec, buf, in) != 0)
