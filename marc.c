@@ -32,7 +32,7 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
     break;
     case SUBFIELD_DELIMITER:
     {
-      // DANGER
+      // DANGER (++i)
       fprintf(out, " $%c: ", field->data[++i]);
     }
     break;
