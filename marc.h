@@ -11,7 +11,7 @@
 #define MISSING_RECORD_TERMINATOR (1 << 1)
 
 typedef struct fieldspec {
-  int count;
+  int len;
   char **spec;
 } fieldspec;
 
@@ -60,16 +60,18 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
  * @param out the file to write to
  * @param rec the marc record to write
  * @param spec the specification of the fields to write; if null, write the entire record
+ * @return int non-zero if an error was encountered
  */
-void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec);
+int marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs);
 
 /**
  * @brief write a marc record to a file
  *
  * @param out the file to write to
  * @param rec the marc record to write
+ * @return int non-zero if an error was encountered
  */
-void marcrec_write(FILE *out, const marcrec *rec);
+int marcrec_write(FILE *out, const marcrec *rec);
 
 /**
  * @brief validate a marc record

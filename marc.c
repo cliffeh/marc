@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "marc.h"
 
 #define atoi1(p) (*(p) - '0')
@@ -43,7 +44,7 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
   fprintf(out, "\n");
 }
 
-static void marcrec_pretty_print(FILE *out, const marcrec *rec)
+static int marcrec_pretty_print(FILE *out, const marcrec *rec)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
           rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
@@ -60,18 +61,14 @@ static void marcrec_pretty_print(FILE *out, const marcrec *rec)
   {
     marcfield_pretty_print(out, &rec->fields[i]);
   }
+
+  return 0;
 }
 
-void marcrec_print(FILE *out, const marcrec *rec, fieldspec *spec)
+int marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs)
 {
-  // if nothing in particular has been specified we'll print out the whole thing
-  if (!spec || spec->count == 0)
-  {
-    marcrec_pretty_print(out, rec);
-  }
-  else
-  {
-  }
+  if (!fs || fs->len == 0)
+    return marcrec_pretty_print(out, rec);
 }
 
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
@@ -117,9 +114,10 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   return marcrec_from_buffer(rec, buf, len);
 }
 
-void marcrec_write(FILE *out, const marcrec *rec)
+int marcrec_write(FILE *out, const marcrec *rec)
 {
   fwrite(rec->raw, sizeof(char), rec->len, out);
+  return 0;
 }
 
 static int marcfield_validate(const marcfield *field)

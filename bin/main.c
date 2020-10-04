@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     int file_count = 0;
     char **filenames = calloc(argc, sizeof(char *));
 
-    __marc_main_fieldspec.count = 0;
+    __marc_main_fieldspec.len = 0;
     __marc_main_fieldspec.spec = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
 
     // process command line args
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
-            __marc_main_fieldspec.spec[__marc_main_fieldspec.count++] = argv[i];
+            __marc_main_fieldspec.spec[__marc_main_fieldspec.len++] = argv[i];
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
         {
