@@ -86,6 +86,7 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
 
 int marcrec_read(marcrec *rec, char *buf, FILE *in)
 {
+  // read the leader
   int n = fread(buf, sizeof(char), 24, in);
   if (n == 0)
     return 0;
