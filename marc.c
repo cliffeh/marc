@@ -1,14 +1,19 @@
 #include <stdio.h>
 #include "marc.h"
-#include "util.h"
+
+#define atoi1(p) (*(p)-'0')
+#define atoi2(p) (atoi1(p)*10+atoi1(p+1))
+#define atoi3(p) (atoi1(p)*100+atoi2(p+1))
+#define atoi4(p) (atoi1(p)*1000+atoi3(p+1))
+#define atoi5(p) (atoi1(p)*10000+atoi4(p+1))
 
 static void marcrec_process_fields(marcrec *rec)
 {
   for (int i = 0; i < rec->field_count; i++)
   {
     rec->fields[i].directory_entry = rec->raw + 24 + i * 12;
-    rec->fields[i].len = char_to_int(rec->fields[i].directory_entry + 3, 4);
-    rec->fields[i].data = rec->raw + rec->base_address + char_to_int(rec->fields[i].directory_entry + 7, 5);
+    rec->fields[i].len = atoi4(rec->fields[i].directory_entry + 3);
+    rec->fields[i].data = rec->raw + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
   }
 }
 
@@ -59,10 +64,10 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
   rec->raw = buf;
 
   // total length of record
-  rec->len = (len == 0) ? char_to_int(buf, 5) : len;
+  rec->len = (len == 0) ? atoi5(buf) : len;
 
   // length of leader + directory
-  rec->base_address = char_to_int(buf + 12, 5);
+  rec->base_address = atoi5(buf + 12);
 
   // compute the number of fields based on directory size
   rec->field_count = (rec->base_address - 24 - 1) / 12;
@@ -81,7 +86,7 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   if(n < 24) return -1;
   
   // total length of record
-  int len = char_to_int(buf, 5);
+  int len = atoi5(buf);
 
   // read the remainder of the record
   n = fread(buf + 24, sizeof(char), len - 24, in);

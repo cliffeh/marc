@@ -8,7 +8,7 @@ VALGRINDS=$(patsubst bin/%,%.valgrind,$(BINARIES))
 
 all: $(BINARIES)
 
-$(BINARIES): %: util.o marc.o bin/main.o %.o
+$(BINARIES): %: marc.o bin/main.o %.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 valgrind: $(VALGRINDS)
