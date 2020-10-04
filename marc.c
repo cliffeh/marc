@@ -20,7 +20,7 @@ static void marcrec_process_fields(marcrec *rec)
 static void marcfield_pretty_print(FILE *out, const marcfield *field)
 {
   // print the tag
-  fprintf(out, "\t%.*s\t", 3, field->directory_entry);
+  fprintf(out, "  %.*s  ", 3, field->directory_entry);
 
   for (int i = 0; i < field->len; i++)
   {
@@ -31,7 +31,8 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
       } break;
       case SUBFIELD_DELIMITER:
       {
-        fprintf(out, "$");
+        // DANGER
+        fprintf(out, " $%c: ", field->data[++i]);
       } break;
       default:
         fprintf(out, "%c", field->data[i]);
