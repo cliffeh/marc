@@ -9,11 +9,16 @@ fieldspec __marc_main_fieldspec; // process all fields by default
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
 extern const char *specific_usage;
 
-#define USAGE                       \
-    "usage: %s [options] [files]\n" \
-    "  %s\n"                        \
-    "options:\n"                    \
-    "  -h, --help  print a brief help message\n"
+#define USAGE                                                                                 \
+    "usage: %s [options] [files]\n"                                                           \
+    "\n"                                                                                      \
+    "%s\n"                                                                                    \
+    "\n"                                                                                      \
+    "options:\n"                                                                              \
+    "  -h, --help     print a brief help message and exit\n"                                  \
+    "  -l, --limit N  limit processing to the first N records per file (default: no limit)\n" \
+    "\n"                                                                                      \
+    "note: if no files are provided this program will read from stdin\n"
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +44,17 @@ int main(int argc, char *argv[])
                 exit(1);
             }
         }*/
-        else { // we'll assume it's a filename
+        else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
+        {
+            if (i + 1 >= argc)
+            {
+                fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
+                exit(1);
+            }
+            __marc_main_limit = atoi(argv[++i]);
+        }
+        else
+        { // we'll assume it's a filename
             filenames[file_count++] = argv[i];
         }
     }
