@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "marc.h"
+#include "../marc.h"
 
 void print_result(FILE *out, FILE *in, marcrec *rec, const char *arg)
 {

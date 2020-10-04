@@ -2,24 +2,25 @@
 DATA=./testfile.marc
 CFLAGS=-g -Wall
 
-BINARIES=marc-validate marc-dump marc-print marc-leaders
-VALGRINDS=$(patsubst %,%.valgrind,$(BINARIES))
+BINSRC=$(wildcard bin/marc-*.c)
+BINARIES=$(patsubst %.c,%,$(BINSRC))
+VALGRINDS=$(patsubst bin/%,%.valgrind,$(BINARIES))
 
 all: $(BINARIES)
 
-$(BINARIES): %: util.o marc.o main.o %.o
+$(BINARIES): %: util.o marc.o bin/main.o %.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 valgrind: $(VALGRINDS)
 
-$(VALGRINDS): %.valgrind: %
-	valgrind --leak-check=full --log-file=$@ ./$< $(DATA) > /dev/null 2>&1
+$(VALGRINDS): %.valgrind: bin/%
+	valgrind --leak-check=full --log-file=$@ $< $(DATA) > /dev/null 2>&1 && cat $@
 
-test: marc-dump
-	./marc-dump < $(DATA) | diff $(DATA) - && echo "basic dump test passed"
+test: bin/marc-dump
+	bin/marc-dump < $(DATA) | diff $(DATA) - && echo "basic dump test passed"
 
 clean:
-	rm -f *.o *.valgrind
+	rm -f *.o bin/*.o *.valgrind
 
 realclean: clean
 	rm -f $(BINARIES)

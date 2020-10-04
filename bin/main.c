@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "marc.h"
+#include "../marc.h"
 
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *arg);
 
