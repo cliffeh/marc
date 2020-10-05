@@ -64,4 +64,5 @@ marc-validate
 .vscode
 
 # user-provided files for testing
-testfile.marc
+test/testfile.marc
+test/data
