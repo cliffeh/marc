@@ -13,6 +13,6 @@ void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
     while (marcrec_read(rec, buf, in) != 0 && (__marc_main_limit - count) != 0)
     {
         count++;
-        marcrec_write(out, rec);
+        marcrec_write(out, rec, 0);
     }
 }

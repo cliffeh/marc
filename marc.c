@@ -63,23 +63,6 @@ static void marcrec_pretty_print(FILE *out, const marcrec *rec)
   }
 }
 
-static void marcrec_print_on_match(FILE *out, const marcrec *rec, const fieldspec *fs)
-{
-  // TODO implement
-}
-
-void marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs)
-{
-  // print the whole shebang by default
-  if (!fs || fs->len == 0) {
-    marcrec_pretty_print(out, rec);
-  }
-  else
-  {
-    marcrec_print_on_match(out, rec, fs);
-  }
-}
-
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
 {
   // you're mine now!
@@ -123,9 +106,16 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   return marcrec_from_buffer(rec, buf, len);
 }
 
-void marcrec_write(FILE *out, const marcrec *rec)
+void marcrec_write(FILE *out, const marcrec *rec, int pretty)
 {
-  fwrite(rec->data, sizeof(char), rec->len, out);
+  if (pretty == 0)
+  {
+    fwrite(rec->data, sizeof(char), rec->len, out);
+  }
+  else
+  {
+    marcrec_pretty_print(out, rec);
+  }
 }
 
 static int marcfield_validate(const marcfield *field)
