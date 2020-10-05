@@ -8,7 +8,8 @@
 int __marc_main_limit = -1;
 
 /* process all fields by default */
-fieldspec __marc_main_fieldspec;
+int __marc_main_fieldspec_count;
+fieldspec *__marc_main_fieldspec;
 
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
 extern const char *specific_usage;
@@ -33,8 +34,8 @@ int main(int argc, char *argv[])
     int file_count = 0;
     char **filenames = calloc(argc, sizeof(char *));
 
-    __marc_main_fieldspec.len = 0;
-    __marc_main_fieldspec.spec = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
+    __marc_main_fieldspec_count = 0;
+    __marc_main_fieldspec = calloc(argc, sizeof(fieldspec)); // more than we need, but not worth optimizing
 
     // process command line args
     for (int i = 1; i < argc; i++)
@@ -52,7 +53,13 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
-            __marc_main_fieldspec.spec[__marc_main_fieldspec.len++] = argv[i];
+            __marc_main_fieldspec[__marc_main_fieldspec_count].len = strlen(argv[i]);
+            __marc_main_fieldspec[__marc_main_fieldspec_count].spec = argv[i];
+            if(validate_fieldspec(&__marc_main_fieldspec[__marc_main_fieldspec_count]) != 0) {
+                fprintf(stderr, "error: '%s' is an invalid fieldspec\n", argv[i]);
+                exit(1);
+            }
+            __marc_main_fieldspec_count++;
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
         {
@@ -85,7 +92,7 @@ int main(int argc, char *argv[])
     }
 
     free(filenames);
-    free(__marc_main_fieldspec.spec);
+    free(__marc_main_fieldspec);
     free(rec->fields);
     free(rec);
 }
