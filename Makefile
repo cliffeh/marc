@@ -1,5 +1,5 @@
 # a file/symlink containing valid marc records
-DATA=./testfile.marc
+DATA=test/testfile.marc
 LIMIT=100
 CFLAGS=-g -Wall
 
