@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../marc.h"
+#include "../fields.h"
 
 const char *specific_usage = "print debug information and exit";
 

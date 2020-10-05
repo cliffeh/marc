@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "../marc.h"
+#include "../fields.h"
 
 const char *specific_usage = "print marc records/fields in a human-readable format";
 

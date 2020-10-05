@@ -4,7 +4,6 @@
 const char *specific_usage = "dump marc records in marc format";
 
 extern int __marc_main_limit;
-extern fieldspec __marc_main_fieldspec;
 
 void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
 {

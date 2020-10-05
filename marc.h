@@ -12,11 +12,6 @@
 #define MISSING_FIELD_TERMINATOR (1 << 0)
 #define MISSING_RECORD_TERMINATOR (1 << 1)
 
-typedef struct fieldspec {
-  int len;
-  char **spec;
-} fieldspec;
-
 typedef struct marcfield
 {
   const char *directory_entry, *data;

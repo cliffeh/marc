@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "../marc.h"
+#include "../fields.h"
 
 /* process all records by default */
 int __marc_main_limit = -1;
