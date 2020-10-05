@@ -2,7 +2,7 @@
 #include "marc.h"
 #include "fields.h"
 
-int fieldspec_validate(fieldspec *fs)
+int fieldspec_validate(const fieldspec *fs)
 {
     // null fieldspec is legit 
     if(!fs) return 0;

@@ -21,6 +21,6 @@ typedef struct fieldspec
  * @param len the length of the fieldspec
  * @return int 0 iff the fieldspec is valid
  */
-int fieldspec_validate(fieldspec *fs);
+int fieldspec_validate(const fieldspec *fs);
 
 #endif
