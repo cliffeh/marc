@@ -24,7 +24,7 @@ typedef struct marcfield
 typedef struct marcrec
 {
   int len, base_address, field_count;
-  const char *raw;
+  const char *data;
   marcfield *fields;
 } marcrec;
 

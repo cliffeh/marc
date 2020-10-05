@@ -12,9 +12,9 @@ static void marcrec_process_fields(marcrec *rec)
 {
   for (int i = 0; i < rec->field_count; i++)
   {
-    rec->fields[i].directory_entry = rec->raw + 24 + i * 12;
+    rec->fields[i].directory_entry = rec->data + 24 + i * 12;
     rec->fields[i].len = atoi4(rec->fields[i].directory_entry + 3);
-    rec->fields[i].data = rec->raw + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
+    rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
   }
 }
 
@@ -47,15 +47,15 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
 static void marcrec_pretty_print(FILE *out, const marcrec *rec)
 {
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
-          rec->len, rec->raw[5], rec->raw[6], rec->raw[7], rec->raw[9]);
+          rec->len, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
   fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
-          rec->raw[10], rec->raw[11], rec->raw[12]);
+          rec->data[10], rec->data[11], rec->data[12]);
   fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
-          rec->base_address, rec->raw[17], rec->raw[18]);
+          rec->base_address, rec->data[17], rec->data[18]);
   fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
-          rec->raw[19], rec->raw[20]);
+          rec->data[19], rec->data[20]);
   fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
-          rec->raw[21], rec->raw[22]);
+          rec->data[21], rec->data[22]);
 
   for (int i = 0; i < rec->field_count; i++)
   {
@@ -83,7 +83,7 @@ void marcrec_print(FILE *out, const marcrec *rec, const fieldspec *fs)
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
 {
   // you're mine now!
-  rec->raw = buf;
+  rec->data = buf;
 
   // total length of record
   rec->len = (len == 0) ? atoi5(buf) : len;
@@ -125,7 +125,7 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
 
 void marcrec_write(FILE *out, const marcrec *rec)
 {
-  fwrite(rec->raw, sizeof(char), rec->len, out);
+  fwrite(rec->data, sizeof(char), rec->len, out);
 }
 
 static int marcfield_validate(const marcfield *field)
@@ -136,9 +136,9 @@ static int marcfield_validate(const marcfield *field)
 int marcrec_validate(const marcrec *rec)
 {
   int r = 0;
-  if (rec->raw[rec->len - 1] != RECORD_TERMINATOR)
+  if (rec->data[rec->len - 1] != RECORD_TERMINATOR)
     r |= MISSING_RECORD_TERMINATOR;
-  if (rec->raw[rec->base_address - 1] != FIELD_TERMINATOR)
+  if (rec->data[rec->base_address - 1] != FIELD_TERMINATOR)
     r |= MISSING_FIELD_TERMINATOR;
 
   for (int i = 0; i < rec->field_count; i++)
