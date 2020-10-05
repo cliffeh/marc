@@ -6,7 +6,7 @@ const char *specific_usage = "print marc records/fields in a human-readable form
 
 extern int __marc_main_limit;
 extern int __marc_main_fieldspec_count;
-extern fieldspec *__marc_main_fieldspec;
+extern fieldspec **__marc_main_fieldspec;
 
 void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
 {
