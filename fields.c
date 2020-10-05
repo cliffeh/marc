@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include "fields.h"
 
-int validate_fieldspec(fieldspec *fs)
+int fieldspec_validate(fieldspec *fs)
 {
     // null fieldspec is legit 
     if(!fs) return 0;

@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
             i++;
             __marc_main_fieldspec[__marc_main_fieldspec_count].len = strlen(argv[i]);
             __marc_main_fieldspec[__marc_main_fieldspec_count].spec = argv[i];
-            if(validate_fieldspec(&__marc_main_fieldspec[__marc_main_fieldspec_count]) != 0) {
+            if(fieldspec_validate(&__marc_main_fieldspec[__marc_main_fieldspec_count]) != 0) {
                 fprintf(stderr, "error: '%s' is an invalid fieldspec\n", argv[i]);
                 exit(1);
             }
