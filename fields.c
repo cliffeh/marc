@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include "marc.h"
 #include "fields.h"
 
 int fieldspec_validate(fieldspec *fs)
