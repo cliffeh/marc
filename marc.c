@@ -18,8 +18,9 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
-static void marcfield_pretty_print(FILE *out, const marcfield *field)
+static void marcfield_print(FILE *out, const marcfield *field, char *spec)
 {
+  // TODO respect the spec!
   // print the tag
   fprintf(out, "  %.*s  ", 3, field->directory_entry);
 
@@ -44,8 +45,9 @@ static void marcfield_pretty_print(FILE *out, const marcfield *field)
   fprintf(out, "\n");
 }
 
-static void marcrec_pretty_print(FILE *out, const marcrec *rec)
+void marcrec_print(FILE *out, const marcrec *rec, char *spec)
 {
+  // TODO respect the spec!
   fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
           rec->len, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
   fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
@@ -59,7 +61,7 @@ static void marcrec_pretty_print(FILE *out, const marcrec *rec)
 
   for (int i = 0; i < rec->field_count; i++)
   {
-    marcfield_pretty_print(out, &rec->fields[i]);
+    marcfield_print(out, &rec->fields[i], 0 /* TODO */);
   }
 }
 
@@ -104,12 +106,6 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
 
   // process the rest of the record
   return marcrec_from_buffer(rec, buf, len);
-}
-
-void marcrec_print(FILE *out, const marcrec *rec, char *spec)
-{
-  // TODO use spec to filter fields
-  marcrec_pretty_print(out, rec);
 }
 
 void marcrec_write(FILE *out, const marcrec *rec)
