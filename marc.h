@@ -1,6 +1,8 @@
 #ifndef __MARC_H
 #define __MARC_H 1
 
+#include <stdio.h> // FILE is defined here
+
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
 #define RECORD_TERMINATOR 0x1d
