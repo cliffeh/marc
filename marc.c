@@ -106,16 +106,15 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in)
   return marcrec_from_buffer(rec, buf, len);
 }
 
-void marcrec_write(FILE *out, const marcrec *rec, int pretty)
+void marcrec_print(FILE *out, const marcrec *rec, char *spec)
 {
-  if (pretty == 0)
-  {
-    fwrite(rec->data, sizeof(char), rec->len, out);
-  }
-  else
-  {
-    marcrec_pretty_print(out, rec);
-  }
+  // TODO use spec to filter fields
+  marcrec_pretty_print(out, rec);
+}
+
+void marcrec_write(FILE *out, const marcrec *rec)
+{
+  fwrite(rec->data, sizeof(char), rec->len, out);
 }
 
 static int marcfield_validate(const marcfield *field)

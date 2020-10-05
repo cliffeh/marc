@@ -52,13 +52,21 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in);
 int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
 
 /**
+ * @brief print a marc record/fields in human-readable format
+ *
+ * @param out the file to write to
+ * @param rec the marc record to write
+ * @param spec specification of the desired fields to print; if null, print the entire record
+ */
+void marcrec_print(FILE *out, const marcrec *rec, char *spec);
+
+/**
  * @brief write a marc record to a file
  *
  * @param out the file to write to
  * @param rec the marc record to write
- * @param pretty if zero write in marc format; otherwise print in human-readable format
  */
-void marcrec_write(FILE *out, const marcrec *rec, int pretty);
+void marcrec_write(FILE *out, const marcrec *rec);
 
 /**
  * @brief validate a marc record
