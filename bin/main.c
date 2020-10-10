@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "../marc.h"
 
 /* process all records by default */
@@ -8,7 +9,7 @@ int __marc_main_limit = -1;
 
 /* process all fields by default */
 int __marc_main_fieldspec_count;
-char **__marc_main_fieldspec;
+const char **__marc_main_fieldspec;
 
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
 extern const char *specific_usage;
@@ -52,6 +53,10 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
+            if(strlen(argv[i]) < 3 || !isdigit(argv[i][0]) || !isdigit(argv[i][1]) || !isdigit(argv[i][2])) {
+                fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
+                exit(1);
+            }
             __marc_main_fieldspec[__marc_main_fieldspec_count++] = argv[i];
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)

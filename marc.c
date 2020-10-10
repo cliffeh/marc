@@ -8,6 +8,9 @@
 #define atoi4(p) (atoi1(p) * 1000 + atoi3(p + 1))
 #define atoi5(p) (atoi1(p) * 10000 + atoi4(p + 1))
 
+#define MATCH_FIELD(spec, direntry) \
+  (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
+
 static void marcrec_process_fields(marcrec *rec)
 {
   for (int i = 0; i < rec->field_count; i++)
@@ -18,11 +21,10 @@ static void marcrec_process_fields(marcrec *rec)
   }
 }
 
-static void marcfield_print(FILE *out, const marcfield *field, char *spec)
+static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
 {
-  // TODO respect the spec!
-  // print the tag
-  fprintf(out, "  %.*s  ", 3, field->directory_entry);
+  // if we have no spec we're going to print the whole thing
+  int printing = (!spec || !*spec) ? 1 : 0;
 
   for (int i = 0; i < field->len; i++)
   {
@@ -32,36 +34,73 @@ static void marcfield_print(FILE *out, const marcfield *field, char *spec)
     { // do not print
     }
     break;
-    case SUBFIELD_DELIMITER:
+    case SUBFIELD_DELIMITER: // state change; re-assess whether we should be printing
     {
-      // DANGER (++i)
-      fprintf(out, " $%c: ", field->data[++i]);
+      ++i; // DANGER
+      printing = (!spec || !*spec) ? 1 : 0;
+      if(!printing) {
+        for(int j = strlen(spec)-1; j >= 0; j--) {
+          if(spec[j] == field->data[i]) {
+            printing = 1;
+            break;
+          }
+        }
+      }
+      if(printing) {
+        fprintf(out, " $%c: ", field->data[i]);
+      }
     }
     break;
     default:
-      fprintf(out, "%c", field->data[i]);
+      if(printing)
+        fprintf(out, "%c", field->data[i]);
     }
   }
-  fprintf(out, "\n");
 }
 
-void marcrec_print(FILE *out, const marcrec *rec, char *spec)
+static void marcfield_print(FILE *out, const marcfield *field, const char **spec)
 {
-  // TODO respect the spec!
-  fprintf(out, "length: %05i | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
-          rec->len, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
-  fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
-          rec->data[10], rec->data[11], rec->data[12]);
-  fprintf(out, "base address of data: %05i | encoding level: %c | descriptive cataloging form: %c\n",
-          rec->base_address, rec->data[17], rec->data[18]);
-  fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
-          rec->data[19], rec->data[20]);
-  fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
-          rec->data[21], rec->data[22]);
+  if (!spec)
+  { // we're printing the entire field
+    // indent (assuming we're pretty-printing entire record)
+    fprintf(out, "\t%.3s ", field->directory_entry);
+    marcfield_print_subfields(out, field, 0);
+    fprintf(out, "\n");
+  }
+  else // only print if we match the spec
+  {
+    for (int i = 0; spec[i]; i++)
+    {
+      if (MATCH_FIELD(spec[i], field->directory_entry))
+      {
+        // no indent since we're only printing specific fields
+        fprintf(out, "%.3s ", field->directory_entry);
+        marcfield_print_subfields(out, field, spec[i] + 3);
+        fprintf(out, "\n");
+      }
+    }
+  }
+}
+
+void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
+{
+  if (!spec) // TODO update spec to include leader fields?
+  {
+    fprintf(out, "length: %.5s | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
+            rec->data, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
+    fprintf(out, "character coding scheme: %c | indicator count: %c | subfield code count: %c\n",
+            rec->data[10], rec->data[11], rec->data[12]);
+    fprintf(out, "base address of data: %.5s | encoding level: %c | descriptive cataloging form: %c\n",
+            rec->data + 12, rec->data[17], rec->data[18]);
+    fprintf(out, "multipart resource record level: %c | length of the length-of-field portion: %c\n",
+            rec->data[19], rec->data[20]);
+    fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
+            rec->data[21], rec->data[22]);
+  }
 
   for (int i = 0; i < rec->field_count; i++)
   {
-    marcfield_print(out, &rec->fields[i], 0 /* TODO */);
+    marcfield_print(out, &rec->fields[i], spec);
   }
 }
 

@@ -58,7 +58,7 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
  * @param rec the marc record to write
  * @param spec specification of the desired fields to print; if null, print the entire record
  */
-void marcrec_print(FILE *out, const marcrec *rec, char *spec);
+void marcrec_print(FILE *out, const marcrec *rec, const char **spec);
 
 /**
  * @brief write a marc record to a file
