@@ -7,3 +7,4 @@
 * --debug flag
 * autotools
 * warn about unused flags
+* doc about fieldspec
