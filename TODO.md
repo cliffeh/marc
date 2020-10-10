@@ -8,3 +8,4 @@
 * autotools
 * warn about unused flags
 * doc about fieldspec
+* put examples in help output?

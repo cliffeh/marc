@@ -14,15 +14,16 @@ const char **__marc_main_fieldspec;
 extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
 extern const char *specific_usage;
 
-#define USAGE                                                                                 \
-    "usage: %s [options] [files]\n"                                                           \
-    "\n"                                                                                      \
-    "%s\n"                                                                                    \
-    "\n"                                                                                      \
-    "options:\n"                                                                              \
-    "  -h, --help     print a brief help message and exit\n"                                  \
-    "  -l, --limit N  limit processing to the first N records per file (default: no limit)\n" \
-    "\n"                                                                                      \
+#define USAGE                                                                                    \
+    "usage: %s [options] [files]\n"                                                              \
+    "\n"                                                                                         \
+    "%s\n"                                                                                       \
+    "\n"                                                                                         \
+    "options:\n"                                                                                 \
+    "  -h, --help        print a brief help message and exit\n"                                  \
+    "  -f, --field SPEC  only output fields adhering to SPEC\n"                                  \
+    "  -l, --limit N     limit processing to the first N records per file (default: no limit)\n" \
+    "\n"                                                                                         \
     "note: if no files are provided this program will read from stdin\n"
 
 int main(int argc, char *argv[])
@@ -54,7 +55,8 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
-            if(strlen(argv[i]) < 3 || !isdigit(argv[i][0]) || !isdigit(argv[i][1]) || !isdigit(argv[i][2])) {
+            if (strlen(argv[i]) < 3 || !isdigit(argv[i][0]) || !isdigit(argv[i][1]) || !isdigit(argv[i][2]))
+            {
                 fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
                 exit(1);
             }
