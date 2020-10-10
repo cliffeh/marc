@@ -64,7 +64,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 }
 
-static void marcfield_print(FILE *out, const marcfield *field, const char **spec)
+void marcfield_print(FILE *out, const marcfield *field, const char **spec)
 {
   if (!spec)
   { // we're printing the entire field
