@@ -6,5 +6,5 @@
 * versioning
 * --debug flag
 * autotools
-* warn about unused flags
 * put examples in help output?
+* include leader in field spec somehow
