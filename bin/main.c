@@ -11,7 +11,7 @@ int __marc_main_limit = -1;
 int __marc_main_fieldspec_count;
 const char **__marc_main_fieldspec;
 
-extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename);
+extern void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in);
 extern const char *specific_usage;
 
 #define USAGE                                                                                    \
@@ -29,8 +29,11 @@ extern const char *specific_usage;
 int main(int argc, char *argv[])
 {
     marcrec rec;
+    // 99999 is the max possible size
+    char buf[100000];
     // 1000 seems like a reasonable upper bound
     marcfield fields[1000];
+    rec.data = buf;
     rec.fields = fields;
 
     int file_count = 0;
@@ -80,14 +83,14 @@ int main(int argc, char *argv[])
 
     if (file_count == 0)
     { // read from stdin
-        print_result(stdout, stdin, &rec, "-");
+        print_result(stdout, &rec, "-", stdin);
     }
     else
     {
         for (int i = 0; i < file_count; i++)
         {
             FILE *f = fopen(filenames[i], "r");
-            print_result(stdout, f, &rec, filenames[i]);
+            print_result(stdout, &rec, filenames[i], f);
             fclose(f);
         }
     }

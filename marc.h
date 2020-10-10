@@ -14,14 +14,14 @@
 
 typedef struct marcfield
 {
-  const char *directory_entry, *data;
+  char *directory_entry, *data;
   int len;
 } marcfield;
 
 typedef struct marcrec
 {
   int len, base_address, field_count;
-  const char *data;
+  char *data;
   marcfield *fields;
 } marcrec;
 
@@ -36,7 +36,7 @@ typedef struct marcrec
  * @param in a pointer to an open FILE to read from
  * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
  */
-int marcrec_read(marcrec *rec, char *buf, FILE *in);
+int marcrec_read(marcrec *rec, FILE *in);
 
 /**
  * @brief read a marcrec from a buffer
@@ -49,7 +49,7 @@ int marcrec_read(marcrec *rec, char *buf, FILE *in);
  * @param len the number of bytes in the marc record, or 0 if the length is unknown and should be computed
  * @return int the number of bytes processed
  */
-int marcrec_from_buffer(marcrec *rec, const char *buf, int len);
+int marcrec_from_buffer(marcrec *rec, char *buf, int len);
 
 /**
  * @brief print a marc record in human-readable format

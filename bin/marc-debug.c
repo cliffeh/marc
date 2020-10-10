@@ -7,7 +7,7 @@ extern int __marc_main_limit;
 extern int __marc_main_fieldspec_count;
 extern char **__marc_main_fieldspec;
 
-void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename)
+void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in)
 {
     fprintf(out, "filename: %s\n", filename);
     fprintf(stdout, "limit: %i\n", __marc_main_limit);

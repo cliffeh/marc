@@ -110,7 +110,7 @@ void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
   }
 }
 
-int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
+int marcrec_from_buffer(marcrec *rec, char *buf, int len)
 {
   // you're mine now!
   rec->data = buf;
@@ -132,25 +132,25 @@ int marcrec_from_buffer(marcrec *rec, const char *buf, int len)
   return rec->len;
 }
 
-int marcrec_read(marcrec *rec, char *buf, FILE *in)
+int marcrec_read(marcrec *rec, FILE *in)
 {
   // read the leader
-  int n = fread(buf, sizeof(char), 24, in);
+  int n = fread(rec->data, sizeof(char), 24, in);
   if (n == 0)
     return 0;
   if (n < 24)
     return -1;
 
   // total length of record
-  int len = atoi5(buf);
+  int len = atoi5(rec->data);
 
   // read the remainder of the record
-  n = fread(buf + 24, sizeof(char), len - 24, in);
+  n = fread(rec->data + 24, sizeof(char), len - 24, in);
   if (n < (len - 24))
     return -1;
 
   // process the rest of the record
-  return marcrec_from_buffer(rec, buf, len);
+  return marcrec_from_buffer(rec, rec->data, len);
 }
 
 void marcrec_write(FILE *out, const marcrec *rec)
