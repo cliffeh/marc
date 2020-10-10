@@ -8,3 +8,4 @@
 * autotools
 * put examples in help output?
 * include leader in field spec somehow
+* include indicators in field spec somehow
