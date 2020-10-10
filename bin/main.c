@@ -27,9 +27,10 @@ extern const char *specific_usage;
 
 int main(int argc, char *argv[])
 {
-    marcrec *rec = malloc(sizeof(marcrec));
+    marcrec rec;
     // 1000 seems like a reasonable upper bound
-    rec->fields = malloc(sizeof(marcfield) * 1000);
+    marcfield fields[1000];
+    rec.fields = fields;
 
     int file_count = 0;
     char **filenames = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
@@ -77,20 +78,18 @@ int main(int argc, char *argv[])
 
     if (file_count == 0)
     { // read from stdin
-        print_result(stdout, stdin, rec, "-");
+        print_result(stdout, stdin, &rec, "-");
     }
     else
     {
         for (int i = 0; i < file_count; i++)
         {
             FILE *f = fopen(filenames[i], "r");
-            print_result(stdout, f, rec, filenames[i]);
+            print_result(stdout, f, &rec, filenames[i]);
             fclose(f);
         }
     }
 
     free(filenames);
     free(__marc_main_fieldspec);
-    free(rec->fields);
-    free(rec);
 }
