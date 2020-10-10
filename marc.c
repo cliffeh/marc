@@ -67,7 +67,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 void marcfield_print(FILE *out, const marcfield *field, const char **spec)
 {
   if (!spec)
-  { // we're printing the entire field
+  {
     // indent (assuming we're pretty-printing entire record)
     fprintf(out, "\t%.3s", field->directory_entry);
     marcfield_print_subfields(out, field, 0);
