@@ -25,8 +25,10 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 {
   // if we have no spec we're going to print the whole thing
   int printing = (!spec || !*spec) ? 1 : 0;
+  if (printing) // print indicators
+    fprintf(out, " %.2s", field->data);
 
-  for (int i = 0; i < field->len; i++)
+  for (int i = 2; i < field->len; i++)
   {
     switch (field->data[i])
     {
@@ -38,21 +40,25 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
     {
       ++i; // DANGER
       printing = (!spec || !*spec) ? 1 : 0;
-      if(!printing) {
-        for(int j = strlen(spec)-1; j >= 0; j--) {
-          if(spec[j] == field->data[i]) {
+      if (!printing)
+      {
+        for (int j = strlen(spec) - 1; j >= 0; j--)
+        {
+          if (spec[j] == field->data[i])
+          {
             printing = 1;
             break;
           }
         }
       }
-      if(printing) {
+      if (printing)
+      {
         fprintf(out, " $%c: ", field->data[i]);
       }
     }
     break;
     default:
-      if(printing)
+      if (printing)
         fprintf(out, "%c", field->data[i]);
     }
   }
@@ -63,7 +69,7 @@ static void marcfield_print(FILE *out, const marcfield *field, const char **spec
   if (!spec)
   { // we're printing the entire field
     // indent (assuming we're pretty-printing entire record)
-    fprintf(out, "\t%.3s ", field->directory_entry);
+    fprintf(out, "\t%.3s", field->directory_entry);
     marcfield_print_subfields(out, field, 0);
     fprintf(out, "\n");
   }
@@ -74,7 +80,7 @@ static void marcfield_print(FILE *out, const marcfield *field, const char **spec
       if (MATCH_FIELD(spec[i], field->directory_entry))
       {
         // no indent since we're only printing specific fields
-        fprintf(out, "%.3s ", field->directory_entry);
+        fprintf(out, "%.3s", field->directory_entry);
         marcfield_print_subfields(out, field, spec[i] + 3);
         fprintf(out, "\n");
       }
