@@ -15,16 +15,16 @@ extern void print_result(FILE *out, FILE *in, marcrec *rec, const char *filename
 extern const char *specific_usage;
 
 #define USAGE                                                                                    \
-    "usage: %s [options] [files]\n"                                                              \
+    "usage: %s [OPTIONS] [FILES]\n"                                                              \
     "\n"                                                                                         \
     "%s\n"                                                                                       \
     "\n"                                                                                         \
-    "options:\n"                                                                                 \
+    "OPTIONS:\n"                                                                                 \
     "  -h, --help        print a brief help message and exit\n"                                  \
     "  -f, --field SPEC  only output fields adhering to SPEC\n"                                  \
     "  -l, --limit N     limit processing to the first N records per file (default: no limit)\n" \
     "\n"                                                                                         \
-    "note: if no files are provided this program will read from stdin\n"
+    "Note: if no files are provided this program will read from stdin\n"
 
 int main(int argc, char *argv[])
 {

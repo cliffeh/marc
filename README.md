@@ -7,7 +7,7 @@ A library and a set of command-line tools for manipulating MARC records.
 
 ## Running
 ```
-usage: marc-$action [OPTIONS] [FILES]
+usage: marc-$ACTION [OPTIONS] [FILES]
 
 ACTIONS:
   dump      dump marc records in marc format
@@ -15,9 +15,11 @@ ACTIONS:
   validate  validate marc records
 
 OPTIONS:
-  -h, --help     print a brief help message and exit
+  -h, --help        print a brief help message and exit
   -f, --field SPEC  only output fields adhering to SPEC
-  -l, --limit N  limit processing to the first N records per file (default: no limit)
+  -l, --limit N     limit processing to the first N records per file (default: no limit)
+
+Note: if no files are provided this program will read from stdin
 
 Examples:
 
@@ -36,6 +38,7 @@ Examples:
   # print out the 245 field (subfields a and b)
   marc-print --field 245ab foo.marc
   ```
+
 ## About
 In a previous life I worked for the office of research at a non-profit that provided services to libraries. Some of what we did involved writing small, efficient C programs that would troll through bibliographic records and tease out interesting bits of information. I recently got an "itch" to revisit that, so I wrote this little C library with some nice functions for processing MARC records.
 
