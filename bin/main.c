@@ -11,19 +11,23 @@ int __marc_main_limit = -1;
 int __marc_main_fieldspec_count;
 const char **__marc_main_fieldspec;
 
+/* output file (stdout if unspecified) */
+const char *__marc_main_outfile;
+
 extern void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in);
 extern const char *specific_usage;
 
-#define USAGE                                                                                    \
-    "usage: %s [OPTIONS] [FILES]\n"                                                              \
-    "\n"                                                                                         \
-    "%s\n"                                                                                       \
-    "\n"                                                                                         \
-    "OPTIONS:\n"                                                                                 \
-    "  -h, --help        print a brief help message and exit\n"                                  \
-    "  -f, --field SPEC  only output fields adhering to SPEC\n"                                  \
-    "  -l, --limit N     limit processing to the first N records per file (default: no limit)\n" \
-    "\n"                                                                                         \
+#define USAGE                                                                                     \
+    "usage: %s [OPTIONS] [FILES]\n"                                                               \
+    "\n"                                                                                          \
+    "%s\n"                                                                                        \
+    "\n"                                                                                          \
+    "OPTIONS:\n"                                                                                  \
+    "  -h, --help         print a brief help message and exit\n"                                  \
+    "  -f, --field SPEC   only output fields adhering to SPEC\n"                                  \
+    "  -l, --limit N      limit processing to the first N records per file (default: no limit)\n" \
+    "  -o, --output FILE  output to FILE (default: stdout)\n"                                     \
+    "\n"                                                                                          \
     "Note: if no files are provided this program will read from stdin\n"
 
 int main(int argc, char *argv[])
@@ -75,26 +79,42 @@ int main(int argc, char *argv[])
             i++;
             __marc_main_limit = atoi(argv[i]);
         }
+        else if (strcmp("--output", argv[i]) == 0 || strcmp("-o", argv[i]) == 0)
+        {
+            if(__marc_main_outfile) {
+                fprintf(stderr, "error: more than one output file specified\n");
+                exit(1);
+            }
+            if (i + 1 >= argc)
+            {
+                fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
+                exit(1);
+            }
+            i++;
+            __marc_main_outfile = argv[i];
+        }
         else // we'll assume it's a filename
         {
             filenames[file_count++] = argv[i];
         }
     }
 
+    FILE *out = (__marc_main_outfile) ? fopen(__marc_main_outfile, "w") : stdout;
     if (file_count == 0)
     { // read from stdin
-        print_result(stdout, &rec, "-", stdin);
+        print_result(out, &rec, "-", stdin);
     }
     else
     {
         for (int i = 0; i < file_count; i++)
         {
-            FILE *f = fopen(filenames[i], "r");
-            print_result(stdout, &rec, filenames[i], f);
-            fclose(f);
+            FILE *in = fopen(filenames[i], "r");
+            print_result(out, &rec, filenames[i], in);
+            fclose(in);
         }
     }
 
+    fclose(out);
     free(filenames);
     free(__marc_main_fieldspec);
 }
