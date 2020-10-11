@@ -11,7 +11,7 @@
 #define MATCH_FIELD(spec, direntry) \
   (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
 
-static void marcrec_process_fields(marcrec *rec)
+static void marcrec_process_directory(marcrec *rec)
 {
   for (int i = 0; i < rec->field_count; i++)
   {
@@ -140,9 +140,9 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
   // compute the number of fields based on directory size
   rec->field_count = (rec->base_address - 24 - 1) / 12;
 
-  // if we've been given storage for fields, assume that we want them to be processed
+  // if we've been given storage for fields, assume that we want to process the directory
   if (rec->fields)
-    marcrec_process_fields(rec);
+    marcrec_process_directory(rec);
 
   // return a pointer to the "rest" of the buffer (if any)
   return rec->length;
