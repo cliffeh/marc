@@ -158,15 +158,15 @@ int marcrec_read(marcrec *rec, FILE *in)
     return -1;
 
   // total length of record
-  int len = atoi5(rec->data);
+  int length = atoi5(rec->data);
 
   // read the remainder of the record
-  n = fread(rec->data + 24, sizeof(char), len - 24, in);
-  if (n < (len - 24))
+  n = fread(rec->data + 24, sizeof(char), length - 24, in);
+  if (n < (length - 24))
     return -1;
 
   // process the rest of the record
-  return marcrec_from_buffer(rec, rec->data, len);
+  return marcrec_from_buffer(rec, rec->data, length);
 }
 
 void marcrec_write(FILE *out, const marcrec *rec)
