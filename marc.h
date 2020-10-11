@@ -1,0 +1,88 @@
+#ifndef __MARC_H
+#define __MARC_H 1
+
+#include <stdio.h> // FILE is defined here
+
+// terminator constants
+#define FIELD_TERMINATOR 0x1e
+#define RECORD_TERMINATOR 0x1d
+#define SUBFIELD_DELIMITER 0x1f
+
+// error constants
+#define MISSING_FIELD_TERMINATOR (1 << 0)
+#define MISSING_RECORD_TERMINATOR (1 << 1)
+
+typedef struct marcfield
+{
+  char *directory_entry, *data;
+  int len;
+} marcfield;
+
+typedef struct marcrec
+{
+  int len, base_address, field_count;
+  char *data;
+  marcfield *fields;
+} marcrec;
+
+/**
+ * @brief read a marcrec from a file
+ *
+ * if rec->fields is non-null this function will assume you want fields processed;
+ * otherwise it will only read the raw record
+ *
+ * @param rec a pointer to an allocated marcrec object to be populated
+ * @param buf a pointer to an allocated buffer to read into
+ * @param in a pointer to an open FILE to read from
+ * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
+ */
+int marcrec_read(marcrec *rec, FILE *in);
+
+/**
+ * @brief read a marcrec from a buffer
+ *
+ * if rec->fields is non-null this function will assume you want fields processed;
+ * otherwise it will only read the raw record
+ *
+ * @param rec a pointer to an allocated marcrec object to be populated
+ * @param buf a pointer to a buffer containing a marc record
+ * @param len the number of bytes in the marc record, or 0 if the length is unknown and should be computed
+ * @return int the number of bytes processed
+ */
+int marcrec_from_buffer(marcrec *rec, char *buf, int len);
+
+/**
+ * @brief print a marc record in human-readable format
+ *
+ * @param out the file to write to
+ * @param rec the marc record to write
+ * @param spec specification of the desired fields to print; if null, print the entire record
+ */
+void marcrec_print(FILE *out, const marcrec *rec, const char **spec);
+
+/**
+ * @brief write a marc record to a file
+ *
+ * @param out the file to write to
+ * @param rec the marc record to write
+ */
+void marcrec_write(FILE *out, const marcrec *rec);
+
+/**
+ * @brief validate a marc record
+ *
+ * @param rec the record to validate
+ * @return int 0 if the marc record has all the appropriate field/record terminators; otherwise non-zero
+ */
+int marcrec_validate(const marcrec *rec);
+
+/**
+ * @brief print a marc field in human-readable format
+ *
+ * @param out the file to write to
+ * @param field the marc field to write
+ * @param spec specification of the desired subfields to print; if null, print the entire field
+ */
+void marcfield_print(FILE *out, const marcfield *field, const char **spec);
+
+#endif
