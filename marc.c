@@ -71,7 +71,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
       }
     }
     break;
-    default: // assume we're supposed to be printing
+    default: // if we're not skipping bytes then we're supposed to be printing
       fprintf(out, "%c", field->data[i++]);
     }
   }
