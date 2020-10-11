@@ -25,21 +25,28 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 {
   // if we have no spec we're going to print the whole thing
   int printing = (!spec || !*spec) ? 1 : 0;
-  if (printing) // print indicators
-    fprintf(out, " %.2s", field->data);
+  int i = 0;
 
-  for (int i = 2; i < field->len; i++)
+  if (printing)
+  { // print indicators
+    fprintf(out, " %.2s", field->data);
+    i = 2;
+  }
+
+  while (i < field->len)
   {
     switch (field->data[i])
     {
     case FIELD_TERMINATOR:
-    { // do not print
+    {
+      i++; // do not print
     }
     break;
     case SUBFIELD_DELIMITER: // state change; re-assess whether we should be printing
     {
-      ++i; // DANGER
+      i++;
       printing = (!spec || !*spec) ? 1 : 0;
+
       if (!printing)
       {
         for (int j = strlen(spec) - 1; j >= 0; j--)
@@ -51,15 +58,21 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
           }
         }
       }
+
       if (printing)
       {
-        fprintf(out, " $%c: ", field->data[i]);
+        fprintf(out, " $%c: ", field->data[i++]);
+      }
+      else
+      {
+        // skip bytes we're not supposed to be printing until the next subfield
+        for (; i < field->len && field->data[i] != SUBFIELD_DELIMITER; i++)
+          ;
       }
     }
     break;
-    default:
-      if (printing)
-        fprintf(out, "%c", field->data[i]);
+    default: // assume we're supposed to be printing
+      fprintf(out, "%c", field->data[i++]);
     }
   }
 }
@@ -102,6 +115,9 @@ void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
             rec->data[19], rec->data[20]);
     fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
             rec->data[21], rec->data[22]);
+
+    // DEBUG
+    // fprintf(out, "fields (%i)\n", rec->field_count);
   }
 
   for (int i = 0; i < rec->field_count; i++)
