@@ -52,11 +52,11 @@ Mkfile.old
 dkms.conf
 
 # compiled executables
-bin/marc-debug
-bin/marc-dump
-bin/marc-leaders
-bin/marc-print
-bin/marc-validate
+c/bin/marc-debug
+c/bin/marc-dump
+c/bin/marc-leaders
+c/bin/marc-print
+c/bin/marc-validate
 
 # memory profiling reports
 *.valgrind
@@ -65,5 +65,4 @@ bin/marc-validate
 .vscode
 
 # user-provided files for testing
-test/testfile.marc
-test/data
+c/test
