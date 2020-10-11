@@ -57,16 +57,18 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int len);
  * @param out the file to write to
  * @param rec the marc record to write
  * @param spec specification of the desired fields to print; if null, print the entire record
+ * @return int the number of fields written
  */
-void marcrec_print(FILE *out, const marcrec *rec, const char **spec);
+int marcrec_print(FILE *out, const marcrec *rec, const char **spec);
 
 /**
  * @brief write a marc record to a file
  *
  * @param out the file to write to
  * @param rec the marc record to write
+ * @return int the number of bytes written
  */
-void marcrec_write(FILE *out, const marcrec *rec);
+int marcrec_write(FILE *out, const marcrec *rec);
 
 /**
  * @brief validate a marc record
@@ -82,7 +84,8 @@ int marcrec_validate(const marcrec *rec);
  * @param out the file to write to
  * @param field the marc field to write
  * @param spec specification of the desired subfields to print; if null, print the entire field
+ * @return int 0 if the field wasn't printed (i.e., didn't match any of the specs); 1 otherwise
  */
-void marcfield_print(FILE *out, const marcfield *field, const char **spec);
+int marcfield_print(FILE *out, const marcfield *field, const char **specs);
 
 #endif

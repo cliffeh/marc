@@ -77,33 +77,37 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 }
 
-void marcfield_print(FILE *out, const marcfield *field, const char **spec)
+int marcfield_print(FILE *out, const marcfield *field, const char **specs)
 {
-  if (!spec)
+  int n = 0;
+  if (!specs)
   {
     // indent (assuming we're pretty-printing entire record)
     fprintf(out, "\t%.3s", field->directory_entry);
     marcfield_print_subfields(out, field, 0);
     fprintf(out, "\n");
+    n = 1;
   }
   else // only print if we match the spec
   {
-    for (int i = 0; spec[i]; i++)
+    for (int i = 0; specs[i]; i++)
     {
-      if (MATCH_FIELD(spec[i], field->directory_entry))
+      if (MATCH_FIELD(specs[i], field->directory_entry))
       {
         // no indent since we're only printing specific fields
         fprintf(out, "%.3s", field->directory_entry);
-        marcfield_print_subfields(out, field, spec[i] + 3);
+        marcfield_print_subfields(out, field, specs[i] + 3);
         fprintf(out, "\n");
+        n = 1;
       }
     }
   }
+  return n;
 }
 
-void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
+int marcrec_print(FILE *out, const marcrec *rec, const char **specs)
 {
-  if (!spec) // TODO update spec to include leader fields?
+  if (!specs) // TODO update spec to include leader fields?
   {
     fprintf(out, "length: %.5s | status: %c | type: %c | bibliographic level: %c | type of control: %c\n",
             rec->data, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
@@ -120,10 +124,12 @@ void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
     // fprintf(out, "fields (%i)\n", rec->field_count);
   }
 
+  int n = 0;
   for (int i = 0; i < rec->field_count; i++)
   {
-    marcfield_print(out, &rec->fields[i], spec);
+    n += marcfield_print(out, &rec->fields[i], specs);
   }
+  return n;
 }
 
 int marcrec_from_buffer(marcrec *rec, char *buf, int length)
@@ -169,9 +175,9 @@ int marcrec_read(marcrec *rec, FILE *in)
   return marcrec_from_buffer(rec, rec->data, length);
 }
 
-void marcrec_write(FILE *out, const marcrec *rec)
+int marcrec_write(FILE *out, const marcrec *rec)
 {
-  fwrite(rec->data, sizeof(char), rec->length, out);
+  return fwrite(rec->data, sizeof(char), rec->length, out);
 }
 
 static int marcfield_validate(const marcfield *field)
