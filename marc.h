@@ -15,12 +15,12 @@
 typedef struct marcfield
 {
   char *directory_entry, *data;
-  int len;
+  int length;
 } marcfield;
 
 typedef struct marcrec
 {
-  int len, base_address, field_count;
+  int length, base_address, field_count;
   char *data;
   marcfield *fields;
 } marcrec;

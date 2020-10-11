@@ -16,7 +16,7 @@ static void marcrec_process_fields(marcrec *rec)
   for (int i = 0; i < rec->field_count; i++)
   {
     rec->fields[i].directory_entry = rec->data + 24 + i * 12;
-    rec->fields[i].len = atoi4(rec->fields[i].directory_entry + 3);
+    rec->fields[i].length = atoi4(rec->fields[i].directory_entry + 3);
     rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
   }
 }
@@ -33,7 +33,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
     i = 2;
   }
 
-  while (i < field->len)
+  while (i < field->length)
   {
     switch (field->data[i])
     {
@@ -66,7 +66,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
       else
       {
         // skip bytes we're not supposed to be printing until the next subfield
-        for (; i < field->len && field->data[i] != SUBFIELD_DELIMITER; i++)
+        for (; i < field->length && field->data[i] != SUBFIELD_DELIMITER; i++)
           ;
       }
     }
@@ -126,13 +126,13 @@ void marcrec_print(FILE *out, const marcrec *rec, const char **spec)
   }
 }
 
-int marcrec_from_buffer(marcrec *rec, char *buf, int len)
+int marcrec_from_buffer(marcrec *rec, char *buf, int length)
 {
   // you're mine now!
   rec->data = buf;
 
   // total length of record
-  rec->len = (len == 0) ? atoi5(buf) : len;
+  rec->length = (length == 0) ? atoi5(buf) : length;
 
   // length of leader + directory
   rec->base_address = atoi5(buf + 12);
@@ -145,7 +145,7 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int len)
     marcrec_process_fields(rec);
 
   // return a pointer to the "rest" of the buffer (if any)
-  return rec->len;
+  return rec->length;
 }
 
 int marcrec_read(marcrec *rec, FILE *in)
@@ -171,18 +171,18 @@ int marcrec_read(marcrec *rec, FILE *in)
 
 void marcrec_write(FILE *out, const marcrec *rec)
 {
-  fwrite(rec->data, sizeof(char), rec->len, out);
+  fwrite(rec->data, sizeof(char), rec->length, out);
 }
 
 static int marcfield_validate(const marcfield *field)
 {
-  return (field->data[field->len - 1] == FIELD_TERMINATOR) ? 0 : MISSING_FIELD_TERMINATOR;
+  return (field->data[field->length - 1] == FIELD_TERMINATOR) ? 0 : MISSING_FIELD_TERMINATOR;
 }
 
 int marcrec_validate(const marcrec *rec)
 {
   int r = 0;
-  if (rec->data[rec->len - 1] != RECORD_TERMINATOR)
+  if (rec->data[rec->length - 1] != RECORD_TERMINATOR)
     r |= MISSING_RECORD_TERMINATOR;
   if (rec->data[rec->base_address - 1] != FIELD_TERMINATOR)
     r |= MISSING_FIELD_TERMINATOR;
