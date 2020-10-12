@@ -181,11 +181,6 @@ int marcrec_write(FILE *out, const marcrec *rec)
   return fwrite(rec->data, sizeof(char), rec->length, out);
 }
 
-static int marcfield_validate(const marcfield *field)
-{
-  return (field->data[field->length - 1] == FIELD_TERMINATOR) ? 0 : MISSING_FIELD_TERMINATOR;
-}
-
 int marcrec_validate(const marcrec *rec)
 {
   int r = 0;
@@ -196,7 +191,12 @@ int marcrec_validate(const marcrec *rec)
 
   for (int i = 0; i < rec->field_count; i++)
   {
-    r |= marcfield_validate(&rec->fields[i]);
+    if (rec->fields[i].data[rec->fields[i].length - 1] != FIELD_TERMINATOR)
+    {
+      r |= marcfield_validate(&rec->fields[i]);
+      // no sense continuing...
+      return r;
+    }
   }
 
   return r;
