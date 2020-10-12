@@ -18,7 +18,7 @@ const char **__marc_main_infiles;
 /* output file (stdout if unspecified) */
 const char *__marc_main_outfile;
 
-extern void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in);
+extern void print_result(FILE *out, marcrec *rec, int current_file, FILE *in);
 extern const char *specific_usage;
 
 #define USAGE                                                                                     \
@@ -108,14 +108,14 @@ int main(int argc, char *argv[])
     if (__marc_main_infile_count == 0)
     { // read from stdin
         __marc_main_infiles[__marc_main_infile_count++] = "-";
-        print_result(out, &rec, "-", stdin);
+        print_result(out, &rec, 0, stdin);
     }
     else
     {
         for (int i = 0; i < __marc_main_infile_count; i++)
         {
             FILE *in = fopen(__marc_main_infiles[i], "r");
-            print_result(out, &rec, __marc_main_infiles[i], in);
+            print_result(out, &rec, i, in);
             fclose(in);
         }
     }

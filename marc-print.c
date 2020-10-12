@@ -7,7 +7,7 @@ extern int __marc_main_limit;
 extern int __marc_main_fieldspec_count;
 extern const char **__marc_main_fieldspec;
 
-void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in)
+void print_result(FILE *out, marcrec *rec, int current_file, FILE *in)
 {
     int count = 0;
     while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
