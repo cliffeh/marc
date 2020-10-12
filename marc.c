@@ -11,13 +11,15 @@
 #define MATCH_FIELD(spec, direntry) \
   (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
 
+#define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag+1) == '0'))
+
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
 {
   // if we have no spec we're going to print the whole thing
   int printing = (!spec || !*spec) ? 1 : 0;
   int i = 0;
 
-  if (*(field->data + 2) == SUBFIELD_DELIMITER)
+  if (!IS_CONTROL_FIELD(field->directory_entry))
   { // print indicators
     fprintf(out, " %.2s", field->data);
     i = 2;
