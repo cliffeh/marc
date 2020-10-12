@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     marcrec rec;
     // 99999 is the max possible size
     char buf[100000];
-    // 1000 seems like a reasonable upper bound
-    marcfield fields[1000];
+    // 10000 seems like a reasonable upper bound
+    marcfield fields[10000];
     rec.data = buf;
     rec.fields = fields;
 
