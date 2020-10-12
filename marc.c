@@ -176,11 +176,6 @@ int marcrec_read(marcrec *rec, FILE *in)
   return marcrec_from_buffer(rec, rec->data, length);
 }
 
-int marcrec_write(FILE *out, const marcrec *rec)
-{
-  return fwrite(rec->data, sizeof(char), rec->length, out);
-}
-
 int marcrec_validate(const marcrec *rec)
 {
   int r = 0;
@@ -200,4 +195,9 @@ int marcrec_validate(const marcrec *rec)
   }
 
   return r;
+}
+
+int marcrec_write(FILE *out, const marcrec *rec)
+{
+  return fwrite(rec->data, sizeof(char), rec->length, out);
 }
