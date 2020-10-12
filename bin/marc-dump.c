@@ -8,7 +8,7 @@ extern int __marc_main_fieldspec_count;
 
 void print_result(FILE *out, marcrec *rec, const char *filename, FILE *in)
 {
-    if(__marc_main_fieldspec_count != -1)
+    if(__marc_main_fieldspec_count != 0)
         fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
 
     int count = 0;

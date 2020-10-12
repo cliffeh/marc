@@ -193,7 +193,7 @@ int marcrec_validate(const marcrec *rec)
   {
     if (rec->fields[i].data[rec->fields[i].length - 1] != FIELD_TERMINATOR)
     {
-      r |= marcfield_validate(&rec->fields[i]);
+      r |= MISSING_FIELD_TERMINATOR;
       // no sense continuing...
       return r;
     }
