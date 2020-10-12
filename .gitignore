@@ -56,6 +56,7 @@ marc-dump
 marc-leaders
 marc-print
 marc-validate
+marc-xml
 
 # memory profiling reports
 *.valgrind

@@ -201,3 +201,8 @@ int marcrec_write(FILE *out, const marcrec *rec)
 {
   return fwrite(rec->data, sizeof(char), rec->length, out);
 }
+
+int marcrec_xml(FILE *out, const marcrec *rec)
+{
+  return 0; // unimplemented
+}

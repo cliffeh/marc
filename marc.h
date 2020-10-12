@@ -79,6 +79,15 @@ int marcrec_validate(const marcrec *rec);
 int marcrec_write(FILE *out, const marcrec *rec);
 
 /**
+ * @brief print a marc record in XML format
+ *
+ * @param out the file to write to
+ * @param rec the marc record to write
+ * @return int the number of records written
+ */
+int marcrec_xml(FILE *out, const marcrec *rec);
+
+/**
  * @brief print a marc field in human-readable format
  *
  * @param out the file to write to
