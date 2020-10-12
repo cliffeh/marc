@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../marc.h"
+#include "marc.h"
 
 const char *specific_usage = "print marc leaders";
 

@@ -52,10 +52,10 @@ Mkfile.old
 dkms.conf
 
 # compiled executables
-bin/marc-dump
-bin/marc-leaders
-bin/marc-print
-bin/marc-validate
+marc-dump
+marc-leaders
+marc-print
+marc-validate
 
 # memory profiling reports
 *.valgrind
