@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
         }
         else if (strcmp("--output", argv[i]) == 0 || strcmp("-o", argv[i]) == 0)
         {
-            if(__marc_main_outfile) {
+            if (__marc_main_outfile)
+            {
                 fprintf(stderr, "error: more than one output file specified\n");
                 exit(1);
             }
