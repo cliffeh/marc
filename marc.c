@@ -17,10 +17,14 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   int printing = (!spec || !*spec) ? 1 : 0;
   int i = 0;
 
-  if (printing)
+  if (*(field->data + 2) == SUBFIELD_DELIMITER)
   { // print indicators
     fprintf(out, " %.2s", field->data);
     i = 2;
+  }
+  else
+  { // prettify fixed-length fields
+    fprintf(out, "    ");
   }
 
   while (i < field->length)
