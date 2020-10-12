@@ -11,16 +11,6 @@
 #define MATCH_FIELD(spec, direntry) \
   (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
 
-static void marcrec_process_directory(marcrec *rec)
-{
-  for (int i = 0; i < rec->field_count; i++)
-  {
-    rec->fields[i].directory_entry = rec->data + 24 + i * 12;
-    rec->fields[i].length = atoi4(rec->fields[i].directory_entry + 3);
-    rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
-  }
-}
-
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
 {
   // if we have no spec we're going to print the whole thing
@@ -148,7 +138,14 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
 
   // if we've been given storage for fields, assume that we want to process the directory
   if (rec->fields)
-    marcrec_process_directory(rec);
+  {
+    for (int i = 0; i < rec->field_count; i++)
+    {
+      rec->fields[i].directory_entry = rec->data + 24 + i * 12;
+      rec->fields[i].length = atoi4(rec->fields[i].directory_entry + 3);
+      rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
+    }
+  }
 
   // return a pointer to the "rest" of the buffer (if any)
   return rec->length;
