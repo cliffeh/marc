@@ -11,6 +11,10 @@ int __marc_main_limit = -1;
 int __marc_main_fieldspec_count;
 const char **__marc_main_fieldspec;
 
+/** input files (stdout if count == 0) */
+int __marc_main_infile_count;
+const char **__marc_main_infiles;
+
 /* output file (stdout if unspecified) */
 const char *__marc_main_outfile;
 
@@ -40,8 +44,8 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
-    int file_count = 0;
-    char **filenames = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
+    __marc_main_infile_count = 0;
+    __marc_main_infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
 
     __marc_main_fieldspec_count = 0;
     __marc_main_fieldspec = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
@@ -96,26 +100,27 @@ int main(int argc, char *argv[])
         }
         else // we'll assume it's a filename
         {
-            filenames[file_count++] = argv[i];
+            __marc_main_infiles[__marc_main_infile_count++] = argv[i];
         }
     }
 
     FILE *out = (__marc_main_outfile) ? fopen(__marc_main_outfile, "w") : stdout;
-    if (file_count == 0)
+    if (__marc_main_infile_count == 0)
     { // read from stdin
+        __marc_main_infiles[__marc_main_infile_count++] = "-";
         print_result(out, &rec, "-", stdin);
     }
     else
     {
-        for (int i = 0; i < file_count; i++)
+        for (int i = 0; i < __marc_main_infile_count; i++)
         {
-            FILE *in = fopen(filenames[i], "r");
-            print_result(out, &rec, filenames[i], in);
+            FILE *in = fopen(__marc_main_infiles[i], "r");
+            print_result(out, &rec, __marc_main_infiles[i], in);
             fclose(in);
         }
     }
 
     fclose(out);
-    free(filenames);
+    free(__marc_main_infiles);
     free(__marc_main_fieldspec);
 }
