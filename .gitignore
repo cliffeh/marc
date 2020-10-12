@@ -52,7 +52,6 @@ Mkfile.old
 dkms.conf
 
 # compiled executables
-bin/marc-debug
 bin/marc-dump
 bin/marc-leaders
 bin/marc-print
