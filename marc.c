@@ -11,7 +11,7 @@
 #define MATCH_FIELD(spec, direntry) \
   (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
 
-#define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag+1) == '0'))
+#define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
 {
@@ -204,7 +204,110 @@ int marcrec_write(FILE *out, const marcrec *rec)
   return fwrite(rec->data, sizeof(char), rec->length, out);
 }
 
+static void marcfield_xml_escape_char(FILE *out, char c)
+{
+  switch (c)
+  {
+  // case '"':
+  // {
+  //   fprintf(out, "&quot;");
+  // }
+  // break;
+  case '&':
+  {
+    fprintf(out, "&amp;");
+  }
+  break;
+  // case '\'':
+  // {
+  //   fprintf(out, "&apos;");
+  // }
+  // break;
+  case '<':
+  {
+    fprintf(out, "&lt;");
+  }
+  break;
+  case '>':
+  {
+    fprintf(out, "&gt;");
+  }
+  break;
+  default:
+    fprintf(out, "%c", c);
+  }
+}
+
+static void marcfield_xml_escape(FILE *out, const char *text, int len)
+{
+  for (int i = 0; i < len; i++)
+  {
+    marcfield_xml_escape_char(out, text[i]);
+  }
+}
+
+static int marcfield_xml_subfield(FILE *out, const marcfield *field, int pos)
+{
+  // quick sanity check
+  if (field->data[pos] != SUBFIELD_DELIMITER)
+  {
+    fprintf(stderr, "error: unrecognized character position; bailing...");
+    return field->length;
+  }
+
+  int i = pos + 1;
+  fprintf(out, "    <subfield code=\"%c\">", field->data[i++]);
+
+  while (i < field->length)
+  {
+    switch (field->data[i])
+    {
+    case FIELD_TERMINATOR:
+      i = field->length; // we're done here
+    case SUBFIELD_DELIMITER:
+    {
+      fprintf(out, "</subfield>\n");
+      return i;
+    }
+    default:
+      marcfield_xml_escape_char(out, field->data[i++]);
+    }
+  }
+
+  fprintf(out, "</subfield>\n");
+  return i;
+}
+
+static void marcfield_xml(FILE *out, const marcfield *field)
+{
+  if (IS_CONTROL_FIELD(field->directory_entry))
+  {
+    // TODO make sure we're escaping XML characters!
+    fprintf(out, "  <controlfield tag=\"%.3s\">", field->directory_entry);
+    marcfield_xml_escape(out, field->data, field->length - 1);
+    fprintf(out, "</controlfield>\n");
+  }
+  else
+  {
+    fprintf(out, "  <datafield tag=\"%.3s\" ind1=\"%c\" ind2=\"%c\">\n", field->directory_entry, field->data[0], field->data[1]);
+    int pos = 2;
+    while (pos < field->length)
+    {
+      pos = marcfield_xml_subfield(out, field, pos);
+    }
+    fprintf(out, "  </datafield>\n");
+  }
+}
+
 int marcrec_xml(FILE *out, const marcrec *rec)
 {
-  return 0; // unimplemented
+  fprintf(out, "<record>\n");
+  fprintf(out, "  <leader>%.24s</leader>\n", rec->data);
+  for (int i = 0; i < rec->field_count; i++)
+  {
+    marcfield_xml(out, &rec->fields[i]);
+  }
+  fprintf(out, "</record>\n");
+
+  return 1;
 }

@@ -14,8 +14,10 @@ void print_result(FILE *out, marcrec *rec, int current_file, FILE *in)
     if (current_file == 0)
     {
         fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                     "\n"
-                     "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
+                     "<collection\n"
+                     "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                     "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
+                     "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
     }
     int count = 0;
     while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
@@ -24,6 +26,6 @@ void print_result(FILE *out, marcrec *rec, int current_file, FILE *in)
         marcrec_xml(out, rec);
     }
     if(current_file + 1 == __marc_main_infile_count) {
-        fprintf(out, "</collection>\n");
+        fprintf(out, "</collection>");
     }
 }
