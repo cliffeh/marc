@@ -2,6 +2,7 @@
 DATA=test/testfile.marc
 LIMIT=100
 CFLAGS=-g -Wall
+LDFLAGS+=-lz
 
 BINSRC=$(wildcard marc-*.c)
 BINARIES=$(patsubst %.c,%,$(BINSRC))
@@ -10,7 +11,7 @@ VALGRINDS=$(patsubst %,%.valgrind,$(BINARIES))
 all: $(BINARIES)
 
 $(BINARIES): %: %.o main.o marc.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 valgrind: $(VALGRINDS)
 

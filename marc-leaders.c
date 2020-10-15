@@ -5,7 +5,7 @@ const char *specific_usage = "print marc leaders";
 
 extern int __marc_main_limit;
 
-void print_result(FILE *out, marcrec *rec, int current_file, FILE *in)
+void print_result(FILE *out, marcrec *rec, int current_file, gzFile in)
 {
     int count = 0;
     while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)

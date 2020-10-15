@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <string.h>
 #include "marc.h"
 
 #define atoi1(p) (*(p) - '0')
@@ -157,10 +155,10 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
   return rec->length;
 }
 
-int marcrec_read(marcrec *rec, FILE *in)
+int marcrec_read(marcrec *rec, gzFile in)
 {
   // read the leader
-  int n = fread(rec->data, sizeof(char), 24, in);
+  int n = gzread(in, rec->data, 24);
   if (n == 0)
     return 0;
   if (n < 24)
@@ -170,7 +168,7 @@ int marcrec_read(marcrec *rec, FILE *in)
   int length = atoi5(rec->data);
 
   // read the remainder of the record
-  n = fread(rec->data + 24, sizeof(char), length - 24, in);
+  n = gzread(in, rec->data + 24, length - 24);
   if (n < (length - 24))
     return -1;
 

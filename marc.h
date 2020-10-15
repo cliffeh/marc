@@ -1,7 +1,9 @@
 #ifndef __MARC_H
 #define __MARC_H 1
 
+#include <zlib.h>
 #include <stdio.h> // FILE is defined here
+#include <string.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
@@ -59,7 +61,7 @@ int marcrec_print(FILE *out, const marcrec *rec, const char **spec);
  * @param in a pointer to an open FILE to read from
  * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
  */
-int marcrec_read(marcrec *rec, FILE *in);
+int marcrec_read(marcrec *rec, gzFile in);
 
 /**
  * @brief validate a marc record
