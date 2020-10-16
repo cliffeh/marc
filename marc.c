@@ -249,7 +249,7 @@ static int marcfield_xml_subfield(FILE *out, const marcfield *field, int pos)
   // quick sanity check
   if (field->data[pos] != SUBFIELD_DELIMITER)
   {
-    fprintf(stderr, "error: unrecognized character position; bailing...");
+    fprintf(stderr, "error: unrecognized character position; bailing...\n");
     return field->length;
   }
 
