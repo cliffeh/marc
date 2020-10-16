@@ -13,7 +13,6 @@
 
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
 {
-
   // we don't need to do any additional matching to tease out subfields;
   // let's just print and get out of here
   if (IS_CONTROL_FIELD(field->directory_entry))
@@ -23,12 +22,11 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 
   // if we have no spec we're going to print the whole thing
-  int printing = (!spec || !*spec) ? 1 : 0;
+  int printing = (!spec || !*spec) ? 1 : 0, i = 2;
 
   // print indicators
   fprintf(out, " %.2s", field->data);
 
-  int i = 2;
   while (i < field->length)
   {
     switch (field->data[i])
