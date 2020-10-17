@@ -21,6 +21,7 @@ OPTIONS:
   -f, --field SPEC   only output fields adhering to SPEC
   -l, --limit N      limit processing to the first N records per file (default: no limit)
   -o, --output FILE  output to FILE (default: stdout)
+  -V, --version      output version and exit
 
 Note: if no files are provided this program will read from stdin
 ```

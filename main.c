@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "marc.h"
+#include "config.h"
 
 /* process all records by default */
 int __marc_main_limit = -1;
@@ -34,6 +35,7 @@ extern const char *specific_usage;
     "  -f, --field SPEC   only output fields adhering to SPEC\n"                                  \
     "  -l, --limit N      limit processing to the first N records per file (default: no limit)\n" \
     "  -o, --output FILE  output to FILE (default: stdout)\n"                                     \
+    "  -V, --version      output version and exit"                                                \
     "\n"                                                                                          \
     "Note: if no files are provided this program will read from stdin\n"
 
@@ -100,6 +102,11 @@ int main(int argc, char *argv[])
             }
             i++;
             __marc_main_outfile = argv[i];
+        }
+        else if (strcmp("--version", argv[i]) == 0 || strcmp("-V", argv[i]) == 0)
+        {
+            fprintf(stdout, PACKAGE_STRING"\n");
+            exit(0);
         }
         else // we'll assume it's a filename
         {
