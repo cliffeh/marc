@@ -3,7 +3,7 @@
 A library and a set of command-line tools for manipulating MARC records.
 
 ## Building
-> `make`
+> `./configure && make`
 
 ## Running
 ```
@@ -11,8 +11,10 @@ usage: marc-$ACTION [OPTIONS] [FILES]
 
 ACTIONS:
   dump      dump marc records in marc format
+  leaders   print marc leaders
   print     print marc records/fields in a human-readable format
   validate  validate marc records
+  xml       print marc records in XML format
 
 OPTIONS:
   -h, --help         print a brief help message and exit
