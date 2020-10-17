@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +61,7 @@ int main(int argc, char *argv[])
     {
         if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0)
         {
-            fprintf(stdout, USAGE, argv[0], specific_usage);
+            fprintf(stdout, USAGE, basename(argv[0]), specific_usage);
             exit(0);
         }
         else if (strcmp("--field", argv[i]) == 0 || strcmp("-f", argv[i]) == 0)
