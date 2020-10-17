@@ -18,6 +18,9 @@ const char **__marc_main_infiles;
 /* output file (stdout if unspecified) */
 const char *__marc_main_outfile;
 
+/* can be set to indicate error status */
+int __marc_main_return_code = 0;
+
 extern void print_result(FILE *out, marcrec *rec, int current_file, gzFile in);
 extern const char *specific_usage;
 
