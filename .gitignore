@@ -61,11 +61,11 @@ Makefile
 stamp-h?
 
 # compiled executables
-marc-dump
-marc-leaders
-marc-print
-marc-validate
-marc-xml
+/marc-dump
+/marc-leaders
+/marc-print
+/marc-validate
+/marc-xml
 
 # memory profiling reports
 *.valgrind
@@ -73,5 +73,9 @@ marc-xml
 # ide files
 .vscode
 
-# temporary testing files
-.dumptest
+# testing files
+test-suite.log
+test/*.log
+test/*.trs
+
+

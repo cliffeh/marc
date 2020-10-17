@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./marc-validate test/testfile.marc.gz
