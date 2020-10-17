@@ -6,4 +6,4 @@ marc_print_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
 marc_validate_SOURCES = marc-validate.c $(MAIN_COMMON_SOURCE_FILES)
 marc_xml_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
 
-TESTS=test/marc-validate
+TESTS = test/marc-dump test/marc-validate

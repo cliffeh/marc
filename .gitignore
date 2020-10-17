@@ -77,5 +77,4 @@ stamp-h?
 test-suite.log
 test/*.log
 test/*.trs
-
-
+test/*.output

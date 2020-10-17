@@ -498,7 +498,7 @@ marc_leaders_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
 marc_print_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
 marc_validate_SOURCES = marc-validate.c $(MAIN_COMMON_SOURCE_FILES)
 marc_xml_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
-TESTS = test/marc-validate
+TESTS = test/marc-dump test/marc-validate
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -846,6 +846,13 @@ recheck: all
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+test/marc-dump.log: test/marc-dump
+	@p='test/marc-dump'; \
+	b='test/marc-dump'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test/marc-validate.log: test/marc-validate
 	@p='test/marc-validate'; \
 	b='test/marc-validate'; \
