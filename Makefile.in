@@ -86,7 +86,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = marc-validate$(EXEEXT)
+bin_PROGRAMS = marc-dump$(EXEEXT) marc-leaders$(EXEEXT) \
+	marc-print$(EXEEXT) marc-validate$(EXEEXT) marc-xml$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -102,10 +103,22 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_marc_validate_OBJECTS = main.$(OBJEXT) marc.$(OBJEXT) \
-	marc-validate.$(OBJEXT)
+am__objects_1 = main.$(OBJEXT) marc.$(OBJEXT)
+am_marc_dump_OBJECTS = marc-dump.$(OBJEXT) $(am__objects_1)
+marc_dump_OBJECTS = $(am_marc_dump_OBJECTS)
+marc_dump_LDADD = $(LDADD)
+am_marc_leaders_OBJECTS = marc-dump.$(OBJEXT) $(am__objects_1)
+marc_leaders_OBJECTS = $(am_marc_leaders_OBJECTS)
+marc_leaders_LDADD = $(LDADD)
+am_marc_print_OBJECTS = marc-dump.$(OBJEXT) $(am__objects_1)
+marc_print_OBJECTS = $(am_marc_print_OBJECTS)
+marc_print_LDADD = $(LDADD)
+am_marc_validate_OBJECTS = marc-validate.$(OBJEXT) $(am__objects_1)
 marc_validate_OBJECTS = $(am_marc_validate_OBJECTS)
 marc_validate_LDADD = $(LDADD)
+am_marc_xml_OBJECTS = marc-dump.$(OBJEXT) $(am__objects_1)
+marc_xml_OBJECTS = $(am_marc_xml_OBJECTS)
+marc_xml_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -121,8 +134,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/main.Po ./$(DEPDIR)/marc-validate.Po \
-	./$(DEPDIR)/marc.Po
+am__depfiles_remade = ./$(DEPDIR)/main.Po ./$(DEPDIR)/marc-dump.Po \
+	./$(DEPDIR)/marc-validate.Po ./$(DEPDIR)/marc.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -136,8 +149,12 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(marc_validate_SOURCES)
-DIST_SOURCES = $(marc_validate_SOURCES)
+SOURCES = $(marc_dump_SOURCES) $(marc_leaders_SOURCES) \
+	$(marc_print_SOURCES) $(marc_validate_SOURCES) \
+	$(marc_xml_SOURCES)
+DIST_SOURCES = $(marc_dump_SOURCES) $(marc_leaders_SOURCES) \
+	$(marc_print_SOURCES) $(marc_validate_SOURCES) \
+	$(marc_xml_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -272,7 +289,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-marc_validate_SOURCES = main.c marc.c marc-validate.c config.h marc.h
+MAIN_COMMON_SOURCE_FILES = main.c marc.c config.h marc.h
+marc_dump_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
+marc_leaders_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
+marc_print_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
+marc_validate_SOURCES = marc-validate.c $(MAIN_COMMON_SOURCE_FILES)
+marc_xml_SOURCES = marc-dump.c $(MAIN_COMMON_SOURCE_FILES)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -369,9 +391,25 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
+marc-dump$(EXEEXT): $(marc_dump_OBJECTS) $(marc_dump_DEPENDENCIES) $(EXTRA_marc_dump_DEPENDENCIES) 
+	@rm -f marc-dump$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(marc_dump_OBJECTS) $(marc_dump_LDADD) $(LIBS)
+
+marc-leaders$(EXEEXT): $(marc_leaders_OBJECTS) $(marc_leaders_DEPENDENCIES) $(EXTRA_marc_leaders_DEPENDENCIES) 
+	@rm -f marc-leaders$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(marc_leaders_OBJECTS) $(marc_leaders_LDADD) $(LIBS)
+
+marc-print$(EXEEXT): $(marc_print_OBJECTS) $(marc_print_DEPENDENCIES) $(EXTRA_marc_print_DEPENDENCIES) 
+	@rm -f marc-print$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(marc_print_OBJECTS) $(marc_print_LDADD) $(LIBS)
+
 marc-validate$(EXEEXT): $(marc_validate_OBJECTS) $(marc_validate_DEPENDENCIES) $(EXTRA_marc_validate_DEPENDENCIES) 
 	@rm -f marc-validate$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(marc_validate_OBJECTS) $(marc_validate_LDADD) $(LIBS)
+
+marc-xml$(EXEEXT): $(marc_xml_OBJECTS) $(marc_xml_DEPENDENCIES) $(EXTRA_marc_xml_DEPENDENCIES) 
+	@rm -f marc-xml$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(marc_xml_OBJECTS) $(marc_xml_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -380,6 +418,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marc-dump.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marc-validate.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marc.Po@am__quote@ # am--include-marker
 
@@ -672,6 +711,7 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f ./$(DEPDIR)/main.Po
+	-rm -f ./$(DEPDIR)/marc-dump.Po
 	-rm -f ./$(DEPDIR)/marc-validate.Po
 	-rm -f ./$(DEPDIR)/marc.Po
 	-rm -f Makefile
@@ -722,6 +762,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f ./$(DEPDIR)/main.Po
+	-rm -f ./$(DEPDIR)/marc-dump.Po
 	-rm -f ./$(DEPDIR)/marc-validate.Po
 	-rm -f ./$(DEPDIR)/marc.Po
 	-rm -f Makefile
