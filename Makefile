@@ -1,6 +1,5 @@
 # a file/symlink containing valid marc records
-DATA=test/testfile.marc
-LIMIT=100
+DATA=testfile.marc.gz
 CFLAGS=-g -Wall
 LDFLAGS+=-lz
 
@@ -16,14 +15,15 @@ $(BINARIES): %: %.o main.o marc.o
 valgrind: $(VALGRINDS)
 
 $(VALGRINDS): %.valgrind: %
-	if [ -z $$(which valgrind) ] ; then	echo "you don't appear to have valgrind installed; skipping..."; else valgrind --leak-check=full --log-file=$@ ./$< --limit $(LIMIT) $(DATA) > /dev/null 2>&1 && cat $@; fi
+	valgrind --leak-check=full --log-file=$@ ./$< -o /dev/null $(DATA)
 
 test: $(BINARIES)
-	./marc-dump < $(DATA) | diff $(DATA) - && echo "basic dump test passed"
-	./marc-print -l 10 $(DATA) > /dev/null && echo "basic print test passed"
+	./marc-validate $(DATA) -o /dev/null && echo "basic validation passed"
+	./marc-dump $(DATA) -o .dumptest && zcat $(DATA) | diff .dumptest - && rm -f .dumptest && echo "basic dump test passed"
+	./marc-print $(DATA) -o /dev/null && echo "basic print test passed"
 
 clean:
-	rm -f *.o *.valgrind
+	rm -f *.o *.valgrind .dumptest
 
 realclean: clean
 	rm -f $(BINARIES)

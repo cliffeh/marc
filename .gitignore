@@ -64,5 +64,5 @@ marc-xml
 # ide files
 .vscode
 
-# user-provided files for testing
-test
+# temporary testing files
+.dumptest
