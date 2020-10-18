@@ -500,7 +500,7 @@ marc_leaders_SOURCES = marc-leaders.c $(MAIN_COMMON_SOURCE_FILES)
 marc_print_SOURCES = marc-print.c $(MAIN_COMMON_SOURCE_FILES)
 marc_validate_SOURCES = marc-validate.c $(MAIN_COMMON_SOURCE_FILES)
 marc_xml_SOURCES = marc-xml.c $(MAIN_COMMON_SOURCE_FILES)
-TESTS = test/marc-dump test/marc-print test/marc-validate
+TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -858,6 +858,13 @@ test/marc-dump.log: test/marc-dump
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/marc-leaders.log: test/marc-leaders
+	@p='test/marc-leaders'; \
+	b='test/marc-leaders'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test/marc-print.log: test/marc-print
 	@p='test/marc-print'; \
 	b='test/marc-print'; \
@@ -868,6 +875,13 @@ test/marc-print.log: test/marc-print
 test/marc-validate.log: test/marc-validate
 	@p='test/marc-validate'; \
 	b='test/marc-validate'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/marc-xml.log: test/marc-xml
+	@p='test/marc-xml'; \
+	b='test/marc-xml'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
