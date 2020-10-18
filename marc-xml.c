@@ -5,12 +5,14 @@ const char *specific_usage = "print marc records in XML format";
 
 extern int __marc_main_limit;
 extern int __marc_main_fieldspec_count;
-extern const char **__marc_main_fieldspec;
 extern int __marc_main_infile_count;
 extern const char **__marc_main_infiles;
 
 void print_result(FILE *out, marcrec *rec, int current_file, gzFile in)
 {
+    if(__marc_main_fieldspec_count != 0)
+        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
+
     if (current_file == 0)
     {
         fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

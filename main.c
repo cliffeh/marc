@@ -11,7 +11,7 @@ int __marc_main_limit = -1;
 
 /* process all fields by default */
 int __marc_main_fieldspec_count;
-const char **__marc_main_fieldspec;
+fieldspec *__marc_main_fieldspecs;
 
 /** input files (stdout if count == 0) */
 int __marc_main_infile_count;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     __marc_main_infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
 
     __marc_main_fieldspec_count = 0;
-    __marc_main_fieldspec = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
+    __marc_main_fieldspecs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
 
     // process command line args
     for (int i = 1; i < argc; i++)
@@ -77,7 +77,9 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
                 exit(1);
             }
-            __marc_main_fieldspec[__marc_main_fieldspec_count++] = argv[i];
+            __marc_main_fieldspecs[__marc_main_fieldspec_count].tag =
+                (argv[i][0] - '0') * 100 + (argv[i][1] - '0') * 10 + argv[i][2] - '0';
+            __marc_main_fieldspecs[__marc_main_fieldspec_count++].subfields = argv[i] + 3;
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
         {
@@ -106,7 +108,7 @@ int main(int argc, char *argv[])
         }
         else if (strcmp("--version", argv[i]) == 0 || strcmp("-V", argv[i]) == 0)
         {
-            fprintf(stdout, PACKAGE_STRING"\n");
+            fprintf(stdout, PACKAGE_STRING "\n");
             exit(0);
         }
         else // we'll assume it's a filename
@@ -135,5 +137,5 @@ int main(int argc, char *argv[])
 
     fclose(out);
     free(__marc_main_infiles);
-    free(__marc_main_fieldspec);
+    free(__marc_main_fieldspecs);
 }

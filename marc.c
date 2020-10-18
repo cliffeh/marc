@@ -11,7 +11,7 @@
 
 #define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 
-static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *spec)
+static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *subfields)
 {
   // we don't need to do any additional matching to tease out subfields;
   // let's just print and get out of here
@@ -22,7 +22,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 
   // if we have no spec we're going to print the whole thing
-  int printing = (!spec || !*spec) ? 1 : 0, i = 2;
+  int printing = (!subfields || !*subfields) ? 1 : 0, i = 2;
 
   // print indicators
   fprintf(out, " %.2s", field->data);
@@ -39,13 +39,13 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
     case SUBFIELD_DELIMITER: // state change; re-assess whether we should be printing
     {
       i++;
-      printing = (!spec || !*spec) ? 1 : 0;
+      printing = (!subfields || !*subfields) ? 1 : 0;
 
       if (!printing)
       {
-        for (int j = strlen(spec) - 1; j >= 0; j--)
+        for (int j = strlen(subfields) - 1; j >= 0; j--)
         {
-          if (spec[j] == field->data[i])
+          if (subfields[j] == field->data[i])
           {
             printing = 1;
             break;
@@ -71,7 +71,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 }
 
-int marcfield_print(FILE *out, const marcfield *field, const char **specs)
+int marcfield_print(FILE *out, const marcfield *field, const fieldspec specs[])
 {
   int n = 0;
   if (!specs)
@@ -84,13 +84,13 @@ int marcfield_print(FILE *out, const marcfield *field, const char **specs)
   }
   else // only print if we match the spec
   {
-    for (int i = 0; specs[i]; i++)
+    for (int i = 0; specs[i].tag != 0; i++)
     {
-      if (MATCH_FIELD(specs[i], field->directory_entry))
+      if (specs[i].tag == field->tag)
       {
         // no indent since we're only printing specific fields
         fprintf(out, "%.3s", field->directory_entry);
-        marcfield_print_subfields(out, field, specs[i] + 3);
+        marcfield_print_subfields(out, field, specs[i].subfields);
         fprintf(out, "\n");
         n = 1;
       }
@@ -99,7 +99,7 @@ int marcfield_print(FILE *out, const marcfield *field, const char **specs)
   return n;
 }
 
-int marcrec_print(FILE *out, const marcrec *rec, const char **specs)
+int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[])
 {
   if (!specs) // TODO update spec to include leader fields?
   {
@@ -113,9 +113,6 @@ int marcrec_print(FILE *out, const marcrec *rec, const char **specs)
             rec->data[19], rec->data[20]);
     fprintf(out, "length of the staring-character-position portion: %c | length of the implementation-defined portion: %c\n",
             rec->data[21], rec->data[22]);
-
-    // DEBUG
-    // fprintf(out, "fields (%i)\n", rec->field_count);
   }
 
   int n = 0;

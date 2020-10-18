@@ -51,10 +51,10 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int len);
  *
  * @param out the file to write to
  * @param rec the marc record to write
- * @param spec specification of the desired fields to print; if null, print the entire record
+ * @param specs specification of the desired fields to print; if null, print the entire record
  * @return int the number of fields written
  */
-int marcrec_print(FILE *out, const marcrec *rec, const char **spec);
+int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
 
 /**
  * @brief read a marcrec from a file
@@ -99,9 +99,9 @@ int marcrec_xml(FILE *out, const marcrec *rec);
  *
  * @param out the file to write to
  * @param field the marc field to write
- * @param spec specification of the desired subfields to print; if null, print the entire field
+ * @param specs specification of the desired subfields to print; if null, print the entire field
  * @return int 0 if the field wasn't printed (i.e., didn't match any of the specs); 1 otherwise
  */
-int marcfield_print(FILE *out, const marcfield *field, const char **specs);
+int marcfield_print(FILE *out, const marcfield *field, const fieldspec specs[]);
 
 #endif
