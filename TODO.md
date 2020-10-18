@@ -7,3 +7,4 @@
 * split library build out from binary build
 * make zlib support optional
 * version bumps?
+* library (.so? .a?)
