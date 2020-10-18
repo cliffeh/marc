@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./marc-xml test/testfile.marc.gz > test/marc-xml.output
-zcat test/testfile.xml.gz | diff test/marc-xml.output -
+./marc xml test/testfile.marc.gz > test/marc-xml.output
+cat test/testfile.xml.gz | zcat | diff test/marc-xml.output -

@@ -23,13 +23,16 @@ const char *__marc_main_outfile;
 /* can be set to indicate error status */
 int __marc_main_return_code = 0;
 
-/* usage specific to the action */
-const char *specific_usage;
-
 #define USAGE                                                                     \
-    "usage: %s [OPTIONS] [FILES]\n"                                               \
+    "usage: marc COMMAND [OPTIONS] [FILES]\n"                                     \
     "\n"                                                                          \
-    "  %s\n"                                                                      \
+    "COMMANDS:\n"                                                                 \
+    "  dump      dump records in marc format\n"                                   \
+    "  help      print a brief help message and exit\n"                           \
+    "  leaders   print marc leaders\n"                                            \
+    "  print     print marc records/fields in a human-readable format\n"          \
+    "  validate  validate marc records\n"                                         \
+    "  xml       print marc records in XML format\n"                              \
     "\n"                                                                          \
     "OPTIONS:\n"                                                                  \
     "  -h, --help         print a brief help message and exit\n"                  \
@@ -44,7 +47,7 @@ const char *specific_usage;
 
 static void marc_dump(FILE *out, marcrec *rec, int current_file, gzFile in)
 {
-    if(__marc_main_fieldspec_count != 0)
+    if (__marc_main_fieldspec_count != 0)
         fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
 
     int count = 0;
@@ -52,6 +55,77 @@ static void marc_dump(FILE *out, marcrec *rec, int current_file, gzFile in)
     {
         count++;
         marcrec_write(out, rec);
+    }
+}
+
+void marc_leaders(FILE *out, marcrec *rec, int current_file, gzFile in)
+{
+    if (__marc_main_fieldspec_count != 0)
+        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
+
+    int count = 0;
+    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
+    {
+        count++;
+        fprintf(out, "%.*s\n", 24, rec->data);
+    }
+}
+
+void marc_print(FILE *out, marcrec *rec, int current_file, gzFile in)
+{
+    int count = 0;
+    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
+    {
+        count++;
+        marcrec_print(out, rec, __marc_main_fieldspec_count ? __marc_main_fieldspecs : 0);
+    }
+}
+
+void marc_validate(FILE *out, marcrec *rec, int current_file, gzFile in)
+{
+    if (__marc_main_fieldspec_count != 0)
+        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
+
+    int __marc_validate_valid_count = 0;
+    int __marc_validate_total_count = 0;
+    int count = 0, valid = 0;
+    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
+    {
+        count++;
+        if (marcrec_validate(rec) == 0)
+            valid++;
+        else
+            __marc_main_return_code = 1;
+    }
+    __marc_validate_valid_count += valid;
+    __marc_validate_total_count += count;
+    fprintf(out, "%s: %i of %i valid (total: %i/%i)\n",
+            __marc_main_infiles[current_file], valid, count,
+            __marc_validate_valid_count, __marc_validate_total_count);
+}
+
+void marc_xml(FILE *out, marcrec *rec, int current_file, gzFile in)
+{
+    if (__marc_main_fieldspec_count != 0)
+        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
+
+    if (current_file == 0)
+    {
+        fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                     "<collection\n"
+                     "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                     "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
+                     "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
+    }
+    int count = 0;
+    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
+    {
+        count++;
+        marcrec_xml(out, rec);
+    }
+    if (current_file + 1 == __marc_main_infile_count)
+    {
+        fprintf(out, "</collection>");
     }
 }
 
@@ -65,12 +139,35 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
-    void (*action)(FILE*, marcrec*, int, gzFile);
-    
-    if(strcmp("dump", argv[1]) == 0) {
+    void (*action)(FILE *, marcrec *, int, gzFile);
+
+    if (strcmp("dump", argv[1]) == 0)
+    {
         action = marc_dump;
-        specific_usage = "dump marc records in marc format";
-    } else {
+    }
+    else if (strcmp("help", argv[1]) == 0 || strcmp("--help", argv[1]) == 0 || strcmp("-h", argv[1]) == 0)
+    {
+        fprintf(stdout, USAGE);
+        exit(0);
+    }
+    else if (strcmp("leaders", argv[1]) == 0)
+    {
+        action = marc_leaders;
+    }
+    else if (strcmp("print", argv[1]) == 0)
+    {
+        action = marc_print;
+    }
+    else if (strcmp("validate", argv[1]) == 0)
+    {
+        action = marc_validate;
+    }
+    else if (strcmp("xml", argv[1]) == 0)
+    {
+        action = marc_xml;
+    }
+    else
+    {
         fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
         exit(1);
     }
@@ -86,7 +183,7 @@ int main(int argc, char *argv[])
     {
         if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0)
         {
-            fprintf(stdout, USAGE, basename(argv[0]), specific_usage);
+            fprintf(stdout, USAGE);
             exit(0);
         }
         else if (strcmp("--field", argv[i]) == 0 || strcmp("-f", argv[i]) == 0)

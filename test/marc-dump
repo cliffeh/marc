@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./marc-dump test/testfile.marc.gz > test/marc-dump.output
+./marc dump test/testfile.marc.gz > test/marc-dump.output
 cat test/testfile.marc.gz | zcat | diff test/marc-dump.output -
