@@ -27,6 +27,12 @@ typedef struct marcrec
   marcfield *fields;
 } marcrec;
 
+typedef struct fieldspec
+{
+  int tag;
+  char *subfields;
+} fieldspec;
+
 /**
  * @brief read a marcrec from a buffer
  *
