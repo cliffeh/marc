@@ -54,9 +54,11 @@ dkms.conf
 # autotools generated
 .deps
 autom4te.cache
+config.guess
 config.h
 config.log
 config.status
+config.sub
 Makefile
 stamp-h?
 
