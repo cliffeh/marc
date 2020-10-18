@@ -1,6 +1,6 @@
 * error checking/recovery
 * unit testing
-* MARCXML/JSON output?
+* json output?
 * cpu/time efficiency vs memory efficiency (dynamic allocation)?
 * max width/formatting?
 * include leader in field spec
