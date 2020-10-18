@@ -10,10 +10,6 @@
 int __marc_main_fieldspec_count;
 fieldspec *__marc_main_fieldspecs;
 
-/** input files (stdout if count == 0) */
-int __marc_main_infile_count;
-const char **__marc_main_infiles;
-
 #define USAGE                                                                     \
     "usage: marc COMMAND [OPTIONS] [FILES]\n"                                     \
     "\n"                                                                          \
@@ -118,11 +114,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int limit = -1;
+    int limit = -1, infile_count = 0;
     FILE *out = 0;
-
-    __marc_main_infile_count = 0;
-    __marc_main_infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
+    char **infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
 
     __marc_main_fieldspec_count = 0;
     __marc_main_fieldspecs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
@@ -184,7 +178,7 @@ int main(int argc, char *argv[])
         }
         else // we'll assume it's a filename
         {
-            __marc_main_infiles[__marc_main_infile_count++] = argv[i];
+            infiles[infile_count++] = argv[i];
         }
     }
 
@@ -198,18 +192,18 @@ int main(int argc, char *argv[])
 
     if (!out)
         out = stdout;
-    if (__marc_main_infile_count == 0)
+    if (infile_count == 0)
     {
-        __marc_main_infiles[__marc_main_infile_count++] = "-";
+        infiles[infile_count++] = "-";
     }
 
     if (preamble)
         preamble(out);
 
     int total_valid = 0, total_count = 0;
-    for (int i = 0; i < __marc_main_infile_count; i++)
+    for (int i = 0; i < infile_count; i++)
     {
-        gzFile in = (strcmp("-", __marc_main_infiles[i]) == 0) ? gzdopen(fileno(stdin), "r") : gzopen(__marc_main_infiles[i], "r");
+        gzFile in = (strcmp("-", infiles[i]) == 0) ? gzdopen(fileno(stdin), "r") : gzopen(infiles[i], "r");
         int valid = 0, count = 0;
         while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
         {
@@ -226,7 +220,7 @@ int main(int argc, char *argv[])
         postamble(out);
 
     fclose(out);
-    free(__marc_main_infiles);
+    free(infiles);
     free(__marc_main_fieldspecs);
 
     return (total_valid == total_count) ? 0 : 1;
