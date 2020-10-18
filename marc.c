@@ -43,7 +43,7 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 
       if (!printing)
       {
-        for (int j = strlen(subfields) - 1; j >= 0; j--)
+        for (int j = 0; subfields[j]; j++)
         {
           if (subfields[j] == field->data[i])
           {

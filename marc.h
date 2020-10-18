@@ -2,8 +2,7 @@
 #define __MARC_H 1
 
 #include <zlib.h>
-#include <stdio.h> // FILE is defined here
-#include <string.h>
+#include <stdio.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
