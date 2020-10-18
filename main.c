@@ -6,10 +6,6 @@
 #include "marc.h"
 #include "config.h"
 
-/* process all fields by default */
-int __marc_main_fieldspec_count;
-fieldspec *__marc_main_fieldspecs;
-
 #define USAGE                                                                     \
     "usage: marc COMMAND [OPTIONS] [FILES]\n"                                     \
     "\n"                                                                          \
@@ -32,25 +28,25 @@ fieldspec *__marc_main_fieldspecs;
     "\n"                                                                          \
     "Note: if no input files are provided this program will read from stdin\n"
 
-static int marc_dump(FILE *out, marcrec *rec)
+static int marc_dump(FILE *out, marcrec *rec, fieldspec specs[])
 {
     marcrec_write(out, rec);
     return 1;
 }
 
-static int marc_leaders(FILE *out, marcrec *rec)
+static int marc_leaders(FILE *out, marcrec *rec, fieldspec specs[])
 {
     fprintf(out, "%.*s\n", 24, rec->data);
     return 1;
 }
 
-static int marc_print(FILE *out, marcrec *rec)
+static int marc_print(FILE *out, marcrec *rec, fieldspec specs[])
 {
-    marcrec_print(out, rec, __marc_main_fieldspec_count ? __marc_main_fieldspecs : 0);
+    marcrec_print(out, rec, specs);
     return 1;
 }
 
-static int marc_validate(FILE *out, marcrec *rec)
+static int marc_validate(FILE *out, marcrec *rec, fieldspec specs[])
 {
     return (marcrec_validate(rec) == 0) ? 1 : 0;
 }
@@ -64,7 +60,7 @@ static void xml_preamble(FILE *out)
                  "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
 }
 
-static int marc_xml(FILE *out, marcrec *rec)
+static int marc_xml(FILE *out, marcrec *rec, fieldspec specs[])
 {
     marcrec_xml(out, rec);
     return 1;
@@ -78,7 +74,7 @@ static void xml_postamble(FILE *out)
 int main(int argc, char *argv[])
 {
     void (*preamble)(FILE *) = 0;
-    int (*action)(FILE *, marcrec *) = 0;
+    int (*action)(FILE *, marcrec *, fieldspec *) = 0;
     void (*postamble)(FILE *) = 0;
 
     if (strcmp("dump", argv[1]) == 0)
@@ -114,12 +110,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int limit = -1, infile_count = 0;
+    int limit = -1, infile_count = 0, fieldspec_count = 0;
     FILE *out = 0;
-    char **infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
-
-    __marc_main_fieldspec_count = 0;
-    __marc_main_fieldspecs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
+    char **infiles = calloc(argc, sizeof(char *));         // more than we need, but not worth optimizing
+    fieldspec *specs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
 
     // process command line args
     for (int i = 2; i < argc; i++)
@@ -142,9 +136,9 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
                 exit(1);
             }
-            __marc_main_fieldspecs[__marc_main_fieldspec_count].tag =
+            specs[fieldspec_count].tag =
                 (argv[i][0] - '0') * 100 + (argv[i][1] - '0') * 10 + argv[i][2] - '0';
-            __marc_main_fieldspecs[__marc_main_fieldspec_count++].subfields = argv[i] + 3;
+            specs[fieldspec_count++].subfields = argv[i] + 3;
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
         {
@@ -190,6 +184,11 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
+    if(fieldspec_count == 0) {
+        free(specs);
+        specs = 0;
+    }
+
     if (!out)
         out = stdout;
     if (infile_count == 0)
@@ -208,7 +207,7 @@ int main(int argc, char *argv[])
         while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
         {
             count++;
-            valid += action(out, &rec);
+            valid += action(out, &rec, specs);
         }
         gzclose(in);
 
@@ -221,7 +220,8 @@ int main(int argc, char *argv[])
 
     fclose(out);
     free(infiles);
-    free(__marc_main_fieldspecs);
+    if(fieldspec_count > 0)
+        free(specs);
 
     return (total_valid == total_count) ? 0 : 1;
 }
