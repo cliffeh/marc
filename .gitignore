@@ -63,6 +63,7 @@ Makefile
 stamp-h?
 
 # compiled executables
+/marc
 /marc-dump
 /marc-leaders
 /marc-print

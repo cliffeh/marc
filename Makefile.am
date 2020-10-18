@@ -1,8 +1,10 @@
 lib_LTLIBRARIES = libmarc.la
 libmarc_la_SOURCES = marc.c config.h marc.h
 
-bin_PROGRAMS = marc-dump marc-leaders marc-print marc-validate marc-xml
+bin_PROGRAMS = marc marc-dump marc-leaders marc-print marc-validate marc-xml
 
+marc_SOURCES = main.c
+marc_LDADD = libmarc.la
 marc_dump_SOURCES = marc-dump.c main.c
 marc_dump_LDADD = libmarc.la
 marc_leaders_SOURCES = marc-leaders.c main.c

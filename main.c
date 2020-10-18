@@ -23,8 +23,8 @@ const char *__marc_main_outfile;
 /* can be set to indicate error status */
 int __marc_main_return_code = 0;
 
-extern void print_result(FILE *out, marcrec *rec, int current_file, gzFile in);
-extern const char *specific_usage;
+/* usage specific to the action */
+const char *specific_usage;
 
 #define USAGE                                                                     \
     "usage: %s [OPTIONS] [FILES]\n"                                               \
@@ -42,6 +42,19 @@ extern const char *specific_usage;
     "\n"                                                                          \
     "Note: if no input files are provided this program will read from stdin\n"
 
+static void marc_dump(FILE *out, marcrec *rec, int current_file, gzFile in)
+{
+    if(__marc_main_fieldspec_count != 0)
+        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
+
+    int count = 0;
+    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
+    {
+        count++;
+        marcrec_write(out, rec);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     marcrec rec;
@@ -52,6 +65,16 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
+    void (*action)(FILE*, marcrec*, int, gzFile);
+    
+    if(strcmp("dump", argv[1]) == 0) {
+        action = marc_dump;
+        specific_usage = "dump marc records in marc format";
+    } else {
+        fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
+        exit(1);
+    }
+
     __marc_main_infile_count = 0;
     __marc_main_infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
 
@@ -59,7 +82,7 @@ int main(int argc, char *argv[])
     __marc_main_fieldspecs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
 
     // process command line args
-    for (int i = 1; i < argc; i++)
+    for (int i = 2; i < argc; i++)
     {
         if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0)
         {
@@ -124,7 +147,7 @@ int main(int argc, char *argv[])
     { // read from stdin
         __marc_main_infiles[__marc_main_infile_count++] = "-";
         gzFile in = gzdopen(fileno(stdin), "r");
-        print_result(out, &rec, 0, in);
+        action(out, &rec, 0, in);
         gzclose(in);
     }
     else
@@ -132,7 +155,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < __marc_main_infile_count; i++)
         {
             gzFile in = gzopen(__marc_main_infiles[i], "r");
-            print_result(out, &rec, i, in);
+            action(out, &rec, i, in);
             gzclose(in);
         }
     }

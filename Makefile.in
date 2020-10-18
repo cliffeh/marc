@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = marc-dump$(EXEEXT) marc-leaders$(EXEEXT) \
+bin_PROGRAMS = marc$(EXEEXT) marc-dump$(EXEEXT) marc-leaders$(EXEEXT) \
 	marc-print$(EXEEXT) marc-validate$(EXEEXT) marc-xml$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -144,6 +144,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_marc_OBJECTS = main.$(OBJEXT)
+marc_OBJECTS = $(am_marc_OBJECTS)
+marc_DEPENDENCIES = libmarc.la
 am_marc_dump_OBJECTS = marc-dump.$(OBJEXT) main.$(OBJEXT)
 marc_dump_OBJECTS = $(am_marc_dump_OBJECTS)
 marc_dump_DEPENDENCIES = libmarc.la
@@ -197,12 +200,13 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libmarc_la_SOURCES) $(marc_dump_SOURCES) \
+SOURCES = $(libmarc_la_SOURCES) $(marc_SOURCES) $(marc_dump_SOURCES) \
 	$(marc_leaders_SOURCES) $(marc_print_SOURCES) \
 	$(marc_validate_SOURCES) $(marc_xml_SOURCES)
-DIST_SOURCES = $(libmarc_la_SOURCES) $(marc_dump_SOURCES) \
-	$(marc_leaders_SOURCES) $(marc_print_SOURCES) \
-	$(marc_validate_SOURCES) $(marc_xml_SOURCES)
+DIST_SOURCES = $(libmarc_la_SOURCES) $(marc_SOURCES) \
+	$(marc_dump_SOURCES) $(marc_leaders_SOURCES) \
+	$(marc_print_SOURCES) $(marc_validate_SOURCES) \
+	$(marc_xml_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -544,6 +548,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libmarc.la
 libmarc_la_SOURCES = marc.c config.h marc.h
+marc_SOURCES = main.c
+marc_LDADD = libmarc.la
 marc_dump_SOURCES = marc-dump.c main.c
 marc_dump_LDADD = libmarc.la
 marc_leaders_SOURCES = marc-leaders.c main.c
@@ -696,6 +702,10 @@ clean-libLTLIBRARIES:
 
 libmarc.la: $(libmarc_la_OBJECTS) $(libmarc_la_DEPENDENCIES) $(EXTRA_libmarc_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libmarc_la_OBJECTS) $(libmarc_la_LIBADD) $(LIBS)
+
+marc$(EXEEXT): $(marc_OBJECTS) $(marc_DEPENDENCIES) $(EXTRA_marc_DEPENDENCIES) 
+	@rm -f marc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(marc_OBJECTS) $(marc_LDADD) $(LIBS)
 
 marc-dump$(EXEEXT): $(marc_dump_OBJECTS) $(marc_dump_DEPENDENCIES) $(EXTRA_marc_dump_DEPENDENCIES) 
 	@rm -f marc-dump$(EXEEXT)
