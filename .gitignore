@@ -64,14 +64,6 @@ stamp-h?
 
 # compiled executables
 /marc
-/marc-dump
-/marc-leaders
-/marc-print
-/marc-validate
-/marc-xml
-
-# memory profiling reports
-*.valgrind
 
 # ide files
 .vscode
