@@ -146,6 +146,7 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
     for (int i = 0; i < rec->field_count; i++)
     {
       rec->fields[i].directory_entry = rec->data + 24 + i * 12;
+      rec->fields[i].tag = atoi3(rec->fields[i].directory_entry);
       rec->fields[i].length = atoi4(rec->fields[i].directory_entry + 3);
       rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
     }

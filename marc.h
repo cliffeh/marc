@@ -17,7 +17,7 @@
 typedef struct marcfield
 {
   char *directory_entry, *data;
-  int length;
+  int tag, length;
 } marcfield;
 
 typedef struct marcrec
