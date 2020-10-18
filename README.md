@@ -18,12 +18,14 @@ ACTIONS:
 
 OPTIONS:
   -h, --help         print a brief help message and exit
-  -f, --field SPEC   only output fields adhering to SPEC
-  -l, --limit N      limit processing to the first N records per file (default: no limit)
+  -f, --field SPEC   only output fields adhering to SPEC (note: this flag
+                     is only used by marc-print)
+  -l, --limit N      limit processing to the first N records per file
+                     (default: no limit)
   -o, --output FILE  output to FILE (default: stdout)
   -V, --version      output version and exit
 
-Note: if no files are provided this program will read from stdin
+Note: if no input files are provided this program will read from stdin
 ```
 
 ## Examples

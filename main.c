@@ -26,19 +26,21 @@ int __marc_main_return_code = 0;
 extern void print_result(FILE *out, marcrec *rec, int current_file, gzFile in);
 extern const char *specific_usage;
 
-#define USAGE                                                                                     \
-    "usage: %s [OPTIONS] [FILES]\n"                                                               \
-    "\n"                                                                                          \
-    "%s\n"                                                                                        \
-    "\n"                                                                                          \
-    "OPTIONS:\n"                                                                                  \
-    "  -h, --help         print a brief help message and exit\n"                                  \
-    "  -f, --field SPEC   only output fields adhering to SPEC\n"                                  \
-    "  -l, --limit N      limit processing to the first N records per file (default: no limit)\n" \
-    "  -o, --output FILE  output to FILE (default: stdout)\n"                                     \
-    "  -V, --version      output version and exit"                                                \
-    "\n"                                                                                          \
-    "Note: if no files are provided this program will read from stdin\n"
+#define USAGE                                                                     \
+    "usage: %s [OPTIONS] [FILES]\n"                                               \
+    "\n"                                                                          \
+    "  %s\n"                                                                      \
+    "\n"                                                                          \
+    "OPTIONS:\n"                                                                  \
+    "  -h, --help         print a brief help message and exit\n"                  \
+    "  -f, --field SPEC   only output fields adhering to SPEC (note: this flag\n" \
+    "                     is only used by marc-print)\n"                          \
+    "  -l, --limit N      limit processing to the first N records per file\n"     \
+    "                     (default: no limit)\n"                                  \
+    "  -o, --output FILE  output to FILE (default: stdout)\n"                     \
+    "  -V, --version      output version and exit\n"                              \
+    "\n"                                                                          \
+    "Note: if no input files are provided this program will read from stdin\n"
 
 int main(int argc, char *argv[])
 {
