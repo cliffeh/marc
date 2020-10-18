@@ -63,29 +63,25 @@ static void marc_validate(FILE *out, marcrec *rec)
         __marc_main_return_code = 1;
 }
 
-/*
+static void xml_preamble(FILE *out)
+{
+    fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<collection\n"
+                 "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+                 "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
+                 "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
+}
+
 void marc_xml(FILE *out, marcrec *rec)
 {
-    if (fileno == 0)
-    {
-        fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                     "<collection\n"
-                     "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                     "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
-                     "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
-    }
-    int count = 0;
-    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
-    {
-        count++;
-        marcrec_xml(out, rec);
-    }
-    if (fileno + 1 == __marc_main_infile_count)
-    {
-        fprintf(out, "</collection>");
-    }
+    marcrec_xml(out, rec);
 }
-*/
+
+static void xml_postamble(FILE *out)
+{
+    fprintf(out, "</collection>");
+}
+
 int main(int argc, char *argv[])
 {
     int limit = -1;
@@ -97,8 +93,10 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
-    void (*action)(FILE *, marcrec *);
-    
+    void (*preamble)(FILE *) = 0;
+    void (*action)(FILE *, marcrec *) = 0;
+    void (*postamble)(FILE *) = 0;
+
     if (strcmp("dump", argv[1]) == 0)
     {
         action = marc_dump;
@@ -120,11 +118,12 @@ int main(int argc, char *argv[])
     {
         action = marc_validate;
     }
-    /*
     else if (strcmp("xml", argv[1]) == 0)
     {
+        preamble = xml_preamble;
         action = marc_xml;
-    }*/
+        postamble = xml_postamble;
+    }
     else
     {
         fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
@@ -204,6 +203,8 @@ int main(int argc, char *argv[])
         __marc_main_infiles[__marc_main_infile_count++] = "-";
     }
 
+    if (preamble)
+        preamble(out);
 
     for (int i = 0; i < __marc_main_infile_count; i++)
     {
@@ -215,6 +216,9 @@ int main(int argc, char *argv[])
         }
         gzclose(in);
     }
+
+    if (postamble)
+        postamble(out);
 
     fclose(out);
     free(__marc_main_infiles);
