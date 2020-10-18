@@ -6,9 +6,6 @@
 #include "marc.h"
 #include "config.h"
 
-/* process all records by default */
-int __marc_main_limit = -1;
-
 /* process all fields by default */
 int __marc_main_fieldspec_count;
 fieldspec *__marc_main_fieldspecs;
@@ -45,71 +42,31 @@ int __marc_main_return_code = 0;
     "\n"                                                                          \
     "Note: if no input files are provided this program will read from stdin\n"
 
-static void marc_dump(FILE *out, marcrec *rec, int current_file, gzFile in)
+static void marc_dump(FILE *out, marcrec *rec)
 {
-    if (__marc_main_fieldspec_count != 0)
-        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
-
-    int count = 0;
-    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
-    {
-        count++;
-        marcrec_write(out, rec);
-    }
+    marcrec_write(out, rec);
 }
 
-void marc_leaders(FILE *out, marcrec *rec, int current_file, gzFile in)
+static void marc_leaders(FILE *out, marcrec *rec)
 {
-    if (__marc_main_fieldspec_count != 0)
-        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
-
-    int count = 0;
-    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
-    {
-        count++;
-        fprintf(out, "%.*s\n", 24, rec->data);
-    }
+    fprintf(out, "%.*s\n", 24, rec->data);
 }
 
-void marc_print(FILE *out, marcrec *rec, int current_file, gzFile in)
+static void marc_print(FILE *out, marcrec *rec)
 {
-    int count = 0;
-    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
-    {
-        count++;
-        marcrec_print(out, rec, __marc_main_fieldspec_count ? __marc_main_fieldspecs : 0);
-    }
+    marcrec_print(out, rec, __marc_main_fieldspec_count ? __marc_main_fieldspecs : 0);
 }
 
-void marc_validate(FILE *out, marcrec *rec, int current_file, gzFile in)
+static void marc_validate(FILE *out, marcrec *rec)
 {
-    if (__marc_main_fieldspec_count != 0)
-        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
-
-    int __marc_validate_valid_count = 0;
-    int __marc_validate_total_count = 0;
-    int count = 0, valid = 0;
-    while (marcrec_read(rec, in) != 0 && (__marc_main_limit - count) != 0)
-    {
-        count++;
-        if (marcrec_validate(rec) == 0)
-            valid++;
-        else
-            __marc_main_return_code = 1;
-    }
-    __marc_validate_valid_count += valid;
-    __marc_validate_total_count += count;
-    fprintf(out, "%s: %i of %i valid (total: %i/%i)\n",
-            __marc_main_infiles[current_file], valid, count,
-            __marc_validate_valid_count, __marc_validate_total_count);
+    if (marcrec_validate(rec) != 0)
+        __marc_main_return_code = 1;
 }
 
-void marc_xml(FILE *out, marcrec *rec, int current_file, gzFile in)
+/*
+void marc_xml(FILE *out, marcrec *rec)
 {
-    if (__marc_main_fieldspec_count != 0)
-        fprintf(stderr, "warning: --field flag has been provided and is unused by this command\n");
-
-    if (current_file == 0)
+    if (fileno == 0)
     {
         fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                      "<collection\n"
@@ -123,14 +80,15 @@ void marc_xml(FILE *out, marcrec *rec, int current_file, gzFile in)
         count++;
         marcrec_xml(out, rec);
     }
-    if (current_file + 1 == __marc_main_infile_count)
+    if (fileno + 1 == __marc_main_infile_count)
     {
         fprintf(out, "</collection>");
     }
 }
-
+*/
 int main(int argc, char *argv[])
 {
+    int limit = -1;
     marcrec rec;
     // 99999 is the max possible size
     char buf[100000];
@@ -139,8 +97,8 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
-    void (*action)(FILE *, marcrec *, int, gzFile);
-
+    void (*action)(FILE *, marcrec *);
+    
     if (strcmp("dump", argv[1]) == 0)
     {
         action = marc_dump;
@@ -162,10 +120,11 @@ int main(int argc, char *argv[])
     {
         action = marc_validate;
     }
+    /*
     else if (strcmp("xml", argv[1]) == 0)
     {
         action = marc_xml;
-    }
+    }*/
     else
     {
         fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
@@ -211,7 +170,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
-            __marc_main_limit = atoi(argv[i]);
+            limit = atoi(argv[i]);
         }
         else if (strcmp("--output", argv[i]) == 0 || strcmp("-o", argv[i]) == 0)
         {
@@ -241,20 +200,20 @@ int main(int argc, char *argv[])
 
     FILE *out = (__marc_main_outfile) ? fopen(__marc_main_outfile, "w") : stdout;
     if (__marc_main_infile_count == 0)
-    { // read from stdin
-        __marc_main_infiles[__marc_main_infile_count++] = "-";
-        gzFile in = gzdopen(fileno(stdin), "r");
-        action(out, &rec, 0, in);
-        gzclose(in);
-    }
-    else
     {
-        for (int i = 0; i < __marc_main_infile_count; i++)
+        __marc_main_infiles[__marc_main_infile_count++] = "-";
+    }
+
+
+    for (int i = 0; i < __marc_main_infile_count; i++)
+    {
+        gzFile in = (strcmp("-", __marc_main_infiles[i]) == 0) ? gzdopen(fileno(stdin), "r") : gzopen(__marc_main_infiles[i], "r");
+        int count = 0;
+        while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
         {
-            gzFile in = gzopen(__marc_main_infiles[i], "r");
-            action(out, &rec, i, in);
-            gzclose(in);
+            action(out, &rec);
         }
+        gzclose(in);
     }
 
     fclose(out);
