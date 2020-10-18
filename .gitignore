@@ -53,10 +53,12 @@ dkms.conf
 
 # autotools generated
 .deps
+.libs
 autom4te.cache
 config.h
 config.log
 config.status
+libtool
 Makefile
 stamp-h?
 
