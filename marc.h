@@ -57,7 +57,6 @@ int marcrec_print(FILE *out, const marcrec *rec, const char **spec);
  * otherwise it will only read the raw record
  *
  * @param rec a pointer to an allocated marcrec object to be populated
- * @param buf a pointer to an allocated buffer to read into
  * @param in a pointer to an open FILE to read from
  * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
  */
