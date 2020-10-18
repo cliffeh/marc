@@ -14,12 +14,6 @@ fieldspec *__marc_main_fieldspecs;
 int __marc_main_infile_count;
 const char **__marc_main_infiles;
 
-/* output file (stdout if unspecified) */
-const char *__marc_main_outfile;
-
-/* can be set to indicate error status */
-int __marc_main_return_code = 0;
-
 #define USAGE                                                                     \
     "usage: marc COMMAND [OPTIONS] [FILES]\n"                                     \
     "\n"                                                                          \
@@ -42,25 +36,27 @@ int __marc_main_return_code = 0;
     "\n"                                                                          \
     "Note: if no input files are provided this program will read from stdin\n"
 
-static void marc_dump(FILE *out, marcrec *rec)
+static int marc_dump(FILE *out, marcrec *rec)
 {
     marcrec_write(out, rec);
+    return 1;
 }
 
-static void marc_leaders(FILE *out, marcrec *rec)
+static int marc_leaders(FILE *out, marcrec *rec)
 {
     fprintf(out, "%.*s\n", 24, rec->data);
+    return 1;
 }
 
-static void marc_print(FILE *out, marcrec *rec)
+static int marc_print(FILE *out, marcrec *rec)
 {
     marcrec_print(out, rec, __marc_main_fieldspec_count ? __marc_main_fieldspecs : 0);
+    return 1;
 }
 
-static void marc_validate(FILE *out, marcrec *rec)
+static int marc_validate(FILE *out, marcrec *rec)
 {
-    if (marcrec_validate(rec) != 0)
-        __marc_main_return_code = 1;
+    return (marcrec_validate(rec) == 0) ? 1 : 0;
 }
 
 static void xml_preamble(FILE *out)
@@ -72,9 +68,10 @@ static void xml_preamble(FILE *out)
                  "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
 }
 
-void marc_xml(FILE *out, marcrec *rec)
+static int marc_xml(FILE *out, marcrec *rec)
 {
     marcrec_xml(out, rec);
+    return 1;
 }
 
 static void xml_postamble(FILE *out)
@@ -84,17 +81,8 @@ static void xml_postamble(FILE *out)
 
 int main(int argc, char *argv[])
 {
-    int limit = -1;
-    marcrec rec;
-    // 99999 is the max possible size
-    char buf[100000];
-    // 10000 seems like a reasonable upper bound
-    marcfield fields[10000];
-    rec.data = buf;
-    rec.fields = fields;
-
     void (*preamble)(FILE *) = 0;
-    void (*action)(FILE *, marcrec *) = 0;
+    int (*action)(FILE *, marcrec *) = 0;
     void (*postamble)(FILE *) = 0;
 
     if (strcmp("dump", argv[1]) == 0)
@@ -129,6 +117,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
         exit(1);
     }
+
+    int limit = -1;
+    FILE *out = 0;
 
     __marc_main_infile_count = 0;
     __marc_main_infiles = calloc(argc, sizeof(char *)); // more than we need, but not worth optimizing
@@ -173,7 +164,7 @@ int main(int argc, char *argv[])
         }
         else if (strcmp("--output", argv[i]) == 0 || strcmp("-o", argv[i]) == 0)
         {
-            if (__marc_main_outfile)
+            if (out)
             {
                 fprintf(stderr, "error: more than one output file specified\n");
                 exit(1);
@@ -184,7 +175,7 @@ int main(int argc, char *argv[])
                 exit(1);
             }
             i++;
-            __marc_main_outfile = argv[i];
+            out = fopen(argv[i], "w");
         }
         else if (strcmp("--version", argv[i]) == 0 || strcmp("-V", argv[i]) == 0)
         {
@@ -197,7 +188,16 @@ int main(int argc, char *argv[])
         }
     }
 
-    FILE *out = (__marc_main_outfile) ? fopen(__marc_main_outfile, "w") : stdout;
+    marcrec rec;
+    // 99999 is the max possible size
+    char buf[100000];
+    // 10000 seems like a reasonable upper bound
+    marcfield fields[10000];
+    rec.data = buf;
+    rec.fields = fields;
+
+    if (!out)
+        out = stdout;
     if (__marc_main_infile_count == 0)
     {
         __marc_main_infiles[__marc_main_infile_count++] = "-";
@@ -206,15 +206,20 @@ int main(int argc, char *argv[])
     if (preamble)
         preamble(out);
 
+    int total_valid = 0, total_count = 0;
     for (int i = 0; i < __marc_main_infile_count; i++)
     {
         gzFile in = (strcmp("-", __marc_main_infiles[i]) == 0) ? gzdopen(fileno(stdin), "r") : gzopen(__marc_main_infiles[i], "r");
-        int count = 0;
+        int valid = 0, count = 0;
         while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
         {
-            action(out, &rec);
+            count++;
+            valid += action(out, &rec);
         }
         gzclose(in);
+
+        total_valid += valid;
+        total_count += count;
     }
 
     if (postamble)
@@ -223,4 +228,6 @@ int main(int argc, char *argv[])
     fclose(out);
     free(__marc_main_infiles);
     free(__marc_main_fieldspecs);
+
+    return (total_valid == total_count) ? 0 : 1;
 }
