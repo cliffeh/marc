@@ -1,8 +1,9 @@
 #ifndef __MARC_H
 #define __MARC_H 1
 
-#include <zlib.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <zlib.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
@@ -12,6 +13,11 @@
 // error constants
 #define MISSING_FIELD_TERMINATOR (1 << 0)
 #define MISSING_RECORD_TERMINATOR (1 << 1)
+
+typedef struct marcfile
+{
+  gzFile file;
+} marcfile;
 
 typedef struct marcfield
 {
@@ -31,6 +37,30 @@ typedef struct fieldspec
   int tag;
   char *subfields;
 } fieldspec;
+
+/**
+ * @brief open a file for reading marc records
+ *
+ * @param filename the name of the file to open
+ * @param mode mode to open the file in (must be "r")
+ * @return marcfile* a pointer to the open marcfile
+ */
+marcfile *marcfile_open(const char *filename, const char *mode);
+
+/**
+ * @brief convert a raw file descriptor into a marcfile
+ *
+ * @param fd the file descriptor
+ * @return marcfile* a pointer to a marcfile
+ */
+marcfile *marcfile_from_fd(int fd, char *mode);
+
+/**
+ * @brief close the marcfile
+ *
+ * @param file the file to be closed
+ */
+void marcfile_close(marcfile *mf);
 
 /**
  * @brief read a marcrec from a buffer
@@ -65,7 +95,7 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
  * @param in a pointer to an open FILE to read from
  * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
  */
-int marcrec_read(marcrec *rec, gzFile in);
+int marcrec_read(marcrec *rec, marcfile *in);
 
 /**
  * @brief validate a marc record

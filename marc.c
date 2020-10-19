@@ -145,10 +145,10 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
   return rec->length;
 }
 
-int marcrec_read(marcrec *rec, gzFile in)
+int marcrec_read(marcrec *rec, marcfile *in)
 {
   // read the leader
-  int n = gzread(in, rec->data, 24);
+  int n = gzread(in->file, rec->data, 24);
   if (n == 0)
     return 0;
   if (n < 24)
@@ -158,7 +158,7 @@ int marcrec_read(marcrec *rec, gzFile in)
   int length = atoin(rec->data, 5);
 
   // read the remainder of the record
-  n = gzread(in, rec->data + 24, length - 24);
+  n = gzread(in->file, rec->data + 24, length - 24);
   if (n < (length - 24))
     return -1;
 
@@ -297,4 +297,24 @@ int marcrec_xml(FILE *out, const marcrec *rec)
   fprintf(out, "</record>\n");
 
   return 1;
+}
+
+marcfile *marcfile_open(const char *filename, const char *mode)
+{
+  marcfile *r = malloc(sizeof(marcfield));
+  r->file = gzopen(filename, mode);
+  return r;
+}
+
+marcfile *marcfile_from_fd(int fd, char *mode)
+{
+  marcfile *r = malloc(sizeof(marcfield));
+  r->file = gzdopen(fd, mode);
+  return r;
+}
+
+void marcfile_close(marcfile *mf)
+{
+  gzclose(mf->file);
+  free(mf);
 }

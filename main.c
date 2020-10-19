@@ -210,14 +210,14 @@ int main(int argc, char *argv[])
     int total_valid = 0, total_count = 0;
     for (int i = 0; i < infile_count; i++)
     {
-        gzFile in = (strcmp("-", infiles[i]) == 0) ? gzdopen(fileno(stdin), "r") : gzopen(infiles[i], "r");
+        marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_fd(fileno(stdin), "r") : marcfile_open(infiles[i], "r");
         int valid = 0, count = 0;
         while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
         {
             count++;
             valid += action(out, &rec, specs);
         }
-        gzclose(in);
+        marcfile_close(in);
 
         total_valid += valid;
         total_count += count;
