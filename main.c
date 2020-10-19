@@ -110,9 +110,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    int limit = -1, infile_count = 0, fieldspec_count = 0;
-    FILE *out = 0;
-    char **infiles = calloc(argc, sizeof(char *));         // more than we need, but not worth optimizing
+    int limit = -1, infile_count = 0, fieldspec_count = 0, verbose = 0;
+    FILE *out = 0, *log = 0;
+    char **infiles = calloc(argc, sizeof(char *));        // more than we need, but not worth optimizing
     fieldspec *specs = calloc(argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
 
     // process command line args
@@ -165,6 +165,10 @@ int main(int argc, char *argv[])
             i++;
             out = fopen(argv[i], "w");
         }
+        else if (strcmp("--verbose", argv[i]) == 0 || strcmp("-v", argv[i]) == 0)
+        {
+            verbose = 1;
+        }
         else if (strcmp("--version", argv[i]) == 0 || strcmp("-V", argv[i]) == 0)
         {
             fprintf(stdout, PACKAGE_STRING "\n");
@@ -184,13 +188,16 @@ int main(int argc, char *argv[])
     rec.data = buf;
     rec.fields = fields;
 
-    if(fieldspec_count == 0) {
+    if (fieldspec_count == 0)
+    {
         free(specs);
         specs = 0;
     }
 
     if (!out)
         out = stdout;
+    if (!log)
+        log = stderr;
     if (infile_count == 0)
     {
         infiles[infile_count++] = "-";
@@ -213,6 +220,12 @@ int main(int argc, char *argv[])
 
         total_valid += valid;
         total_count += count;
+
+        if (verbose)
+        {
+            fprintf(log, "%s: %i/%i (total: %i/%i)\n",
+                    infiles[i], valid, count, total_valid, total_count);
+        }
     }
 
     if (postamble)
@@ -220,7 +233,7 @@ int main(int argc, char *argv[])
 
     fclose(out);
     free(infiles);
-    if(fieldspec_count > 0)
+    if (fieldspec_count > 0)
         free(specs);
 
     return (total_valid == total_count) ? 0 : 1;
