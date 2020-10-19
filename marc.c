@@ -313,6 +313,11 @@ marcfile *marcfile_from_fd(int fd, char *mode)
   return r;
 }
 
+marcfile *marcfile_from_FILE(FILE *file, char *mode)
+{
+  return marcfile_from_fd(fileno(file), mode);
+}
+
 void marcfile_close(marcfile *mf)
 {
   gzclose(mf->file);
