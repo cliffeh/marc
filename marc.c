@@ -1,12 +1,6 @@
 #include "marc.h"
 #include "util.h"
 
-#define atoi1(p) (*(p) - '0')
-#define atoi2(p) (atoi1(p) * 10 + atoi1(p + 1))
-#define atoi3(p) (atoi1(p) * 100 + atoi2(p + 1))
-#define atoi4(p) (atoi1(p) * 1000 + atoi3(p + 1))
-#define atoi5(p) (atoi1(p) * 10000 + atoi4(p + 1))
-
 #define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *subfields)
@@ -127,10 +121,10 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
   rec->data = buf;
 
   // total length of record
-  rec->length = (length == 0) ? atoi5(buf) : length;
+  rec->length = (length == 0) ? atoin(buf, 5) : length;
 
   // length of leader + directory
-  rec->base_address = atoi5(buf + 12);
+  rec->base_address = atoin(buf + 12, 5);
 
   // compute the number of fields based on directory size
   rec->field_count = (rec->base_address - 24 - 1) / 12;
@@ -141,9 +135,9 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
     for (int i = 0; i < rec->field_count; i++)
     {
       rec->fields[i].directory_entry = rec->data + 24 + i * 12;
-      rec->fields[i].tag = atoi3(rec->fields[i].directory_entry);
-      rec->fields[i].length = atoi4(rec->fields[i].directory_entry + 3);
-      rec->fields[i].data = rec->data + rec->base_address + atoi5(rec->fields[i].directory_entry + 7);
+      rec->fields[i].tag = atoin(rec->fields[i].directory_entry, 3);
+      rec->fields[i].length = atoin(rec->fields[i].directory_entry + 3, 4);
+      rec->fields[i].data = rec->data + rec->base_address + atoin(rec->fields[i].directory_entry + 7, 5);
     }
   }
 
@@ -161,7 +155,7 @@ int marcrec_read(marcrec *rec, gzFile in)
     return -1;
 
   // total length of record
-  int length = atoi5(rec->data);
+  int length = atoin(rec->data, 5);
 
   // read the remainder of the record
   n = gzread(in, rec->data + 24, length - 24);
