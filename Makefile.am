@@ -9,4 +9,7 @@ include_HEADERS = marc.h
 
 TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml
 
+check_PROGRAMS = test/dynamic-alloc
+
+AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
