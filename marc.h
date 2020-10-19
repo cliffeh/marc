@@ -73,9 +73,12 @@ void marcfile_close(marcfile *mf);
 /**
  * @brief dynamically allocate a new marcrec
  *
+ * @param nBytes the number of bytes to allocate for marc data; if zero, 100000 bytes will
+ *               be allocated (max data size + 1)
+ * @param nFields the number of fields to allocate; if zero, 10000 fields will be allocated
  * @return marcrec* the newly-allocated marcrec
  */
-marcrec *marcrec_alloc();
+marcrec *marcrec_alloc(int nBytes, int nFields);
 
 /**
  * @brief free a marcrec that was previously allocated using marcrec_alloc()

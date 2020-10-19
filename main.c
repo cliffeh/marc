@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    marcrec *rec = marcrec_alloc();
+    marcrec *rec = marcrec_alloc(0, 0);
 
     if (fieldspec_count == 0)
     {
