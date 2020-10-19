@@ -50,16 +50,16 @@ marcfile *marcfile_open(const char *filename, const char *mode);
 /**
  * @brief convert a raw file descriptor into a marcfile
  *
- * @param fd the file descriptor
- * @return marcfile* a pointer to a marcfile
+ * @param fd the file descriptor to open
+ * @return marcfile* a pointer to the open marcfile
  */
 marcfile *marcfile_from_fd(int fd, char *mode);
 
 /**
  * @brief convert an stdio FILE into a marcfile
  *
- * @param file the file descriptor
- * @return marcfile* a pointer to a marcfile
+ * @param file the FILE to open
+ * @return marcfile* a pointer to the open marcfile
  */
 marcfile *marcfile_from_FILE(FILE *file, char *mode);
 
