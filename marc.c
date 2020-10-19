@@ -1,4 +1,5 @@
 #include "marc.h"
+#include "util.h"
 
 #define atoi1(p) (*(p) - '0')
 #define atoi2(p) (atoi1(p) * 10 + atoi1(p + 1))

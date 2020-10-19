@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "marc.h"
+#include "util.h"
 #include "config.h"
 
 #define USAGE                                                                     \
@@ -137,8 +138,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
                 exit(1);
             }
-            specs[fieldspec_count].tag =
-                (argv[i][0] - '0') * 100 + (argv[i][1] - '0') * 10 + argv[i][2] - '0';
+            specs[fieldspec_count].tag = atoin(argv[i], 3);
             specs[fieldspec_count++].subfields = argv[i] + 3;
         }
         else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0)
