@@ -6,9 +6,6 @@
 #define atoi4(p) (atoi1(p) * 1000 + atoi3(p + 1))
 #define atoi5(p) (atoi1(p) * 10000 + atoi4(p + 1))
 
-#define MATCH_FIELD(spec, direntry) \
-  (*(spec) && (*(spec) == *(direntry))) && (*((spec) + 1) && (*((spec) + 1) == *((direntry) + 1))) && (*((spec) + 2) && (*((spec) + 2) == *((direntry) + 2)))
-
 #define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 
 static void marcfield_print_subfields(FILE *out, const marcfield *field, const char *subfields)
