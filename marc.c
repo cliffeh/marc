@@ -63,6 +63,23 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
   }
 }
 
+marcrec *marcrec_alloc()
+{
+  marcrec *rec = calloc(1, sizeof(marcrec));
+  // max length 99999
+  rec->data = calloc(100000, sizeof(char));
+  // 10000 is a reasonable guess at an upper bound
+  rec->fields = calloc(10000, sizeof(marcfield));
+  return rec;
+}
+
+void marcrec_free(marcrec *rec)
+{
+  free(rec->fields);
+  free(rec->data);
+  free(rec);
+}
+
 int marcfield_print(FILE *out, const marcfield *field, const fieldspec specs[])
 {
   int n = 0;

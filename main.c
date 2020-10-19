@@ -181,13 +181,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    marcrec rec;
-    // 99999 is the max possible size
-    char buf[100000];
-    // 10000 seems like a reasonable upper bound
-    marcfield fields[10000];
-    rec.data = buf;
-    rec.fields = fields;
+    marcrec *rec = marcrec_alloc();
 
     if (fieldspec_count == 0)
     {
@@ -212,10 +206,10 @@ int main(int argc, char *argv[])
     {
         marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_fd(fileno(stdin), "r") : marcfile_open(infiles[i], "r");
         int valid = 0, count = 0;
-        while (marcrec_read(&rec, in) != 0 && (limit - count) != 0)
+        while (marcrec_read(rec, in) != 0 && (limit - count) != 0)
         {
             count++;
-            valid += action(out, &rec, specs);
+            valid += action(out, rec, specs);
         }
         marcfile_close(in);
 
@@ -236,6 +230,7 @@ int main(int argc, char *argv[])
     free(infiles);
     if (fieldspec_count > 0)
         free(specs);
+    marcrec_free(rec);
 
     return (total_valid == total_count) ? 0 : 1;
 }

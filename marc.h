@@ -71,6 +71,20 @@ marcfile *marcfile_from_FILE(FILE *file, char *mode);
 void marcfile_close(marcfile *mf);
 
 /**
+ * @brief dynamically allocate a new marcrec
+ *
+ * @return marcrec* the newly-allocated marcrec
+ */
+marcrec *marcrec_alloc();
+
+/**
+ * @brief free a marcrec that was previously allocated using marcrec_alloc()
+ *
+ * @param rec the record to free
+ */
+void marcrec_free(marcrec *rec);
+
+/**
  * @brief read a marcrec from a buffer
  *
  * if rec->fields is non-null this function will assume you want fields processed;
