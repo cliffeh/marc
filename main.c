@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     int total_valid = 0, total_count = 0;
     for (int i = 0; i < infile_count; i++)
     {
-        marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_fd(fileno(stdin), "r") : marcfile_open(infiles[i], "r");
+        marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(stdin, "r") : marcfile_open(infiles[i], "r");
         int valid = 0, count = 0;
         while (marcrec_read(rec, in) != 0 && (limit - count) != 0)
         {
