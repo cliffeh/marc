@@ -5,3 +5,4 @@
 * include leader in field spec
 * make zlib support optional
 * version bumps?
+* man page
