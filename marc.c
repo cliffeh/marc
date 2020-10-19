@@ -278,7 +278,6 @@ static void marcfield_xml(FILE *out, const marcfield *field)
 {
   if (IS_CONTROL_FIELD(field->directory_entry))
   {
-    // TODO make sure we're escaping XML characters!
     fprintf(out, "  <controlfield tag=\"%.3s\">", field->directory_entry);
     marcfield_xml_escape(out, field->data, field->length - 1);
     fprintf(out, "</controlfield>\n");
