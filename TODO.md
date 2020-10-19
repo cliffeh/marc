@@ -6,3 +6,5 @@
 * make zlib support optional
 * version bumps?
 * man page
+* allocate-on-read
+* error handling for file read errors

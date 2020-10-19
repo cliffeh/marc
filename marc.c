@@ -132,7 +132,7 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[])
   return n;
 }
 
-int marcrec_from_buffer(marcrec *rec, char *buf, int length)
+marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int length)
 {
   // you're mine now!
   rec->data = buf;
@@ -158,26 +158,26 @@ int marcrec_from_buffer(marcrec *rec, char *buf, int length)
     }
   }
 
-  // return a pointer to the "rest" of the buffer (if any)
-  return rec->length;
+  // return a pointer to the newly-populated marcrec
+  return rec;
 }
 
-int marcrec_read(marcrec *rec, marcfile *in)
+marcrec *marcrec_read(marcrec *rec, marcfile *in)
 {
   // read the leader
   int n = gzread(in->file, rec->data, 24);
-  if (n == 0)
+  // TODO set error flag if n < 24?
+  if (n == 0 || n < 24)
     return 0;
-  if (n < 24)
-    return -1;
 
   // total length of record
   int length = atoin(rec->data, 5);
 
   // read the remainder of the record
   n = gzread(in->file, rec->data + 24, length - 24);
+  // TODO set error flag if n < (length - 24)?
   if (n < (length - 24))
-    return -1;
+    return 0;
 
   // process the rest of the record
   return marcrec_from_buffer(rec, rec->data, length);

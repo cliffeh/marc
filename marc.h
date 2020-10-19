@@ -93,9 +93,9 @@ void marcrec_free(marcrec *rec);
  * @param rec a pointer to an allocated marcrec object to be populated
  * @param buf a pointer to a buffer containing a marc record
  * @param len the number of bytes in the marc record, or 0 if the length is unknown and should be computed
- * @return int the number of bytes processed
+ * @return marcrec* a pointer to the marcrec that was read, or 0 if buf had no available bytes
  */
-int marcrec_from_buffer(marcrec *rec, char *buf, int len);
+marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int len);
 
 /**
  * @brief print a marc record in human-readable format
@@ -115,9 +115,9 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
  *
  * @param rec a pointer to an allocated marcrec object to be populated
  * @param in a pointer to an open FILE to read from
- * @return int the number of bytes read (-1 if the number of bytes was fewer than expected)
+ * @return marcrec* a pointer to the marcrec that was read, or 0 if in had no available bytes
  */
-int marcrec_read(marcrec *rec, marcfile *in);
+marcrec *marcrec_read(marcrec *rec, marcfile *in);
 
 /**
  * @brief validate a marc record
