@@ -24,6 +24,7 @@
     "  -l, --limit N      limit processing to the first N records per file\n"     \
     "                     (default: no limit)\n"                                  \
     "  -o, --output FILE  output to FILE (default: stdout)\n"                     \
+    "  -v, --verbose      turn on verbose logging\n"                              \
     "  -V, --version      output version and exit\n"                              \
     "\n"                                                                          \
     "Note: if no input files are provided this program will read from stdin\n"

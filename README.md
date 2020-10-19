@@ -7,10 +7,11 @@ A library and a set of command-line tools for manipulating MARC records.
 
 ## Running
 ```
-usage: marc-$ACTION [OPTIONS] [FILES]
+usage: marc COMMAND [OPTIONS] [FILES]
 
-ACTIONS:
-  dump      dump marc records in marc format
+COMMANDS:
+  dump      dump records in marc format
+  help      print a brief help message and exit
   leaders   print marc leaders
   print     print marc records/fields in a human-readable format
   validate  validate marc records
@@ -23,6 +24,7 @@ OPTIONS:
   -l, --limit N      limit processing to the first N records per file
                      (default: no limit)
   -o, --output FILE  output to FILE (default: stdout)
+  -v, --verbose      turn on verbose logging
   -V, --version      output version and exit
 
 Note: if no input files are provided this program will read from stdin
