@@ -301,7 +301,7 @@ int marcrec_xml(FILE *out, const marcrec *rec)
 
 marcfile *marcfile_open(const char *filename, const char *mode)
 {
-  marcfile *r = malloc(sizeof(marcfield));
+  marcfile *r = malloc(sizeof(marcfile));
   r->file = gzopen(filename, mode);
   return r;
 }
