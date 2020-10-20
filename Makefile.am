@@ -7,13 +7,9 @@ marc_LDADD = libmarc.la
 
 include_HEADERS = marc.h
 
-TESTS = test/marc-dump \
-    test/marc-leaders \
-    test/marc-print \
-    test/marc-validate \
-    test/marc-xml \
-    test/test-dynamic-alloc \
-    test/valgrind
+TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml \
+    test/test-dynamic-alloc test/valgrind-dump test/valgrind-leaders test/valgrind-print \
+    test/valgrind-validate test/valgrind-xml test/valgrind-dynamic-alloc
 
 check_PROGRAMS = test/dynamic-alloc
 test_dynamic_alloc_LDADD = libmarc.la

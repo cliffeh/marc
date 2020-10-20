@@ -1,12 +1,11 @@
 #!/bin/bash
 
-which valgrind || { echo "can't find valgrind; skippint test..."; exit 77; }
+which valgrind >& /dev/null || { echo "can't find valgrind; skippint test..."; exit 77; }
 
-for cmd in dump leaders print validate xml; do
-    logfile=test/marc-$cmd.valgrind
-    zcat < test/testfile.marc.gz | ./libtool --mode=execute valgrind --leak-check=full --log-file=$logfile ./marc $cmd -o /dev/null
-    grep 'ERROR SUMMARY: 0' $logfile || { echo "leak detected in marc $cmd; exiting..."; exit 1; }
-done
+cmd=$(echo "$0" | cut -d- -s -f2)
 
-zcat < test/testfile.marc.gz | ./libtool --mode=execute valgrind --leak-check=full --log-file=test/dynamic-alloc.valgrind test/dynamic-alloc -o /dev/null
-grep 'ERROR SUMMARY: 0' test/dynamic-alloc.valgrind || { echo "leak detected in dynamic-alloc; exiting..."; exit 1; }
+[[ -n "$cmd" ]] || { echo "this script wasn't meant to be run without a -command suffix!"; exit 99; }
+
+logfile="test/marc-$cmd.valgrind"
+zcat < test/testfile.marc.gz | ./libtool --mode=execute valgrind --leak-check=full --log-file="$logfile" ./marc "$cmd" -o /dev/null
+grep 'ERROR SUMMARY: 0' "$logfile" || { echo "leak detected in marc $cmd; exiting..."; exit 1; }

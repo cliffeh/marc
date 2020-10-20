@@ -537,13 +537,9 @@ libmarc_la_SOURCES = marc.c util.c config.h marc.h
 marc_SOURCES = main.c
 marc_LDADD = libmarc.la
 include_HEADERS = marc.h
-TESTS = test/marc-dump \
-    test/marc-leaders \
-    test/marc-print \
-    test/marc-validate \
-    test/marc-xml \
-    test/test-dynamic-alloc \
-    test/valgrind
+TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml \
+    test/test-dynamic-alloc test/valgrind-dump test/valgrind-leaders test/valgrind-print \
+    test/valgrind-validate test/valgrind-xml test/valgrind-dynamic-alloc
 
 test_dynamic_alloc_LDADD = libmarc.la
 AUTOMAKE_OPTIONS = subdir-objects
@@ -1030,9 +1026,44 @@ test/test-dynamic-alloc.log: test/test-dynamic-alloc
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test/valgrind.log: test/valgrind
-	@p='test/valgrind'; \
-	b='test/valgrind'; \
+test/valgrind-dump.log: test/valgrind-dump
+	@p='test/valgrind-dump'; \
+	b='test/valgrind-dump'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind-leaders.log: test/valgrind-leaders
+	@p='test/valgrind-leaders'; \
+	b='test/valgrind-leaders'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind-print.log: test/valgrind-print
+	@p='test/valgrind-print'; \
+	b='test/valgrind-print'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind-validate.log: test/valgrind-validate
+	@p='test/valgrind-validate'; \
+	b='test/valgrind-validate'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind-xml.log: test/valgrind-xml
+	@p='test/valgrind-xml'; \
+	b='test/valgrind-xml'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind-dynamic-alloc.log: test/valgrind-dynamic-alloc
+	@p='test/valgrind-dynamic-alloc'; \
+	b='test/valgrind-dynamic-alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
