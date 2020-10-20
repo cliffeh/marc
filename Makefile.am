@@ -12,7 +12,8 @@ TESTS = test/marc-dump \
     test/marc-print \
     test/marc-validate \
     test/marc-xml \
-    test/test-dynamic-alloc
+    test/test-dynamic-alloc \
+    test/valgrind
 
 check_PROGRAMS = test/dynamic-alloc
 test_dynamic_alloc_LDADD = libmarc.la

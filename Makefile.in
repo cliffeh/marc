@@ -542,7 +542,8 @@ TESTS = test/marc-dump \
     test/marc-print \
     test/marc-validate \
     test/marc-xml \
-    test/test-dynamic-alloc
+    test/test-dynamic-alloc \
+    test/valgrind
 
 test_dynamic_alloc_LDADD = libmarc.la
 AUTOMAKE_OPTIONS = subdir-objects
@@ -1024,6 +1025,13 @@ test/marc-xml.log: test/marc-xml
 test/test-dynamic-alloc.log: test/test-dynamic-alloc
 	@p='test/test-dynamic-alloc'; \
 	b='test/test-dynamic-alloc'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test/valgrind.log: test/valgrind
+	@p='test/valgrind'; \
+	b='test/valgrind'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

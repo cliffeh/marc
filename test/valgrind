@@ -1,0 +1,9 @@
+#!/bin/bash
+
+which valgrind || { echo "can't find valgrind; skippint test..."; exit 77; }
+
+for cmd in dump leaders print validate xml; do
+    logfile=test/marc-$cmd.valgrind
+    zcat < test/testfile.marc.gz | valgrind --leak-check=full --log-file=$logfile ./marc $cmd -o /dev/null
+    grep 'ERROR SUMMARY: 0' $logfile || { echo "leak detected in marc $cmd; exiting..."; exit 1; }
+done
