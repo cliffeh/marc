@@ -1,6 +1,8 @@
 #ifndef __MARC_UTIL_H
 #define __MARC_UTIL_H 1
 
+#include <ctype.h>
+
 /**
  * @brief convert a sequence of digits into a positive integer
  *
