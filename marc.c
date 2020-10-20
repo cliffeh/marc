@@ -181,8 +181,10 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   n = fread(p, sizeof(char), 24, in->f);
 #endif
   // TODO set error flag if n < 24?
-  if (n == 0 || n < 24)
+  if (n == 0 || n < 24) {
+    if(!rec) free(p);
     return 0;
+  }
   nBytes = atoin(p, 5);
 
   // grow the buffer if we need to
@@ -196,8 +198,10 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   n = fread(p + 24, sizeof(char), nBytes - 24, in->f);
 #endif
   // TODO set error flag if n < (length - 24)?
-  if (n < (nBytes - 24))
+  if (n < (nBytes - 24)) {
+    if(!rec) free(p);
     return 0;
+  }
 
   return marcrec_from_buffer(rec, p, nBytes);
 }

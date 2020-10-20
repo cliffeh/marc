@@ -14,6 +14,7 @@ int main()
         count++;
         marcrec_free(rec);
     }
+    marcfile_close(in);
     fprintf(stdout, "%i/%i valid\n", valid, count);
 
     return count - valid;
