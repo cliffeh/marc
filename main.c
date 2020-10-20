@@ -21,7 +21,7 @@
     "OPTIONS:\n"                                                                  \
     "  -h, --help         print a brief help message and exit\n"                  \
     "  -f, --field SPEC   only output fields adhering to SPEC (note: this flag\n" \
-    "                     is only used by marc-print)\n"                          \
+    "                     is only used by `marc print`)\n"                        \
     "  -l, --limit N      limit processing to the first N records per file\n"     \
     "                     (default: no limit)\n"                                  \
     "  -o, --output FILE  output to FILE (default: stdout)\n"                     \
@@ -189,6 +189,10 @@ int main(int argc, char *argv[])
     {
         free(specs);
         specs = 0;
+    }
+    else if (action != marc_print)
+    {
+        fprintf(stderr, "warning: field specifiers are ignored by actions other than print\n");
     }
 
     if (!out)
