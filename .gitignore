@@ -53,6 +53,7 @@ dkms.conf
 
 # autotools generated
 .deps
+.dirstamp
 .libs
 autom4te.cache
 config.h
@@ -64,6 +65,7 @@ stamp-h?
 
 # compiled executables
 /marc
+test/dynamic-alloc
 
 # ide files
 .vscode

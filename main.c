@@ -181,7 +181,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    marcrec *rec = marcrec_alloc(0, 0);
+    // max record size is 99999, and 10000 seems like a conservative upper bound
+    // for the number of fields any given record is likely to to contain
+    marcrec *rec = marcrec_alloc(100000, 10000);
 
     if (fieldspec_count == 0)
     {

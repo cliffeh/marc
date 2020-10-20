@@ -73,15 +73,18 @@ void marcfile_close(marcfile *mf);
 /**
  * @brief dynamically allocate a new marcrec
  *
- * @param nBytes the number of bytes to allocate for marc data; if zero, 100000 bytes will
- *               be allocated (max data size + 1)
- * @param nFields the number of fields to allocate; if zero, 10000 fields will be allocated
+ * @param nBytes the number of bytes to allocate for marc data
+ * @param nFields the number of fields to allocate
  * @return marcrec* the newly-allocated marcrec
  */
 marcrec *marcrec_alloc(int nBytes, int nFields);
 
 /**
- * @brief free a marcrec that was previously allocated using marcrec_alloc()
+ * @brief free a marcrec
+ * 
+ * note that this will free the marcrec as well as rec->fields and rec->data; if
+ * you don't want this you may set either (or both) field to 0 before calling
+ * marcrec_free
  *
  * @param rec the record to free
  */
@@ -90,22 +93,27 @@ void marcrec_free(marcrec *rec);
 /**
  * @brief read a marcrec from a buffer
  *
- * if rec->fields is non-null this function will assume you want fields processed;
- * otherwise it will only read the raw record
+ * note that this function will consume the input buffer - i.e., will result in
+ * a marcrec with pointers to `buf`
  *
- * @param rec a pointer to an allocated marcrec object to be populated
+ * @param rec a pointer to an allocated marcrec object to be populated; if null,
+ *            and there is data remaining in buf, a new marcrec will be
+ *            allocated that the caller is responsible for freeing
  * @param buf a pointer to a buffer containing a marc record
- * @param len the number of bytes in the marc record, or 0 if the length is unknown and should be computed
- * @return marcrec* a pointer to the marcrec that was read, or 0 if buf had no available bytes
+ * @param nBytes the number of bytes in the marc record, or 0 if the length is
+ *               unknown and should be computed
+ * @return marcrec* a pointer to the marcrec that was read, or 0 if buf had no
+ *                  available bytes
  */
-marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int len);
+marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes);
 
 /**
  * @brief print a marc record in human-readable format
  *
  * @param out the file to write to
  * @param rec the marc record to write
- * @param specs specification of the desired fields to print; if null, print the entire record
+ * @param specs specification of the desired fields to print; if null, print the
+ *              entire record
  * @return int the number of fields written
  */
 int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
@@ -113,12 +121,12 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
 /**
  * @brief read a marcrec from a file
  *
- * if rec->fields is non-null this function will assume you want fields processed;
- * otherwise it will only read the raw record
- *
- * @param rec a pointer to an allocated marcrec object to be populated
+ * @param rec a pointer to an allocated marcrec object to be populated; if null,
+ *            and there is data to be read, a new marcrec will be allocated that
+ *            the caller is responsible for freeing
  * @param in a pointer to an open FILE to read from
- * @return marcrec* a pointer to the marcrec that was read, or 0 if in had no available bytes
+ * @return marcrec* a pointer to the marcrec that was read, or 0 if in had no
+ *                  available data
  */
 marcrec *marcrec_read(marcrec *rec, marcfile *in);
 
@@ -126,7 +134,8 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in);
  * @brief validate a marc record
  *
  * @param rec the record to validate
- * @return int 0 if the marc record has all the appropriate field/record terminators; otherwise non-zero
+ * @return int 0 if the marc record has all the appropriate field/record
+ *             terminators; otherwise non-zero
  */
 int marcrec_validate(const marcrec *rec);
 
@@ -153,8 +162,10 @@ int marcrec_xml(FILE *out, const marcrec *rec);
  *
  * @param out the file to write to
  * @param field the marc field to write
- * @param specs specification of the desired subfields to print; if null, print the entire field
- * @return int 0 if the field wasn't printed (i.e., didn't match any of the specs); 1 otherwise
+ * @param specs specification of the desired subfields to print; if null, print
+ *              the entire field
+ * @return int 0 if the field wasn't printed (i.e., didn't match any of the
+ *             specs); 1 otherwise
  */
 int marcfield_print(FILE *out, const marcfield *field, const fieldspec specs[]);
 

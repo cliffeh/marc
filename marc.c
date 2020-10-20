@@ -66,17 +66,21 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 marcrec *marcrec_alloc(int nBytes, int nFields)
 {
   marcrec *rec = calloc(1, sizeof(marcrec));
-  // max length 99999
-  rec->data = calloc(nBytes ? nBytes : 100000, sizeof(char));
-  // 10000 is a reasonable guess at an upper bound
-  rec->fields = calloc(nFields ? nFields : 10000, sizeof(marcfield));
+  if(nBytes)
+    rec->data = calloc(nBytes, sizeof(char));
+  if(nFields)
+    rec->fields = calloc(nFields, sizeof(marcfield));
   return rec;
 }
 
 void marcrec_free(marcrec *rec)
 {
-  free(rec->fields);
-  free(rec->data);
+  if (!rec) // just in case
+    return;
+  if (rec->fields)
+    free(rec->fields);
+  if (rec->data)
+    free(rec->data);
   free(rec);
 }
 
@@ -132,30 +136,33 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[])
   return n;
 }
 
-marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int length)
+marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes)
 {
-  // you're mine now!
-  rec->data = buf;
-
+  // no data left
+  if(!buf || !(*buf))
+    return 0;
+  
   // total length of record
-  rec->length = (length == 0) ? atoin(buf, 5) : length;
-
+  int length = nBytes ? nBytes : atoin(buf, 5);
   // length of leader + directory
-  rec->base_address = atoin(buf + 12, 5);
-
+  int base_address = atoin(buf + 12, 5);
   // compute the number of fields based on directory size
-  rec->field_count = (rec->base_address - 24 - 1) / 12;
+  int field_count = (base_address - 24 - 1) / 12;
+  
+  // we already have a buffer, need to allocaterecords and fields
+  rec = rec ? rec : marcrec_alloc(0, field_count);
+  rec->data = buf;
+  rec->length = length;
+  rec->base_address = base_address;
+  rec->field_count = field_count;
 
-  // if we've been given storage for fields, assume that we want to process the directory
-  if (rec->fields)
+  // process the directory
+  for (int i = 0; i < rec->field_count; i++)
   {
-    for (int i = 0; i < rec->field_count; i++)
-    {
-      rec->fields[i].directory_entry = rec->data + 24 + i * 12;
-      rec->fields[i].tag = atoin(rec->fields[i].directory_entry, 3);
-      rec->fields[i].length = atoin(rec->fields[i].directory_entry + 3, 4);
-      rec->fields[i].data = rec->data + rec->base_address + atoin(rec->fields[i].directory_entry + 7, 5);
-    }
+    rec->fields[i].directory_entry = rec->data + 24 + i * 12;
+    rec->fields[i].tag = atoin(rec->fields[i].directory_entry, 3);
+    rec->fields[i].length = atoin(rec->fields[i].directory_entry + 3, 4);
+    rec->fields[i].data = rec->data + rec->base_address + atoin(rec->fields[i].directory_entry + 7, 5);
   }
 
   // return a pointer to the newly-populated marcrec
@@ -164,23 +171,27 @@ marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int length)
 
 marcrec *marcrec_read(marcrec *rec, marcfile *in)
 {
-  // read the leader
-  int n = gzread(in->file, rec->data, 24);
+  int n, nBytes;
+  // allocate a buffer if we haven't been given one
+  char *p = rec ? rec->data : malloc(24);
+
+  n = gzread(in->file, p, 24);
   // TODO set error flag if n < 24?
   if (n == 0 || n < 24)
     return 0;
+  nBytes = atoin(p, 5);
 
-  // total length of record
-  int length = atoin(rec->data, 5);
+  // grow the buffer if we need to
+  if (!rec)
+    p = realloc(p, nBytes);
 
-  // read the remainder of the record
-  n = gzread(in->file, rec->data + 24, length - 24);
+  //read the rest of the record
+  n = gzread(in->file, p + 24, nBytes - 24);
   // TODO set error flag if n < (length - 24)?
-  if (n < (length - 24))
+  if (n < (nBytes - 24))
     return 0;
 
-  // process the rest of the record
-  return marcrec_from_buffer(rec, rec->data, length);
+  return marcrec_from_buffer(rec, p, nBytes);
 }
 
 int marcrec_validate(const marcrec *rec)

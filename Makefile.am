@@ -7,9 +7,15 @@ marc_LDADD = libmarc.la
 
 include_HEADERS = marc.h
 
-TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml
+TESTS = test/marc-dump \
+    test/marc-leaders \
+    test/marc-print \
+    test/marc-validate \
+    test/marc-xml \
+    test/dynamic-alloc
 
 check_PROGRAMS = test/dynamic-alloc
+test_dynamic_alloc_LDADD = libmarc.la
 
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
