@@ -548,6 +548,7 @@ TESTS = test/marc-dump \
 test_dynamic_alloc_LDADD = libmarc.la
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
+CLEANFILES = test/*.output test/*.valgrind
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1253,6 +1254,7 @@ mostlyclean-generic:
 	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
