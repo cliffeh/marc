@@ -1414,7 +1414,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --disable-zlib          disable gzipped file support
+  --disable-zlib          disable gzip file support
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12868,8 +12868,8 @@ fi
 done
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable use of zlib for reading gzipped files" >&5
-$as_echo_n "checking whether to enable use of zlib for reading gzipped files... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable use of zlib for reading gzip files" >&5
+$as_echo_n "checking whether to enable use of zlib for reading gzip files... " >&6; }
 # Check whether --enable-zlib was given.
 if test "${enable_zlib+set}" = set; then :
   enableval=$enable_zlib;

@@ -5,9 +5,9 @@ LT_INIT
 AC_PROG_CC
 AC_CHECK_HEADERS(zlib.h)
 
-AC_MSG_CHECKING([whether to enable use of zlib for reading gzipped files])
+AC_MSG_CHECKING([whether to enable use of zlib for reading gzip files])
 AC_ARG_ENABLE([zlib],                                                                                                                
-        AS_HELP_STRING([--disable-zlib],[disable gzipped file support]))
+        AS_HELP_STRING([--disable-zlib],[disable gzip file support]))
 AH_TEMPLATE([USE_ZLIB],
 [Undefine if you do not want to include gzip file support. By default this is defined.])
 if test x"$enable_zlib" != x"no"; then
