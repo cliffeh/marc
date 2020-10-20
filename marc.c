@@ -172,6 +172,15 @@ marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes)
 
 marcrec *marcrec_read(marcrec *rec, marcfile *in)
 {
+// if we've reached end of file let's get out of here
+#ifdef USE_ZLIB
+  if (gzeof(in->gzf))
+    return 0;
+#else
+  if (feof(in->f))
+    return 0;
+#endif
+
   int n, nBytes;
   // allocate a buffer if we haven't been given one
   char *p = rec ? rec->data : malloc(24);
@@ -181,8 +190,10 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   n = fread(p, sizeof(char), 24, in->f);
 #endif
   // TODO set error flag if n < 24?
-  if (n == 0 || n < 24) {
-    if(!rec) free(p);
+  if (n < 24)
+  {
+    if (!rec)
+      free(p);
     return 0;
   }
   nBytes = atoin(p, 5);
@@ -198,8 +209,10 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   n = fread(p + 24, sizeof(char), nBytes - 24, in->f);
 #endif
   // TODO set error flag if n < (length - 24)?
-  if (n < (nBytes - 24)) {
-    if(!rec) free(p);
+  if (n < (nBytes - 24))
+  {
+    if (!rec)
+      free(p);
     return 0;
   }
 
