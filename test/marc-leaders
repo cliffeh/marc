@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./marc leaders test/testfile.marc.gz > test/marc-leaders.output
-cat test/marc-leaders.txt.gz | zcat | diff test/marc-leaders.output -
+zcat < test/testfile.marc.gz | ./marc leaders > test/marc-leaders.output
+zcat < test/marc-leaders.txt.gz | diff test/marc-leaders.output -

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-./marc print test/testfile.marc.gz > test/marc-print.output
-cat test/marc-print.txt.gz | zcat | diff test/marc-print.output -
+zcat < test/testfile.marc.gz | ./marc print > test/marc-print.output
+zcat < test/marc-print.txt.gz | diff test/marc-print.output -

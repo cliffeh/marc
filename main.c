@@ -1,3 +1,4 @@
+#include "config.h"
 #include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -5,7 +6,6 @@
 #include <ctype.h>
 #include "marc.h"
 #include "util.h"
-#include "config.h"
 
 #define USAGE                                                                     \
     "usage: marc COMMAND [OPTIONS] [FILES]\n"                                     \

@@ -3,7 +3,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
@@ -16,7 +18,11 @@
 
 typedef struct marcfile
 {
-  gzFile file;
+#ifdef USE_ZLIB
+  gzFile gzf;
+#else
+  FILE *f;
+#endif
 } marcfile;
 
 typedef struct marcfield

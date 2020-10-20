@@ -1,3 +1,4 @@
+#include "config.h"
 #include "marc.h"
 #include "util.h"
 
@@ -66,9 +67,9 @@ static void marcfield_print_subfields(FILE *out, const marcfield *field, const c
 marcrec *marcrec_alloc(int nBytes, int nFields)
 {
   marcrec *rec = calloc(1, sizeof(marcrec));
-  if(nBytes)
+  if (nBytes)
     rec->data = calloc(nBytes, sizeof(char));
-  if(nFields)
+  if (nFields)
     rec->fields = calloc(nFields, sizeof(marcfield));
   return rec;
 }
@@ -139,16 +140,16 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[])
 marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes)
 {
   // no data left
-  if(!buf || !(*buf))
+  if (!buf || !(*buf))
     return 0;
-  
+
   // total length of record
   int length = nBytes ? nBytes : atoin(buf, 5);
   // length of leader + directory
   int base_address = atoin(buf + 12, 5);
   // compute the number of fields based on directory size
   int field_count = (base_address - 24 - 1) / 12;
-  
+
   // we already have a buffer, need to allocaterecords and fields
   rec = rec ? rec : marcrec_alloc(0, field_count);
   rec->data = buf;
@@ -174,8 +175,11 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   int n, nBytes;
   // allocate a buffer if we haven't been given one
   char *p = rec ? rec->data : malloc(24);
-
-  n = gzread(in->file, p, 24);
+#ifdef USE_ZLIB
+  n = gzread(in->gzf, p, 24);
+#else
+  n = fread(p, sizeof(char), 24, in->f);
+#endif
   // TODO set error flag if n < 24?
   if (n == 0 || n < 24)
     return 0;
@@ -185,8 +189,12 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   if (!rec)
     p = realloc(p, nBytes);
 
-  //read the rest of the record
-  n = gzread(in->file, p + 24, nBytes - 24);
+    //read the rest of the record
+#ifdef USE_ZLIB
+  n = gzread(in->gzf, p + 24, nBytes - 24);
+#else
+  n = fread(p + 24, sizeof(char), nBytes - 24, in->f);
+#endif
   // TODO set error flag if n < (length - 24)?
   if (n < (nBytes - 24))
     return 0;
@@ -330,14 +338,22 @@ int marcrec_xml(FILE *out, const marcrec *rec)
 marcfile *marcfile_open(const char *filename, const char *mode)
 {
   marcfile *r = calloc(1, sizeof(marcfile));
-  r->file = gzopen(filename, mode);
+#ifdef USE_ZLIB
+  r->gzf = gzopen(filename, mode);
+#else
+  r->f = fopen(filename, mode);
+#endif
   return r;
 }
 
 marcfile *marcfile_from_fd(int fd, char *mode)
 {
   marcfile *r = malloc(sizeof(marcfield));
-  r->file = gzdopen(fd, mode);
+#ifdef USE_ZLIB
+  r->gzf = gzdopen(fd, mode);
+#else
+  r->f = fdopen(fd, mode);
+#endif
   return r;
 }
 
@@ -348,6 +364,10 @@ marcfile *marcfile_from_FILE(FILE *file, char *mode)
 
 void marcfile_close(marcfile *mf)
 {
-  gzclose(mf->file);
+#ifdef USE_ZLIB
+  gzclose(mf->gzf);
+#else
+  fclose(mf->f);
+#endif
   free(mf);
 }

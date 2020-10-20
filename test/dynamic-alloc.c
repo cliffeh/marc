@@ -1,8 +1,9 @@
+#include "config.h"
 #include "marc.h"
 
 int main()
 {
-    marcfile *in = marcfile_open("test/testfile.marc.gz", "r");
+    marcfile *in = marcfile_from_FILE(stdin, "r");
     marcrec *rec;
 
     int count = 0, valid = 0;

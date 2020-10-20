@@ -91,8 +91,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = marc$(EXEEXT)
-TESTS = test/marc-dump test/marc-leaders test/marc-print \
-	test/marc-validate test/marc-xml test/dynamic-alloc$(EXEEXT)
 check_PROGRAMS = test/dynamic-alloc$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -539,6 +537,13 @@ libmarc_la_SOURCES = marc.c util.c config.h marc.h
 marc_SOURCES = main.c
 marc_LDADD = libmarc.la
 include_HEADERS = marc.h
+TESTS = test/marc-dump \
+    test/marc-leaders \
+    test/marc-print \
+    test/marc-validate \
+    test/marc-xml \
+    test/test-dynamic-alloc
+
 test_dynamic_alloc_LDADD = libmarc.la
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
@@ -1016,9 +1021,9 @@ test/marc-xml.log: test/marc-xml
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test/dynamic-alloc.log: test/dynamic-alloc$(EXEEXT)
-	@p='test/dynamic-alloc$(EXEEXT)'; \
-	b='test/dynamic-alloc'; \
+test/test-dynamic-alloc.log: test/test-dynamic-alloc
+	@p='test/test-dynamic-alloc'; \
+	b='test/test-dynamic-alloc'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
