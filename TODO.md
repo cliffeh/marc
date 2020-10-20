@@ -6,3 +6,5 @@
 * version bumps?
 * man page
 * error handling for file read errors
+* validate leader characters
+* validate subfield codes/indicators?

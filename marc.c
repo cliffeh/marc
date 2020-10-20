@@ -219,21 +219,29 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   return marcrec_from_buffer(rec, p, nBytes);
 }
 
-int marcrec_validate(const marcrec *rec)
+int marcrec_validate(const marcrec *rec, FILE *verbose)
 {
   int r = 0;
   if (rec->data[rec->length - 1] != RECORD_TERMINATOR)
+  {
+    if (verbose)
+      fprintf(verbose, "warning: missing record terminator\n");
     r |= MISSING_RECORD_TERMINATOR;
+  }
   if (rec->data[rec->base_address - 1] != FIELD_TERMINATOR)
+  {
     r |= MISSING_FIELD_TERMINATOR;
+    if (verbose)
+      fprintf(verbose, "warning: missing field terminator\n");
+  }
 
   for (int i = 0; i < rec->field_count; i++)
   {
     if (rec->fields[i].data[rec->fields[i].length - 1] != FIELD_TERMINATOR)
     {
+      if (verbose)
+        fprintf(verbose, "warning: missing field terminator\n");
       r |= MISSING_FIELD_TERMINATOR;
-      // no sense continuing...
-      return r;
     }
   }
 

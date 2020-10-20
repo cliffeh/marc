@@ -50,7 +50,8 @@ static int marc_print(FILE *out, marcrec *rec, fieldspec specs[])
 
 static int marc_validate(FILE *out, marcrec *rec, fieldspec specs[])
 {
-    return (marcrec_validate(rec) == 0) ? 1 : 0;
+    // TODO have main pass in the verbose file, or make it a global var
+    return (marcrec_validate(rec, stderr) == 0) ? 1 : 0;
 }
 
 static void xml_preamble(FILE *out)

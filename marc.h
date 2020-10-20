@@ -15,6 +15,7 @@
 // error constants
 #define MISSING_FIELD_TERMINATOR (1 << 0)
 #define MISSING_RECORD_TERMINATOR (1 << 1)
+#define INVALID_LEADER_CHARACTER (1 << 2)
 
 typedef struct marcfile
 {
@@ -140,10 +141,12 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in);
  * @brief validate a marc record
  *
  * @param rec the record to validate
+ * @param verbose if non-null, print a brief message to this file upon
+ *                discovering each error
  * @return int 0 if the marc record has all the appropriate field/record
  *             terminators; otherwise non-zero
  */
-int marcrec_validate(const marcrec *rec);
+int marcrec_validate(const marcrec *rec, FILE *verbose);
 
 /**
  * @brief write a marc record to a file
