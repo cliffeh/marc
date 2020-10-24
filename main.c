@@ -101,6 +101,11 @@ int main(int argc, char *argv[])
     {
         action = marc_validate;
     }
+    else if (strcmp("version", argv[1]) == 0 || strcmp("--version", argv[1]) == 0 || strcmp("-V", argv[1]) == 0)
+    {
+        fprintf(stdout, PACKAGE_STRING "\n");
+        exit(0);
+    }
     else if (strcmp("xml", argv[1]) == 0)
     {
         preamble = xml_preamble;
