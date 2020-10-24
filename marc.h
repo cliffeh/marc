@@ -141,12 +141,10 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in);
  * @brief validate a marc record
  *
  * @param rec the record to validate
- * @param verbose if non-null, print a brief message to this file upon
- *                discovering each error
  * @return int 0 if the marc record has all the appropriate field/record
  *             terminators; otherwise non-zero
  */
-int marcrec_validate(const marcrec *rec, FILE *verbose);
+int marcrec_validate(const marcrec *rec);
 
 /**
  * @brief write a marc record to a file
