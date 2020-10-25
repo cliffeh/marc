@@ -187,6 +187,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    marcfile in;
     // max record size is 99999, and 10000 seems like a conservative upper bound
     // for the number of fields any given record is likely to to contain
     marcrec *rec = marcrec_alloc(100000, 10000);
@@ -216,14 +217,15 @@ int main(int argc, char *argv[])
     int total_valid = 0, total_count = 0;
     for (int i = 0; i < infile_count; i++)
     {
-        marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(stdin) : marcfile_open(infiles[i]);
+        int rc = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(&in, stdin) : marcfile_open(&in, infiles[i]);
+
         int valid = 0, count = 0;
-        while (marcrec_read(rec, in) != 0 && (limit - count) != 0)
+        while (marcrec_read(rec, &in) != 0 && (limit - count) != 0)
         {
             count++;
             valid += action(out, rec, specs);
         }
-        marcfile_close(in);
+        marcfile_close(&in);
 
         total_valid += valid;
         total_count += count;

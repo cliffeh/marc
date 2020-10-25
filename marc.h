@@ -48,26 +48,29 @@ typedef struct fieldspec
 /**
  * @brief open a file for reading marc records
  *
+ * @param mf a pointer to an allocated marcfile to open
  * @param filename the name of the file to open
- * @return marcfile* a pointer to the open marcfile
+ * @return int zero if the file was successfully opened, non-zero otherwise
  */
-marcfile *marcfile_open(const char *filename);
+int marcfile_open(marcfile *mf, const char *filename);
 
 /**
  * @brief convert a raw file descriptor into a marcfile
  *
+ * @param mf a pointer to an allocated marcfile to open
  * @param fd the file descriptor to open
- * @return marcfile* a pointer to the open marcfile
+ * @return int zero if the file was successfully opened, non-zero otherwise
  */
-marcfile *marcfile_from_fd(int fd);
+int marcfile_from_fd(marcfile *mf, int fd);
 
 /**
  * @brief convert an stdio FILE into a marcfile
  *
+ * @param mf a pointer to an allocated marcfile to open
  * @param file the FILE to open
- * @return marcfile* a pointer to the open marcfile
+ * @return int zero if the file was successfully opened, non-zero otherwise
  */
-marcfile *marcfile_from_FILE(FILE *file);
+int marcfile_from_FILE(marcfile *mf, FILE *file);
 
 /**
  * @brief close the marcfile
@@ -75,6 +78,16 @@ marcfile *marcfile_from_FILE(FILE *file);
  * @param file the file to be closed
  */
 void marcfile_close(marcfile *mf);
+
+/**
+ * @brief checks if the error indicator for the underlying stream has been set
+ *
+ * @param mf the marcfile to check for errors
+ * @param msg a buffer to put a message describing the error into; if null this
+ *            parameter will be ignored
+ * @return int the error indicator that was set, or 0 if no error
+ */
+int marcfile_error(marcfile *mf, char *msg);
 
 /**
  * @brief dynamically allocate a new marcrec

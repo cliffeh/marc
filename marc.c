@@ -354,31 +354,27 @@ int marcrec_xml(FILE *out, const marcrec *rec)
   return 1;
 }
 
-marcfile *marcfile_open(const char *filename)
+int marcfile_open(marcfile *mf, const char *filename)
 {
-  marcfile *r = calloc(1, sizeof(marcfile));
 #ifdef USE_ZLIB
-  r->gzf = gzopen(filename, "r");
+  return ((mf->gzf = gzopen(filename, "r")) == 0);
 #else
-  r->f = fopen(filename, "r");
+  return ((mf->f = fopen(filename, "r")) == 0);
 #endif
-  return r;
 }
 
-marcfile *marcfile_from_fd(int fd)
+int marcfile_from_fd(marcfile *mf, int fd)
 {
-  marcfile *r = malloc(sizeof(marcfield));
 #ifdef USE_ZLIB
-  r->gzf = gzdopen(fd, "r");
+  return ((mf->gzf = gzdopen(fd, "r")) == 0);
 #else
-  r->f = fdopen(fd, "r");
+  return ((mf->f = fdopen(fd, "r")) == 0);
 #endif
-  return r;
 }
 
-marcfile *marcfile_from_FILE(FILE *file)
+int marcfile_from_FILE(marcfile *mf, FILE *file)
 {
-  return marcfile_from_fd(fileno(file));
+  return marcfile_from_fd(mf, fileno(file));
 }
 
 void marcfile_close(marcfile *mf)
@@ -388,5 +384,20 @@ void marcfile_close(marcfile *mf)
 #else
   fclose(mf->f);
 #endif
-  free(mf);
+}
+
+int marcfile_error(marcfile *mf, char *msg)
+{
+  int num;
+#ifdef USE_ZLIB
+  char tmp[1024];
+  sprintf(msg ? msg : tmp, "%s", gzerror(mf->gzf, &num));
+#else
+  num = ferror(mf->f);
+  if (msg)
+  {
+    sprintf(msg, "%s", strerror(num));
+  }
+#endif
+  return num;
 }
