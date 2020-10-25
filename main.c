@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
         int rc = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(&in, stdin) : marcfile_open(&in, infiles[i]);
         if (rc)
         {
-            fprintf(stderr, "error: %s: %s\n", infiles[i], strerror(errno));
+            fprintf(stderr, "error: could not open '%s': %s\n", infiles[i], strerror(errno));
         }
         else
         {

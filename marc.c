@@ -200,9 +200,11 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
 
   // grow the buffer if we need to
   if (!rec)
+  {
     p = realloc(p, nBytes);
+  }
 
-    //read the rest of the record
+  //read the rest of the record
 #ifdef USE_ZLIB
   n = gzread(in->gzf, p + 24, nBytes - 24);
 #else
