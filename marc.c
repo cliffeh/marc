@@ -145,8 +145,18 @@ marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes)
 
   // total length of record
   int length = nBytes ? nBytes : atoin(buf, 5);
+  if (length < 0)
+  {
+    // TODO capture error information somewhere?
+    return 0;
+  }
   // length of leader + directory
   int base_address = atoin(buf + 12, 5);
+  if (base_address < 0)
+  {
+    // TODO capture error information somewhere?
+    return 0;
+  }
   // compute the number of fields based on directory size
   int field_count = (base_address - 24 - 1) / 12;
 
@@ -160,6 +170,7 @@ marcrec *marcrec_from_buffer(marcrec *rec, char *buf, int nBytes)
   // process the directory
   for (int i = 0; i < rec->field_count; i++)
   {
+    // TODO handle bad directory data
     rec->fields[i].directory_entry = rec->data + 24 + i * 12;
     rec->fields[i].tag = atoin(rec->fields[i].directory_entry, 3);
     rec->fields[i].length = atoin(rec->fields[i].directory_entry + 3, 4);
@@ -189,14 +200,21 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
 #else
   n = fread(p, sizeof(char), 24, in->f);
 #endif
-  // TODO set error flag if n < 24?
   if (n < 24)
   {
+    in->errnum = LEADER_NOT_ENOUGH_BYTES;
     if (!rec)
+    {
       free(p);
+    }
     return 0;
   }
   nBytes = atoin(p, 5);
+  if (nBytes < 0)
+  {
+    in->errnum = INVALID_MARC_RECORD_LENGTH;
+    return 0;
+  }
 
   // grow the buffer if we need to
   if (!rec)
@@ -213,8 +231,11 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
   // TODO set error flag if n < (length - 24)?
   if (n < (nBytes - 24))
   {
+    in->errnum = RECORD_NOT_ENOUGH_BYTES;
     if (!rec)
+    {
       free(p);
+    }
     return 0;
   }
 
@@ -356,27 +377,47 @@ int marcrec_xml(FILE *out, const marcrec *rec)
   return 1;
 }
 
-int marcfile_open(marcfile *mf, const char *filename)
+marcfile *marcfile_open(const char *filename)
 {
+  marcfile *mf = calloc(1, sizeof(marcfile));
 #ifdef USE_ZLIB
-  return ((mf->gzf = gzopen(filename, "r")) == 0);
+  if (!(mf->gzf = gzopen(filename, "r")))
+  {
+    free(mf);
+    mf = 0;
+  }
 #else
-  return ((mf->f = fopen(filename, "r")) == 0);
+  if (!(mf->f = fopen(filename, "r")))
+  {
+    free(mf);
+    mf = 0;
+  }
 #endif
+  return mf;
 }
 
-int marcfile_from_fd(marcfile *mf, int fd)
+marcfile *marcfile_from_fd(int fd)
 {
+  marcfile *mf = calloc(1, sizeof(marcfile));
 #ifdef USE_ZLIB
-  return ((mf->gzf = gzdopen(fd, "r")) == 0);
+  if (!(mf->gzf = gzdopen(fd, "r")))
+  {
+    free(mf);
+    mf = 0;
+  }
 #else
-  return ((mf->f = fdopen(fd, "r")) == 0);
+  if (!(mf->f = fdopen(fd, "r")))
+  {
+    free(mf);
+    mf = 0;
+  }
 #endif
+  return mf;
 }
 
-int marcfile_from_FILE(marcfile *mf, FILE *file)
+marcfile *marcfile_from_FILE(FILE *file)
 {
-  return marcfile_from_fd(mf, fileno(file));
+  return marcfile_from_fd(fileno(file));
 }
 
 void marcfile_close(marcfile *mf)
@@ -386,20 +427,36 @@ void marcfile_close(marcfile *mf)
 #else
   fclose(mf->f);
 #endif
+  free(mf);
 }
 
 int marcfile_error(marcfile *mf, char *msg)
 {
-  int num;
+
+  if (!msg || !mf->errnum)
+    return mf->errnum;
+
+  int nBytes, num;
+  switch (mf->errnum)
+  {
+  case LEADER_NOT_ENOUGH_BYTES:
+    nBytes = sprintf(msg, "leader had fewer than 24 bytes");
+    break;
+  case RECORD_NOT_ENOUGH_BYTES:
+    nBytes = sprintf(msg, "input had fewer bytes than record length");
+    break;
+  case INVALID_MARC_RECORD_LENGTH:
+    nBytes = sprintf(msg, "invalid record length in leader");
+    break;
+  }
 #ifdef USE_ZLIB
-  char tmp[1024];
-  sprintf(msg ? msg : tmp, "%s", gzerror(mf->gzf, &num));
+  const char *tmp = gzerror(mf->gzf, &num);
+  // if there was a related read error on the underlying file then append it
+  if (num)
+    sprintf(msg + nBytes, ": %s", tmp);
 #else
   num = ferror(mf->f);
-  if (msg)
-  {
-    sprintf(msg, "%s", strerror(num));
-  }
 #endif
-  return num;
+
+  return mf->errnum;
 }

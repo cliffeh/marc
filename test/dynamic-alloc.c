@@ -3,17 +3,17 @@
 
 int main()
 {
-    marcfile in;
+    
     marcrec *rec;
 
-    int rc = marcfile_from_FILE(&in, stdin);
-    if(rc) {
+    marcfile *in = marcfile_from_FILE(stdin);
+    if(!in) {
         fprintf(stderr, "error: could not open stdin?\n");
-        exit(rc);
+        exit(1);
     }
 
     int count = 0, valid = 0;
-    for (rec = marcrec_read(0, &in); rec; rec = marcrec_read(0, &in))
+    for (rec = marcrec_read(0, in); rec; rec = marcrec_read(0, in))
     {
         if (marcrec_validate(rec) == 0)
         {
@@ -22,7 +22,7 @@ int main()
         count++;
         marcrec_free(rec);
     }
-    marcfile_close(&in);
+    marcfile_close(in);
     fprintf(stdout, "%i/%i valid\n", valid, count);
 
     return count - valid;

@@ -6,21 +6,25 @@
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
-#include <string.h>
-#include <errno.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
 #define RECORD_TERMINATOR 0x1d
 #define SUBFIELD_DELIMITER 0x1f
 
-// error constants
+// validation constants
 #define MISSING_FIELD_TERMINATOR (1 << 0)
 #define MISSING_RECORD_TERMINATOR (1 << 1)
 #define INVALID_LEADER_CHARACTER (1 << 2)
 
+// error constants
+#define LEADER_NOT_ENOUGH_BYTES 1
+#define RECORD_NOT_ENOUGH_BYTES 2
+#define INVALID_MARC_RECORD_LENGTH 3
+
 typedef struct marcfile
 {
+  int errnum;
 #ifdef USE_ZLIB
   gzFile gzf;
 #else
@@ -50,34 +54,31 @@ typedef struct fieldspec
 /**
  * @brief open a file for reading marc records
  *
- * @param mf a pointer to an allocated marcfile to open
  * @param filename the name of the file to open
- * @return int zero if the file was successfully opened, non-zero otherwise
+ * @return marcfile* a pointer to an open marcfile, or null on error
  */
-int marcfile_open(marcfile *mf, const char *filename);
+marcfile *marcfile_open(const char *filename);
 
 /**
  * @brief convert a raw file descriptor into a marcfile
  *
- * @param mf a pointer to an allocated marcfile to open
  * @param fd the file descriptor to open
- * @return int zero if the file was successfully opened, non-zero otherwise
+ * @return marcfile* a pointer to an open marcfile, or null on error
  */
-int marcfile_from_fd(marcfile *mf, int fd);
+marcfile *marcfile_from_fd(int fd);
 
 /**
- * @brief convert an stdio FILE into a marcfile
+ * @brief convert a FILE into a marcfile
  *
- * @param mf a pointer to an allocated marcfile to open
  * @param file the FILE to open
- * @return int zero if the file was successfully opened, non-zero otherwise
+ * @return marcfile* a pointer to an open marcfile, or null on error
  */
-int marcfile_from_FILE(marcfile *mf, FILE *file);
+marcfile *marcfile_from_FILE(FILE *file);
 
 /**
  * @brief close the marcfile
  *
- * @param file the file to be closed
+ * @param file the marcfile to be closed
  */
 void marcfile_close(marcfile *mf);
 
@@ -142,12 +143,12 @@ int marcrec_print(FILE *out, const marcrec *rec, const fieldspec specs[]);
 /**
  * @brief read a marcrec from a file
  *
- * @param rec a pointer to an allocated marcrec object to be populated; if null,
+ * @param rec a pointer to an allocated marcrec object to be populated; if null
  *            and there is data to be read, a new marcrec will be allocated that
  *            the caller is responsible for freeing
- * @param in a pointer to an open FILE to read from
- * @return marcrec* a pointer to the marcrec that was read, or 0 if in had no
- *                  available data
+ * @param in a pointer to an open marcrec to read from
+ * @return marcrec* a pointer to the marcrec that was read, or 0 if either eof
+ *                  was reached or there was an error
  */
 marcrec *marcrec_read(marcrec *rec, marcfile *in);
 
