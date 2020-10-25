@@ -49,10 +49,9 @@ typedef struct fieldspec
  * @brief open a file for reading marc records
  *
  * @param filename the name of the file to open
- * @param mode mode to open the file in (must be "r")
  * @return marcfile* a pointer to the open marcfile
  */
-marcfile *marcfile_open(const char *filename, const char *mode);
+marcfile *marcfile_open(const char *filename);
 
 /**
  * @brief convert a raw file descriptor into a marcfile
@@ -60,7 +59,7 @@ marcfile *marcfile_open(const char *filename, const char *mode);
  * @param fd the file descriptor to open
  * @return marcfile* a pointer to the open marcfile
  */
-marcfile *marcfile_from_fd(int fd, char *mode);
+marcfile *marcfile_from_fd(int fd);
 
 /**
  * @brief convert an stdio FILE into a marcfile
@@ -68,7 +67,7 @@ marcfile *marcfile_from_fd(int fd, char *mode);
  * @param file the FILE to open
  * @return marcfile* a pointer to the open marcfile
  */
-marcfile *marcfile_from_FILE(FILE *file, char *mode);
+marcfile *marcfile_from_FILE(FILE *file);
 
 /**
  * @brief close the marcfile

@@ -354,31 +354,31 @@ int marcrec_xml(FILE *out, const marcrec *rec)
   return 1;
 }
 
-marcfile *marcfile_open(const char *filename, const char *mode)
+marcfile *marcfile_open(const char *filename)
 {
   marcfile *r = calloc(1, sizeof(marcfile));
 #ifdef USE_ZLIB
-  r->gzf = gzopen(filename, mode);
+  r->gzf = gzopen(filename, "r");
 #else
-  r->f = fopen(filename, mode);
+  r->f = fopen(filename, "r");
 #endif
   return r;
 }
 
-marcfile *marcfile_from_fd(int fd, char *mode)
+marcfile *marcfile_from_fd(int fd)
 {
   marcfile *r = malloc(sizeof(marcfield));
 #ifdef USE_ZLIB
-  r->gzf = gzdopen(fd, mode);
+  r->gzf = gzdopen(fd, "r");
 #else
-  r->f = fdopen(fd, mode);
+  r->f = fdopen(fd, "r");
 #endif
   return r;
 }
 
-marcfile *marcfile_from_FILE(FILE *file, char *mode)
+marcfile *marcfile_from_FILE(FILE *file)
 {
-  return marcfile_from_fd(fileno(file), mode);
+  return marcfile_from_fd(fileno(file));
 }
 
 void marcfile_close(marcfile *mf)

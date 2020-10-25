@@ -3,7 +3,7 @@
 
 int main()
 {
-    marcfile *in = marcfile_from_FILE(stdin, "r");
+    marcfile *in = marcfile_from_FILE(stdin);
     marcrec *rec;
 
     int count = 0, valid = 0;
