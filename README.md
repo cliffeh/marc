@@ -3,7 +3,16 @@
 A library and a set of command-line tools for manipulating MARC records.
 
 ## Building
+To build the marc library and command-line tool:
 > `./configure && make`
+
+## Testing
+To run unit tests:
+> `make check`
+
+## Installing
+Depending on your environment this may require elevated privileges:
+> `make install`
 
 ## Running
 ```
@@ -52,10 +61,16 @@ Note: if no input files are provided this program will read from stdin
 ```
 
 ## About
-In a previous life I worked for the office of research at a non-profit that provided services to libraries. Some of what we did involved writing small, efficient C programs that would troll through bibliographic records and tease out interesting bits of information. I recently got an "itch" to revisit that, so I wrote this little C library with some nice functions for processing MARC records.
+In a previous life I worked for the office of research at a non-profit that
+provided services to libraries. Some of what we did involved writing small,
+efficient C programs that would troll through bibliographic records and tease
+out interesting bits of information. I recently got an "itch" to revisit that,
+so I wrote this little C library with some nice functions for processing MARC
+records.
 
-There are also a few convenient command-line tools `marc-*` described above (print, validate, etc.)
+There ia also a reference implementation viz the command-line tool `marc` with a
+few useful functions described above (print, validate, etc.)
 
 ## References
 * [MARC-21 documentation](http://www.loc.gov/marc/bibliographic/)
-* [Library of Congress downloadable compressed records](http://www.loc.gov/marc/bibliographic/)
+* [Library of Congress downloadable records](http://www.loc.gov/marc/bibliographic/)
