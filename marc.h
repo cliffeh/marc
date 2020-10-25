@@ -6,6 +6,8 @@
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
+#include <string.h>
+#include <errno.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
