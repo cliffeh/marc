@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "marc.h"
 #include "util.h"
 
@@ -218,22 +219,28 @@ int main(int argc, char *argv[])
     for (int i = 0; i < infile_count; i++)
     {
         int rc = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(&in, stdin) : marcfile_open(&in, infiles[i]);
-
-        int valid = 0, count = 0;
-        while (marcrec_read(rec, &in) != 0 && (limit - count) != 0)
+        if (rc)
         {
-            count++;
-            valid += action(out, rec, specs);
+            fprintf(stderr, "error: %s: %s\n", infiles[i], strerror(errno));
         }
-        marcfile_close(&in);
-
-        total_valid += valid;
-        total_count += count;
-
-        if (verbose)
+        else
         {
-            fprintf(log, "%s: %i/%i (total: %i/%i)\n",
-                    infiles[i], valid, count, total_valid, total_count);
+            int valid = 0, count = 0;
+            while (marcrec_read(rec, &in) != 0 && (limit - count) != 0)
+            {
+                count++;
+                valid += action(out, rec, specs);
+            }
+            marcfile_close(&in);
+
+            total_valid += valid;
+            total_count += count;
+
+            if (verbose)
+            {
+                fprintf(log, "%s: %i/%i (total: %i/%i)\n",
+                        infiles[i], valid, count, total_valid, total_count);
+            }
         }
     }
 
