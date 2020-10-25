@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
     if (preamble)
         preamble(out);
 
-    int total_valid = 0, total_count = 0;
+    int total_valid = 0, total_count = 0, rc = 0;
     for (int i = 0; i < infile_count; i++)
     {
         marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(stdin) : marcfile_open(infiles[i]);
@@ -230,6 +230,12 @@ int main(int argc, char *argv[])
                 count++;
                 valid += action(out, rec, specs);
             }
+            char errbuf[1024];
+            if(marcfile_error(in, errbuf)) {
+                rc = 1;
+                fprintf(stderr, "error: %s\n", errbuf);
+            }
+
             marcfile_close(in);
 
             total_valid += valid;
@@ -252,5 +258,5 @@ int main(int argc, char *argv[])
         free(specs);
     marcrec_free(rec);
 
-    return (total_valid == total_count) ? 0 : 1;
+    return rc ? rc : ((total_valid == total_count) ? 0 : 1);
 }

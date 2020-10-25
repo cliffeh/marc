@@ -202,7 +202,8 @@ marcrec *marcrec_read(marcrec *rec, marcfile *in)
 #endif
   if (n < 24)
   {
-    in->errnum = LEADER_NOT_ENOUGH_BYTES;
+    if(n != 0) // eof doesn't catch this?
+      in->errnum = LEADER_NOT_ENOUGH_BYTES;
     if (!rec)
     {
       free(p);
