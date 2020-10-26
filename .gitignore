@@ -60,7 +60,7 @@ config.h
 config.log
 config.status
 libtool
-Makefile
+/Makefile
 stamp-h?
 
 # compiled executables

@@ -1,0 +1,35 @@
+package marc;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+
+public class MarcReader {
+    private InputStream in;
+    
+    public MarcReader(InputStream in) {
+        this.in = in;
+    }
+
+    public synchronized MarcRecord read() throws IOException, ParseException {
+        byte[] leader = new byte[24];
+        
+        int n = in.readNBytes(leader, 0, 24);
+        if(n == 0) { // eof
+            return null;
+        } else if(n < 24) {
+            throw new IOException("fewer than 24 bytes received for leader; got " + n + " bytes");
+        }
+
+        int len = Util.atoin(leader, 0, 5);
+
+        byte[] data = new byte[len-24];
+        n = in.readNBytes(data, 0, len-24);  
+        
+        if(n < (len-24)) {
+            throw new IOException("not enough bytes; expected " + (len-24) + ", got " + n);
+        }
+
+        return new MarcRecord(leader, data);
+    }
+}
