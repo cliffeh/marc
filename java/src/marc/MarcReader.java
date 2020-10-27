@@ -21,15 +21,16 @@ public class MarcReader {
             throw new IOException("fewer than 24 bytes received for leader; got " + n + " bytes");
         }
 
-        int len = Util.atoin(leader, 0, 5);
+        int len = Util.atoin(leader, 0, 5); // throws ParseException
 
-        byte[] data = new byte[len-24];
-        n = in.readNBytes(data, 0, len-24);  
+        byte[] data = new byte[len];
+        System.arraycopy(leader, 0, data, 0, 24);
+        n = in.readNBytes(data, 24, len-24); 
         
         if(n < (len-24)) {
             throw new IOException("not enough bytes; expected " + (len-24) + ", got " + n);
         }
 
-        return new MarcRecord(leader, data);
+        return new MarcRecord(data);
     }
 }
