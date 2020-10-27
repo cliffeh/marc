@@ -1,7 +1,9 @@
 package marc;
 
+import java.nio.ByteBuffer;
+
 public class DataField extends MarcField {
-    public byte[] indicators;
-    private byte[] data;
-    private MarcSubfield[] subfields;
+    public DataField(int tag, ByteBuffer data) {
+        super(tag, data);
+    }
 }
