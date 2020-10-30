@@ -1,3 +1,4 @@
+* enable writes!
 * error checking/recovery
 * json output?
 * max width/formatting?
