@@ -1,7 +1,6 @@
 package marc;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.ParseException;
 
 public class Main {
@@ -10,8 +9,9 @@ public class Main {
             MarcReader in = new MarcReader(System.in);
             MarcRecord rec = null;
             while ((rec = in.read()) != null) {
-                rec.write(System.out);
+                rec.process().write(System.out);
             }
+            System.out.flush();
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.exit(1);
