@@ -1,4 +1,4 @@
-AC_INIT([marc], [0.0.1], [cliff.snyder@gmail.com])
+AC_INIT([marc], m4_esyscmd_s([cat VERSION]), [cliff.snyder@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AM_PROG_AR
 LT_INIT
