@@ -81,6 +81,11 @@ int main(int argc, char *argv[])
     int (*action)(FILE *, marcrec *, fieldspec *) = 0;
     void (*postamble)(FILE *) = 0;
 
+    if(argc == 1) {
+        fprintf(stderr, USAGE);
+        exit(1);
+    }
+
     if (strcmp("dump", argv[1]) == 0)
     {
         action = marc_dump;
