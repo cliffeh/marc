@@ -30,7 +30,7 @@ public class Main {
                 else
                     in = pb; // plaintext
 
-                MarcReader reader = new MarcReader(in);
+                Reader reader = new Reader(in);
                 Record rec = null;
                 while ((rec = reader.read()) != null) {
                     rec.process(true).write(System.out);

@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 
-public class MarcReader {
+public class Reader {
     private InputStream in;
     
-    public MarcReader(InputStream in) {
+    public Reader(InputStream in) {
         this.in = in;
     }
 
