@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DataField extends Field {
     private byte[] indicators;
-    private List<MarcSubfield> subfields;
+    private List<Subfield> subfields;
 
     public DataField(int tag, ByteBuffer data) {
         super(tag, data);
@@ -24,7 +24,7 @@ public class DataField extends Field {
         indicators[0] = data.get();
         indicators[1] = data.get();
 
-        subfields = new ArrayList<MarcSubfield>();
+        subfields = new ArrayList<Subfield>();
 
         byte b = data.get();
         while (data.hasRemaining()) {
@@ -39,7 +39,7 @@ public class DataField extends Field {
             }
             int pos = data.position();
             ByteBuffer subfieldData = data.reset().slice().limit(limit);
-            subfields.add(new MarcSubfield(code, subfieldData));
+            subfields.add(new Subfield(code, subfieldData));
             data.position(pos);
         }
 
@@ -53,7 +53,7 @@ public class DataField extends Field {
         } else {
             out.write(indicators[0]);
             out.write(indicators[1]);
-            for (MarcSubfield subfield : subfields) {
+            for (Subfield subfield : subfields) {
                 out.write(Constants.SUBFIELD_DELIMITER);
                 subfield.write(out);
             }
