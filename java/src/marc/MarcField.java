@@ -18,14 +18,15 @@ public abstract class MarcField {
         return (tag < 10);
     }
 
-    public void write(OutputStream out) throws IOException {
+    public synchronized void write(OutputStream out) throws IOException {
         data.position(0);
         while(data.hasRemaining()) {
             out.write(data.get());
         }
+        out.write(Constants.FIELD_TERMINATOR);
     }
 
-    public MarcField process() throws ParseException {
+    public synchronized MarcField process() throws ParseException {
         return this;
     }
 }

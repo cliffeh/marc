@@ -17,11 +17,7 @@ public class MarcRecord {
         this.fields = null;
     }
 
-    public int getLength() {
-        return data.limit();
-    }
-
-    public MarcRecord process(boolean deep) throws ParseException {
+    public synchronized MarcRecord process(boolean deep) throws ParseException {
         data.position(12);
         baseAddress = Util.atoin(data, 5);
 
@@ -46,15 +42,7 @@ public class MarcRecord {
         return this;
     }
 
-    public boolean validate() {
-        return true;
-    }
-
-    public ByteBuffer getLeader() {
-        return data.rewind().slice().limit(24);
-    }
-
-    public void write(OutputStream out) throws IOException {
+    public synchronized void write(OutputStream out) throws IOException {
         if (fields == null) {
             out.write(data.array());
         } else {

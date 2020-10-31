@@ -9,7 +9,6 @@ public class MarcSubfield {
     private ByteBuffer data;
 
     public MarcSubfield(char code, ByteBuffer data) {
-        System.err.println("new subfield: '" + code + "' " + data);
         this.code = code;
         this.data = data;
     }

@@ -15,29 +15,42 @@ public class DataField extends MarcField {
         super(tag, data);
         indicators = new byte[2];
         subfields = null;
+        System.err.println("new data field: " + tag);
     }
 
     @Override
-    public MarcField process() throws ParseException {
+    public synchronized MarcField process() throws ParseException {
         data.position(0);
 
         indicators[0] = data.get();
         indicators[1] = data.get();
 
-        byte b = data.get();
-        if (b != Constants.SUBFIELD_DELIMITER) {
-            throw new ParseException("expected subfield delimiter, got byte '" + b + "'", 2);
-        }
-
         subfields = new ArrayList<MarcSubfield>();
 
-        // TODO implement
+        byte b;
+        while ((b = data.get()) != Constants.FIELD_TERMINATOR && data.hasRemaining()) {
+            if (b != Constants.SUBFIELD_DELIMITER) {
+                throw new ParseException("expected subfield delimiter, got byte '" + b + "'", 2);
+            }
+            char code = (char)data.get();
+            data.mark();
+            int limit = 0;
+            while(data.hasRemaining() && ((b = data.get()) != Constants.SUBFIELD_DELIMITER)) {
+                // System.err.println("b: " + b);
+                limit++;
+            }
+            int pos = data.position() - 1;
+            System.err.println("char: " + code + " ; pos: " + pos);
+            ByteBuffer subfieldData = data.reset().slice().limit(limit);
+            subfields.add(new MarcSubfield(code, subfieldData));
+            data.position(pos);
+        }
 
         return this;
     }
 
     @Override
-    public void write(OutputStream out) throws IOException {
+    public synchronized void write(OutputStream out) throws IOException {
         if (subfields == null) {
             super.write(out);
         } else {

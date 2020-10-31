@@ -2,4 +2,4 @@
 
 TESTFILE="../test/testfile.marc.gz"
 
-zcat "$TESTFILE" | bin/marc > tmpfil && zcat "$TESTFILE" | diff tmpfil -
+zcat < "$TESTFILE" | bin/marc > tmpfil && zcat < "$TESTFILE" | diff tmpfil -
