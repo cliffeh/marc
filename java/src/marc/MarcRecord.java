@@ -31,12 +31,13 @@ public class MarcRecord {
             int fieldLength = Util.atoin(directory, 4);
             int fieldPosition = Util.atoin(directory, 5);
 
-            ByteBuffer current = fieldData.position(fieldPosition).slice().limit(fieldLength);
+            ByteBuffer current = fieldData.position(fieldPosition).slice().limit(fieldLength - 1);
             MarcField field = MarcField.isControlField(tag) ? new ControlField(tag, current)
                     : new DataField(tag, current);
 
             if (deep)
                 field = field.process();
+
             fields.add(field);
         }
         return this;
