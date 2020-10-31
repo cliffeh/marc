@@ -7,7 +7,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataField extends MarcField {
+public class DataField extends Field {
     private byte[] indicators;
     private List<MarcSubfield> subfields;
 
@@ -18,7 +18,7 @@ public class DataField extends MarcField {
     }
 
     @Override
-    public synchronized MarcField process() throws ParseException {
+    public synchronized Field process() throws ParseException {
         data.position(0);
 
         indicators[0] = data.get();

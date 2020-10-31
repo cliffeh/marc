@@ -11,7 +11,7 @@ public class MarcReader {
         this.in = in;
     }
 
-    public synchronized MarcRecord read() throws IOException, ParseException {
+    public synchronized Record read() throws IOException, ParseException {
         byte[] leader = new byte[24];
         
         int n = in.readNBytes(leader, 0, 24);
@@ -31,6 +31,6 @@ public class MarcReader {
             throw new IOException("not enough bytes; expected " + (len-24) + ", got " + n);
         }
 
-        return new MarcRecord(data);
+        return new Record(data);
     }
 }

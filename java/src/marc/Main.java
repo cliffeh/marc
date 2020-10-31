@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             MarcReader in = new MarcReader(System.in);
-            MarcRecord rec = null;
+            Record rec = null;
             while ((rec = in.read()) != null) {
                 rec.process(true).write(System.out);
             }
