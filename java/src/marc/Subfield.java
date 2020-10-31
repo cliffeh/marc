@@ -13,7 +13,7 @@ public class Subfield {
         this.data = data;
     }
 
-    public void write(OutputStream out) throws IOException {
+    public synchronized void write(OutputStream out) throws IOException {
         out.write(code);
         data.position(0);
         while (data.hasRemaining()) {
