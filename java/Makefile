@@ -13,7 +13,7 @@ build:
 	mkdir -p build
 
 clean:
-	echo "nothing to clean..."
+	rm -f tmpfil
 
 realclean: clean
 	rm -rf build
