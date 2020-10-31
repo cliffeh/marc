@@ -6,7 +6,7 @@ all: $(OBJ)
 $(OBJ): build $(SRC)
 	javac -d build $(SRC)
 
-check: test/marc-dump
+check: $(OBJ) test/marc-dump
 	test/marc-dump && echo 'marc dump test passed'
 
 build:

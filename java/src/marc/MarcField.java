@@ -3,10 +3,11 @@ package marc;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 
 public abstract class MarcField {
     public int tag;
-    private ByteBuffer data;
+    protected ByteBuffer data;
 
     public MarcField(int tag, ByteBuffer data) {
         this.tag = tag;
@@ -18,8 +19,13 @@ public abstract class MarcField {
     }
 
     public void write(OutputStream out) throws IOException {
-        byte[] buf = new byte[data.limit()];
-        data.position(0).get(buf, 0, buf.length);
-        out.write(buf);
+        data.position(0);
+        while(data.hasRemaining()) {
+            out.write(data.get());
+        }
+    }
+
+    public MarcField process() throws ParseException {
+        return this;
     }
 }

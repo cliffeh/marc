@@ -9,7 +9,7 @@ public class Main {
             MarcReader in = new MarcReader(System.in);
             MarcRecord rec = null;
             while ((rec = in.read()) != null) {
-                rec.process().write(System.out);
+                rec.process(true).write(System.out);
             }
             System.out.flush();
         } catch (IOException ioe) {
