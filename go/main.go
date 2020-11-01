@@ -24,8 +24,8 @@ func Atoi(bytes []byte) (r int, e error) {
 
 func main() {
 	in := marc.NewReader(os.Stdin)
-	r, err := in.ReadRecord()
+	rec, err := in.ReadRecord()
 	check(err)
 
-	fmt.Println(string(r.Leader))
+	fmt.Println(string(rec.Leader))
 }

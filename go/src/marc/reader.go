@@ -5,12 +5,6 @@ import (
 	"io"
 )
 
-type Record struct {
-	Leader    []byte
-	Directory []byte
-	Data      []byte
-}
-
 type RecordReader struct {
 	rd io.Reader
 }
