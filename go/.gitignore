@@ -1,0 +1,10 @@
+# generated binary
+/marc
+
+# test files
+/onerec.marc
+/testfil
+/tmpfil
+
+# libs
+/pkg
