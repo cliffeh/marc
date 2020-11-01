@@ -1,10 +1,11 @@
 SRC=main.go $(wildcard src/marc/*.go)
+BIN=bin/marc
 
-marc: $(SRC)
-	GOPATH=$$PWD go build -o marc
+$(BIN): $(SRC)
+	GOPATH=$$PWD go build -o $@
 
 clean:
-	rm -rf pkg
+	rm -f tmpfil testfile
 
 distclean: clean
-	rm -f marc
+	rm -f $(BIN)

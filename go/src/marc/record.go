@@ -1,7 +1,10 @@
 package marc
 
 type Record struct {
-	Leader    []byte
-	Directory []byte
-	Data      []byte
+	data   []byte
+	fields []Field
+}
+
+func (rec Record) Leader() []byte {
+	return rec.data[0:24]
 }
