@@ -6,5 +6,6 @@
 /testfil
 /tmpfil
 
-# libs
+# libs and bins
 /pkg
+/bin
