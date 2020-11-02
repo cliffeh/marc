@@ -10,7 +10,7 @@ func atoi(bytes []byte) (r int, e error) {
 		case '0':
 			r += 0
 		case '1':
-			r += 1
+			r++ // go linter bitches about r += 1 :-/
 		case '2':
 			r += 2
 		case '3':
