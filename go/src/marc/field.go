@@ -8,6 +8,12 @@ type Field struct {
 	Tag  int
 }
 
+// Subfield basic representation of a MARC subfield
+type Subfield struct {
+	Code byte
+	data []byte
+}
+
 func (f Field) Write(w io.Writer) {
 	w.Write(f.data)
 }
