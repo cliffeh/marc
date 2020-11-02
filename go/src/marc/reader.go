@@ -26,13 +26,14 @@ func (rr RecordReader) ReadRecord() (r *Record, e error) {
 		return nil, fmt.Errorf("leader fewer than 24 bytes")
 	}
 
-	length, e := atoi(buf[0:5])
+	length := atoi(buf[0:5])
 	r.data = make([]byte, length)
 	copy(r.data, buf)
 	n, e = rr.rd.Read(r.data[24:])
 	if n < length-24 {
 		return nil, fmt.Errorf("too few bytes; expected %d, got %d", length, n+24)
 	}
+	r.baseAddress = atoi(r.data[12:17])
 
 	return r, e
 }

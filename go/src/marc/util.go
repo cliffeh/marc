@@ -2,7 +2,7 @@ package marc
 
 import "fmt"
 
-func atoi(bytes []byte) (r int, e error) {
+func atoi(bytes []byte) (r int) {
 	r = 0
 	for _, b := range bytes {
 		r *= 10
@@ -28,8 +28,8 @@ func atoi(bytes []byte) (r int, e error) {
 		case '9':
 			r += 9
 		default:
-			e = fmt.Errorf("unexpected non-digit character '%c'", b)
+			panic(fmt.Errorf("unexpected non-digit character '%c'", b))
 		}
 	}
-	return r, e
+	return r
 }
