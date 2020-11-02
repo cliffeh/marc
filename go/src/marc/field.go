@@ -14,6 +14,6 @@ type Subfield struct {
 	data []byte
 }
 
-func (f Field) Write(w io.Writer) {
+func (f *Field) Write(w io.Writer) {
 	w.Write(f.data)
 }

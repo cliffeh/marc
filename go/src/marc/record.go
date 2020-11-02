@@ -10,12 +10,12 @@ type Record struct {
 }
 
 // Leader retrieves the leader (first 24 bytes) of a MARC record
-func (r Record) Leader() []byte {
+func (r *Record) Leader() []byte {
 	return r.data[0:24]
 }
 
 // Process processes and populates this Record's fields
-func (r Record) Process() Record {
+func (r *Record) Process() *Record {
 	nFields := (r.baseAddress - 24 - 1) / 12
 	r.fields = make([]Field, nFields)
 	for i := 0; i < nFields; i++ {
@@ -33,7 +33,7 @@ func (r Record) Process() Record {
 }
 
 // Write writes rec out in MARC format
-func (r Record) Write(w io.Writer) {
+func (r *Record) Write(w io.Writer) {
 	if r.fields == nil {
 		w.Write(r.data)
 	} else {
