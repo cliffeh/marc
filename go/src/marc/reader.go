@@ -5,16 +5,19 @@ import (
 	"io"
 )
 
+// RecordReader basic MARC record reader
 type RecordReader struct {
 	rd io.Reader
 }
 
+// NewReader creates a new MARC record reader
 func NewReader(rd io.Reader) *RecordReader {
 	r := new(RecordReader)
 	r.rd = rd
 	return r
 }
 
+// ReadRecord reads a single MARC record
 func (rr RecordReader) ReadRecord() (r *Record, e error) {
 	r = new(Record)
 	buf := make([]byte, 24)
