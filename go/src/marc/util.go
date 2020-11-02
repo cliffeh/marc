@@ -33,3 +33,8 @@ func atoi(bytes []byte) (r int) {
 	}
 	return r
 }
+
+// IsControlField returns true iff tag is a control field tag
+func IsControlField(tag int) bool {
+	return tag < 10
+}
