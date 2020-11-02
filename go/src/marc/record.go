@@ -10,33 +10,38 @@ type Record struct {
 }
 
 // Leader retrieves the leader (first 24 bytes) of a MARC record
-func (rec Record) Leader() []byte {
-	return rec.data[0:24]
+func (r Record) Leader() []byte {
+	return r.data[0:24]
 }
 
 // Process processes and populates this Record's fields
-func (rec Record) Process() Record {
-	nFields := (rec.baseAddress - 24 - 1) / 12
-	rec.fields = make([]Field, nFields)
+func (r Record) Process() Record {
+	nFields := (r.baseAddress - 24 - 1) / 12
+	r.fields = make([]Field, nFields)
 	for i := 0; i < nFields; i++ {
 		p := 24 + i*12
-		tag := atoi(rec.data[p : p+3])
-		len := atoi(rec.data[p+3 : p+7])
-		pos := atoi(rec.data[p+7 : p+12])
+		tag := atoi(r.data[p : p+3])
+		len := atoi(r.data[p+3 : p+7])
+		pos := r.baseAddress + atoi(r.data[p+7:p+12])
 
 		field := new(Field)
 		field.Tag = tag
-		field.data = rec.data[pos : pos+len-1]
-		rec.fields[i] = *field
+		field.data = r.data[pos : pos+len-1]
+		r.fields[i] = *field
 	}
-	return rec
+	return r
 }
 
 // Write writes rec out in MARC format
-func (rec Record) Write(w io.Writer) {
-	if rec.fields == nil {
-		w.Write(rec.data)
+func (r Record) Write(w io.Writer) {
+	if r.fields == nil {
+		w.Write(r.data)
 	} else {
-		w.Write(rec.data[0:rec.baseAddress])
+		w.Write(r.data[0:r.baseAddress])
+		for _, field := range r.fields {
+			field.Write(w)
+			w.Write([]byte{FieldTerminator})
+		}
+		w.Write([]byte{RecordTerminator})
 	}
 }
