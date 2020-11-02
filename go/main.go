@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"marc"
@@ -18,5 +17,5 @@ func main() {
 	rec, err := in.ReadRecord()
 	check(err)
 
-	fmt.Println(string(rec.Leader()))
+	rec.Write(os.Stdout)
 }
