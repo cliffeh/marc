@@ -18,7 +18,7 @@ func NewReader(rd io.Reader) *RecordReader {
 }
 
 // ReadRecord reads a single MARC record
-func (rr RecordReader) ReadRecord() (r *Record, e error) {
+func (rr *RecordReader) ReadRecord() (r *Record, e error) {
 	r = new(Record)
 	buf := make([]byte, 24)
 	n, e := rr.rd.Read(buf)
