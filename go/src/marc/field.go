@@ -25,10 +25,19 @@ type Subfield struct {
 	data []byte
 }
 
-func (f ControlField) Process() Field {
+// Process process the ControlField
+func (f *ControlField) Process() Field {
 	return f
 }
 
-func (f ControlField) Write(w io.Writer) {
+func (f *DataField) Process() Field {
+	return f
+}
+
+func (f *ControlField) Write(w io.Writer) {
 	w.Write(f.data)
+}
+
+func (f *DataField) Write(w io.Writer) {
+
 }

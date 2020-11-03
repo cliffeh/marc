@@ -30,7 +30,7 @@ func (r *Record) Process(deep bool) *Record {
 		if deep {
 			field.Process()
 		}
-		r.fields[i] = *field
+		r.fields[i] = field
 	}
 	return r
 }
