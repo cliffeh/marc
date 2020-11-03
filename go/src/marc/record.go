@@ -15,7 +15,7 @@ func (r *Record) Leader() []byte {
 }
 
 // Process processes and populates this Record's fields
-func (r *Record) Process() *Record {
+func (r *Record) Process(deep bool) *Record {
 	nFields := (r.baseAddress - 24 - 1) / 12
 	r.fields = make([]Field, nFields)
 	for i := 0; i < nFields; i++ {
@@ -24,9 +24,12 @@ func (r *Record) Process() *Record {
 		len := atoi(r.data[p+3 : p+7])
 		pos := r.baseAddress + atoi(r.data[p+7:p+12])
 
-		field := new(Field)
+		field := new(ControlField)
 		field.Tag = tag
 		field.data = r.data[pos : pos+len-1]
+		if deep {
+			field.Process()
+		}
 		r.fields[i] = *field
 	}
 	return r

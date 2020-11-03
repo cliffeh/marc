@@ -17,5 +17,5 @@ func main() {
 	rec, err := in.ReadRecord()
 	check(err)
 
-	rec.Process().Write(os.Stdout)
+	rec.Process(true).Write(os.Stdout)
 }
