@@ -5,17 +5,19 @@ import (
 	"io"
 )
 
-// Field basic representation of a MARC field
+// Field basic functions for a MARC field
 type Field interface {
 	Write(w io.Writer)
 	Process() Field
 }
 
+// ControlField representation of a MARC control field
 type ControlField struct {
 	data []byte
 	Tag  int
 }
 
+// DataField representation of a MARC data field
 type DataField struct {
 	data      []byte
 	Tag       int
