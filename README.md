@@ -42,22 +42,22 @@ Note: if no input files are provided this program will read from stdin
 ## Examples
 ```
   # validate records
-  marc-validate foo.marc
+  marc validate foo.marc
 
   # print all records
-  marc-print foo.marc
+  marc print foo.marc
 
   # print out the full 245 field of all records
-  marc-print --field 245 foo.marc
+  marc print --field 245 foo.marc
 
   # print out the 245a subfield of all records
-  marc-print --field 245a foo.marc
+  marc print --field 245a foo.marc
 
   # print out the 245 field (subfields a and b)
-  marc-print --field 245ab foo.marc
+  marc print --field 245ab foo.marc
 
   # dump the first ten records of one file into another
-  marc-dump --limit 10 -o bar.marc foo.marc
+  marc dump --limit 10 -o bar.marc foo.marc
 ```
 
 ## About
