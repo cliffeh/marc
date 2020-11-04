@@ -41,7 +41,6 @@ func (r *Record) Write(w io.Writer) {
 		w.Write(r.data[0:r.baseAddress])
 		for _, field := range r.fields {
 			field.Write(w)
-			w.Write([]byte{FieldTerminator})
 		}
 		w.Write([]byte{RecordTerminator})
 	}

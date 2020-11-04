@@ -64,6 +64,7 @@ func (f *DataField) Process() Field {
 
 func (f *ControlField) Write(w io.Writer) {
 	w.Write(f.data)
+	w.Write([]byte{FieldTerminator})
 }
 
 func (f *DataField) Write(w io.Writer) {
@@ -74,4 +75,5 @@ func (f *DataField) Write(w io.Writer) {
 		w.Write([]byte{subfield.Code})
 		w.Write(subfield.data)
 	}
+	w.Write([]byte{FieldTerminator})
 }
