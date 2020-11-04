@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"os"
 
 	"marc"
@@ -14,8 +15,10 @@ func check(e error) {
 
 func main() {
 	in := marc.NewReader(os.Stdin)
-	rec, err := in.ReadRecord()
-	check(err)
-
-	rec.Process().Write(os.Stdout)
+	out := bufio.NewWriter(os.Stdout)
+	for rec, err := in.ReadRecord(); rec != nil; rec, err = in.ReadRecord() {
+		check(err)
+		rec.Process().Write(out)
+	}
+	out.Flush()
 }
