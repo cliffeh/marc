@@ -68,7 +68,7 @@ out interesting bits of information. I recently got an "itch" to revisit that,
 so I wrote this little C library with some nice functions for processing MARC
 records.
 
-There ia also a reference implementation viz the command-line tool `marc` with a
+There is also a reference implementation viz the command-line tool `marc` with a
 few useful functions described above (print, validate, etc.)
 
 ## References
