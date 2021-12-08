@@ -17,4 +17,6 @@ test_dynamic_alloc_LDADD = libmarc.la
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
+EXTRA_DIST = README.md LICENSE
+
 CLEANFILES = test/*.output test/*.valgrind

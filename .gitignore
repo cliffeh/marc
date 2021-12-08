@@ -76,3 +76,6 @@ test/*.log
 test/*.trs
 test/*.output
 test/*.valgrind
+
+# distribution tarballs
+marc*.tar.gz
