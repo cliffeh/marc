@@ -1,6 +1,6 @@
 #!/bin/bash
 
-which valgrind >& /dev/null || { echo "can't find valgrind; skippint test..."; exit 77; }
+which valgrind >& /dev/null || { echo "can't find valgrind; skipping test..."; exit 77; }
 
 cmd=$(echo "$0" | cut -d- -s -f2)
 
