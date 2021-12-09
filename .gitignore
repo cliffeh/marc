@@ -71,6 +71,9 @@ install-sh
 ar-lib
 missing
 test-driver
+config.h.in*
+config.guess
+config.sub
 
 # compiled executables
 /marc
