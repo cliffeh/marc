@@ -65,6 +65,9 @@ stamp-h?
 Makefile.in
 aclocal.m4
 configure
+compile
+depcomp
+install-sh
 
 # compiled executables
 /marc
