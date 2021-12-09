@@ -74,6 +74,7 @@ test-driver
 config.h.in*
 config.guess
 config.sub
+m4/
 
 # compiled executables
 /marc
