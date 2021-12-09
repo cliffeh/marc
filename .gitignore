@@ -75,6 +75,7 @@ config.h.in*
 config.guess
 config.sub
 m4/
+ltmain.sh
 
 # compiled executables
 /marc
