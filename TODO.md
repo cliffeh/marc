@@ -7,3 +7,4 @@
 * man page
 * error handling for file read errors
 * protect against multiple "-" being specified
+* FIX DIST TARBALL!
