@@ -62,6 +62,9 @@ config.status
 libtool
 /Makefile
 stamp-h?
+Makefile.in
+aclocal.m4
+configure
 
 # compiled executables
 /marc
