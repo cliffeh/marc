@@ -68,6 +68,9 @@ configure
 compile
 depcomp
 install-sh
+ar-lib
+missing
+test-driver
 
 # compiled executables
 /marc
