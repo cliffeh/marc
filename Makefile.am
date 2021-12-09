@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libmarc.la
-libmarc_la_SOURCES = marc.c util.c config.h marc.h
+libmarc_la_SOURCES = marc.c util.c config.h marc.h util.h
 
 bin_PROGRAMS = marc
 marc_SOURCES = main.c
