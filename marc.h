@@ -1,8 +1,8 @@
 #ifndef __MARC_H
 #define __MARC_H 1
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
@@ -22,8 +22,7 @@
 #define RECORD_NOT_ENOUGH_BYTES 2
 #define INVALID_MARC_RECORD_LENGTH 3
 
-typedef struct marcfile
-{
+typedef struct marcfile {
   int errnum;
 #ifdef USE_ZLIB
   gzFile gzf;
@@ -32,21 +31,18 @@ typedef struct marcfile
 #endif
 } marcfile;
 
-typedef struct marcfield
-{
+typedef struct marcfield {
   char *directory_entry, *data;
   int tag, length;
 } marcfield;
 
-typedef struct marcrec
-{
+typedef struct marcrec {
   int length, base_address, field_count;
   char *data;
   marcfield *fields;
 } marcrec;
 
-typedef struct fieldspec
-{
+typedef struct fieldspec {
   int tag;
   char *subfields;
 } fieldspec;
@@ -103,7 +99,7 @@ marcrec *marcrec_alloc(int nBytes, int nFields);
 
 /**
  * @brief free a marcrec
- * 
+ *
  * note that this will free the marcrec as well as rec->fields and rec->data; if
  * you don't want this you may set either (or both) field to 0 before calling
  * marcrec_free
