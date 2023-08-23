@@ -13,12 +13,17 @@ check_SCRIPTS = test/marc-dump test/marc-leaders test/marc-print test/marc-valid
     test/valgrind-validate test/valgrind-xml test/valgrind-dynamic-alloc
 
 TESTS = $(check_SCRIPTS)
+TEST_INPUTS = test/marc-leaders.txt.gz test/marc-print.txt.gz test/testfile.marc.gz test/testfile.xml.gz
+
+# tell our test scripts where to find their input
+TESTS_ENVIRONMENT = SRCDIR=$(srcdir)/test BUILDDIR=$(builddir)/test
 
 test_dynamic_alloc_LDADD = libmarc.la
 
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = README.md LICENSE $(check_SCRIPTS)
+EXTRA_DIST = README.md LICENSE $(check_SCRIPTS) $(TEST_INPUTS)
 
 CLEANFILES = test/*.output test/*.valgrind
+

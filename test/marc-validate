@@ -1,3 +1,10 @@
 #!/bin/bash
 
-zcat < test/testfile.marc.gz | ./marc validate -v
+set -euxo pipefail
+
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR}
+BUILDDIR=${BUILDDIR:-$DIR}
+
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc validate -v

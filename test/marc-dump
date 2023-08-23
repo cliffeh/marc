@@ -1,4 +1,11 @@
 #!/bin/bash
 
-zcat < test/testfile.marc.gz | ./marc dump > test/marc-dump.output
-zcat < test/testfile.marc.gz | diff test/marc-dump.output -
+set -euxo pipefail
+
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR}
+BUILDDIR=${BUILDDIR:-$DIR}
+
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc dump > "$BUILDDIR/marc-dump.output"
+zcat < "$SRCDIR/testfile.marc.gz" | diff "$BUILDDIR/marc-dump.output" -

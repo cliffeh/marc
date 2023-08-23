@@ -1,4 +1,9 @@
 #!/bin/bash
 
-zcat < test/testfile.marc.gz | ./marc xml  > test/marc-xml.output
-zcat < test/testfile.xml.gz | diff test/marc-xml.output -
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR}
+BUILDDIR=${BUILDDIR:-$DIR}
+
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc xml  > "$BUILDDIR/marc-xml.output"
+zcat < "$SRCDIR/testfile.xml.gz" | diff "$BUILDDIR/marc-xml.output" -

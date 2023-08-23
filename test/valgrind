@@ -2,10 +2,15 @@
 
 which valgrind >& /dev/null || { echo "can't find valgrind; skipping test..."; exit 77; }
 
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR}
+BUILDDIR=${BUILDDIR:-$DIR}
+
 cmd=$(echo "$0" | cut -d- -s -f2)
 
 [[ -n "$cmd" ]] || { echo "this script wasn't meant to be run without a -command suffix!"; exit 99; }
 
-logfile="test/marc-$cmd.valgrind"
-zcat < test/testfile.marc.gz | ./libtool --mode=execute valgrind --leak-check=full --log-file="$logfile" ./marc "$cmd" -o /dev/null
+logfile="$BUILDDIR/marc-$cmd.valgrind"
+zcat < "$SRCDIR/testfile.marc.gz" | ./libtool --mode=execute valgrind --leak-check=full --log-file="$logfile" ./marc "$cmd" -o /dev/null
 grep 'ERROR SUMMARY: 0' "$logfile" || { echo "leak detected in marc $cmd; exiting..."; exit 1; }
