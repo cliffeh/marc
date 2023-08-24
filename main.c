@@ -45,7 +45,8 @@ marc_validate (FILE *out, marcrec *rec, fieldspec specs[])
 int
 main (int argc, const char *argv[])
 {
-  int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0;
+  int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0,
+          verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
   char *format = "human", *outfile = "-", *logfile = 0;
   FILE *out = stdout, *log = stderr;
@@ -56,14 +57,16 @@ main (int argc, const char *argv[])
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
     { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
       "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
+    { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
+      "log to FILE (default: stderr)", "FILE" },
     { "limit", 'L', POPT_ARG_INT | POPT_ARGFLAG_SHOW_DEFAULT, &limit, 'L',
       "maximum number of records to process; -1 means process all "
       "available records",
       0 },
-    { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
-      "log to FILE (default: stderr)", "FILE" },
     { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
       'o', "output to FILE", "FILE" },
+    { "verbose", 'v', POPT_ARG_NONE, &verbose, 'v', "enable verbose logging",
+      0 },
     { "version", 'V', POPT_ARG_NONE, 0, 'V',
       "show version information and exit", 0 },
     POPT_AUTOHELP POPT_TABLEEND
@@ -157,6 +160,13 @@ main (int argc, const char *argv[])
       exit (1);
     }
 
+  if (verbose)
+    {
+      fprintf (log, "verbose logging enabled\n");
+      fprintf (log, "output file: %s\n", outfile);
+      fprintf (log, "limit: %i\n", limit);
+    }
+
   if (!(args = poptGetArgs (optCon)))
     args = defaultArgs;
 
@@ -175,11 +185,16 @@ main (int argc, const char *argv[])
 
       rc = 0;
 
+      if (verbose)
+        fprintf (log, "processing file: %s\n", arg);
+
       // protect against trying to read from stdin more than once
       if (strcmp ("-", arg) == 0)
         {
           if (stdin_already_used)
             {
+              if (verbose)
+                fprintf (log, "skipping %s (stdin already read)\n", arg);
               continue;
             }
           else
@@ -192,8 +207,7 @@ main (int argc, const char *argv[])
         {
           if (!(in = marcfile_open (arg)))
             {
-              // TODO log file?
-              fprintf (stderr,
+              fprintf (log,
                        "error: couldn't open file '%s' (%s); skipping...\n",
                        arg, strerror (errno));
 
