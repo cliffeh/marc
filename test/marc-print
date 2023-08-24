@@ -7,5 +7,5 @@ DIR=$(dirname "$0")
 SRCDIR=${SRCDIR:-$DIR}
 BUILDDIR=${BUILDDIR:-$DIR}
 
-zcat < "$SRCDIR/testfile.marc.gz" | ./marc print > "$BUILDDIR/marc-print.output"
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc -Fhuman > "$BUILDDIR/marc-print.output"
 zcat < "$SRCDIR/marc-print.txt.gz" | diff "$BUILDDIR/marc-print.output" -

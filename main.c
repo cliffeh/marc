@@ -131,6 +131,8 @@ main (int argc, const char *argv[])
   for (; arg = *args; args++)
     {
       marcfile *in;
+      // TODO make this a parameter!
+      FILE *out = stdout;
       // max record size is 99999, and 10000 seems like a conservative upper
       // bound for the number of fields any given record is likely to to
       // contain
@@ -170,14 +172,27 @@ main (int argc, const char *argv[])
         {
           current_count++;
           total_count++;
+
+          // TODO implement validation
+
           switch (output_type)
             {
             case OUTPUT_TYPE_HUMAN:
               {
                 // TODO allow specifying an output file!
-                marc_print (stdout, rec, 0);
+                marc_print (out, rec, 0);
               }
               break;
+
+            case OUTPUT_TYPE_MARC:
+              {
+                marcrec_write (out, rec);
+              }
+              break;
+
+              // TODO xml
+
+            case OUTPUT_TYPE_NONE: // no-op
             }
         }
 
@@ -240,7 +255,8 @@ main (int argc, const char *argv[])
   FILE *out = 0, *log = 0;
 
 
-  // max record size is 99999, and 10000 seems like a conservative upper bound
+  // max record size is 99999, and 10000 seems like a conservative upper
+  bound
   // for the number of fields any given record is likely to to contain
   marcrec *rec = marcrec_alloc (100000, 10000);
 
@@ -300,8 +316,8 @@ main (int argc, const char *argv[])
 
           if (verbose)
             {
-              fprintf (log, "%s: %i/%i (total: %i/%i)\n", infiles[i], valid,
-                       count, total_valid, total_count);
+              fprintf (log, "%s: %i/%i (total: %i/%i)\n", infiles[i],
+  valid, count, total_valid, total_count);
             }
         }
     }
