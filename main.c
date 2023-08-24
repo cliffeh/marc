@@ -1,5 +1,6 @@
 #include "config.h"
 #include "marc.h"
+#include "popt/popt.h"
 #include "util.h"
 #include <ctype.h>
 #include <errno.h>
