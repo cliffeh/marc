@@ -111,7 +111,7 @@ main (int argc, const char *argv[])
     args = defaultArgs;
 
   if (output_type == OUTPUT_TYPE_XML)
-    fprintf (out, "%s", MARC_XML_PREAMBLE);
+    fprintf (out, "%s\n", MARC_XML_PREAMBLE);
 
   for (; arg = *args; args++)
     {
@@ -188,7 +188,7 @@ main (int argc, const char *argv[])
     }
 
   if (output_type == OUTPUT_TYPE_XML)
-    fprintf (out, "%s", MARC_XML_POSTAMBLE);
+    fprintf (out, "%s\n", MARC_XML_POSTAMBLE);
 
   /*
   void (*preamble) (FILE *) = 0;
