@@ -9,29 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USAGE                                                                 \
-  "usage: marc COMMAND [OPTIONS] [FILES]\n"                                   \
-  "\n"                                                                        \
-  "COMMANDS:\n"                                                               \
-  "  dump      dump records in marc format\n"                                 \
-  "  help      print a brief help message and exit\n"                         \
-  "  leaders   print marc leaders\n"                                          \
-  "  print     print marc records/fields in a human-readable format\n"        \
-  "  validate  validate marc records\n"                                       \
-  "  xml       print marc records in XML format\n"                            \
-  "\n"                                                                        \
-  "OPTIONS:\n"                                                                \
-  "  -h, --help         print a brief help message and exit\n"                \
-  "  -f, --field SPEC   only output fields adhering to SPEC (note: this "     \
-  "flag\n"                                                                    \
-  "                     is only used by `marc print`)\n"                      \
-  "  -l, --limit N      limit processing to the first N records per file\n"   \
-  "                     (default: no limit)\n"                                \
-  "  -o, --output FILE  output to FILE (default: stdout)\n"                   \
-  "  -v, --verbose      turn on verbose logging\n"                            \
-  "  -V, --version      output version and exit\n"                            \
-  "\n"                                                                        \
-  "Note: if no input files are provided this program will read from stdin\n"
+#define OUTPUT_TYPE_HUMAN 1
+#define OUTPUT_TYPE_MARC 2
+#define OUTPUT_TYPE_NONE 3
+#define OUTPUT_TYPE_XML 3
 
 static int
 marc_dump (FILE *out, marcrec *rec, fieldspec specs[])
@@ -87,8 +68,67 @@ xml_postamble (FILE *out)
 }
 
 int
-main (int argc, char *argv[])
+main (int argc, const char *argv[])
 {
+  int rc, output_type;
+  char *format = "marc";
+  poptContext optCon;
+
+  int limit = -1;
+
+  struct poptOption options[] = {
+    /* longName, shortName, argInfo, arg, val, descrip, argDescript */
+    { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
+      "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
+    { "limit", 'l', POPT_ARG_INT | POPT_ARGFLAG_SHOW_DEFAULT, &limit, 'l',
+      "maximum number of records to process; -1 means process all "
+      "available records",
+      0 },
+    POPT_AUTOHELP POPT_TABLEEND
+  };
+
+  optCon = poptGetContext (0, argc, argv, options, 0);
+  poptSetOtherOptionHelp (optCon, "[OPTION...] [FILE...]\nWill read from "
+                                  "stdin if no FILEs are provided.\nOptions:");
+
+  while ((rc = poptGetNextOpt (optCon)) > 0)
+    ;
+
+  if (rc != -1)
+    {
+      fprintf (stderr, "error: %s: %s\n",
+               poptBadOption (optCon, POPT_BADOPTION_NOALIAS),
+               poptStrerror (rc));
+      poptPrintHelp (optCon, stderr, 0);
+      poptFreeContext (optCon);
+      exit (1);
+    }
+
+  if ((strcmp ("h", format) == 0) || (strcmp ("human", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_HUMAN;
+    }
+  else if ((strcmp ("m", format) == 0) || (strcmp ("marc", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_MARC;
+    }
+  else if ((strcmp ("n", format) == 0) || (strcmp ("none", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_NONE;
+    }
+  else if ((strcmp ("x", format) == 0) || (strcmp ("xml", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_XML;
+    }
+  else
+    {
+      fprintf (stderr, "error: unknown format type '%s'\n", format);
+      poptPrintHelp (optCon, stderr, 0);
+      poptFreeContext (optCon);
+      exit (1);
+    }
+
+  /*
   void (*preamble) (FILE *) = 0;
   int (*action) (FILE *, marcrec *, fieldspec *) = 0;
   void (*postamble) (FILE *) = 0;
@@ -309,4 +349,5 @@ main (int argc, char *argv[])
   marcrec_free (rec);
 
   return rc ? rc : ((total_valid == total_count) ? 0 : 1);
+  */
 }
