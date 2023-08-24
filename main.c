@@ -46,9 +46,8 @@ int
 main (int argc, const char *argv[])
 {
   int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0;
-  char *format = "human";
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
-  // TODO make this a parameter!
+  char *format = "human", *outfile = "-";
   FILE *out = stdout;
 
   poptContext optCon;
@@ -61,6 +60,8 @@ main (int argc, const char *argv[])
       "maximum number of records to process; -1 means process all "
       "available records",
       0 },
+    { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
+      'o', "output to FILE", "FILE" },
     POPT_AUTOHELP POPT_TABLEEND
   };
 
@@ -81,6 +82,11 @@ main (int argc, const char *argv[])
       poptPrintHelp (optCon, stderr, 0);
       poptFreeContext (optCon);
       exit (1);
+    }
+
+  if (strcmp ("-", outfile) != 0)
+    {
+      out = fopen (outfile, "w");
     }
 
   if ((strcmp ("h", format) == 0) || (strcmp ("human", format) == 0))
@@ -327,6 +333,7 @@ main (int argc, const char *argv[])
   */
 
   // clean up and exit
+  fclose (out);
   poptFreeContext (optCon);
 
   // TODO maybe some better logic around specific return codes
