@@ -11,6 +11,6 @@
  * @return int the number represented by the sequence, or -1 if a non-digit
  *             character is encountered
  */
-int atoin(const char *p, int n);
+int atoin (const char *p, int n);
 
 #endif
