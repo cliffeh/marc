@@ -42,6 +42,7 @@ marc_validate (FILE *out, marcrec *rec, fieldspec specs[])
   return (marcrec_validate (rec) == 0) ? 1 : 0;
 }
 
+// TODO put this in marc.h/marc.c
 static void
 xml_preamble (FILE *out)
 {
@@ -54,13 +55,7 @@ xml_preamble (FILE *out)
            "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
 }
 
-static int
-marc_xml (FILE *out, marcrec *rec, fieldspec specs[])
-{
-  marcrec_xml (out, rec);
-  return 1;
-}
-
+// TODO put this in marc.h/marc.c
 static void
 xml_postamble (FILE *out)
 {
@@ -70,11 +65,11 @@ xml_postamble (FILE *out)
 int
 main (int argc, const char *argv[])
 {
-  int rc, output_type;
+  int rc, limit = -1, output_type = OUTPUT_TYPE_MARC, stdin_already_used = 0;
   char *format = "marc";
-  poptContext optCon;
+  const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
 
-  int limit = -1;
+  poptContext optCon;
 
   struct poptOption options[] = {
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
@@ -92,7 +87,9 @@ main (int argc, const char *argv[])
                                   "stdin if no FILEs are provided.\nOptions:");
 
   while ((rc = poptGetNextOpt (optCon)) > 0)
-    ;
+    {
+      // printf ("opt: %c\n", (char)rc);
+    }
 
   if (rc != -1)
     {
@@ -128,6 +125,64 @@ main (int argc, const char *argv[])
       exit (1);
     }
 
+  if (!(args = poptGetArgs (optCon)))
+    args = defaultArgs;
+
+  for (; arg = *args; args++)
+    {
+      marcfile *in;
+      // max record size is 99999, and 10000 seems like a conservative upper
+      // bound for the number of fields any given record is likely to to
+      // contain
+      marcrec *rec = marcrec_alloc (100000, 10000);
+      int current_count, total_count = 0;
+
+      rc = 0;
+
+      // protect against trying to read from stdin more than once
+      if (strcmp ("-", arg) == 0)
+        {
+          if (stdin_already_used)
+            {
+              continue;
+            }
+          else
+            {
+              in = marcfile_from_FILE (stdin);
+              stdin_already_used = 1;
+            }
+        }
+      else
+        {
+          if (!(in = marcfile_open (arg)))
+            {
+              // TODO log file?
+              fprintf (stderr,
+                       "error: couldn't open file '%s' (%s); skipping...\n",
+                       arg, strerror (errno));
+
+              continue;
+            }
+        }
+
+      current_count = 0;
+      while (marcrec_read (rec, in) != 0 && (limit - total_count) != 0)
+        {
+          current_count++;
+          total_count++;
+          switch (output_type)
+            {
+            case OUTPUT_TYPE_HUMAN:
+              {
+                // TODO allow specifying an output file!
+                marc_print (stdout, rec, 0);
+              }
+              break;
+            }
+        }
+
+      marcfile_close (in);
+    }
   /*
   void (*preamble) (FILE *) = 0;
   int (*action) (FILE *, marcrec *, fieldspec *) = 0;
@@ -183,95 +238,7 @@ main (int argc, const char *argv[])
   int already_using_stdin = 0, limit = -1, infile_count = 0,
       fieldspec_count = 0, verbose = 0;
   FILE *out = 0, *log = 0;
-  char **infiles = calloc (
-      argc, sizeof (char *)); // more than we need, but not worth optimizing
-  fieldspec *specs = calloc (
-      argc,
-      sizeof (fieldspec *)); // more than we need, but not worth optimizing
 
-  // process command line args
-  for (int i = 2; i < argc; i++)
-    {
-      if (strcmp ("--help", argv[i]) == 0 || strcmp ("-h", argv[i]) == 0)
-        {
-          fprintf (stdout, USAGE);
-          exit (0);
-        }
-      else if (strcmp ("--field", argv[i]) == 0 || strcmp ("-f", argv[i]) == 0)
-        {
-          if (i + 1 >= argc)
-            {
-              fprintf (stderr, "error: %s flag requires an argument\n",
-                       argv[i]);
-              exit (1);
-            }
-          i++;
-          if (strlen (argv[i]) < 3 || !isdigit (argv[i][0])
-              || !isdigit (argv[i][1]) || !isdigit (argv[i][2]))
-            {
-              fprintf (stderr, "error: '%s' is an invalid field specifier\n",
-                       argv[i]);
-              exit (1);
-            }
-          specs[fieldspec_count].tag = atoin (argv[i], 3);
-          specs[fieldspec_count++].subfields = argv[i] + 3;
-        }
-      else if (strcmp ("--limit", argv[i]) == 0 || strcmp ("-l", argv[i]) == 0)
-        {
-          if (i + 1 >= argc)
-            {
-              fprintf (stderr, "error: %s flag requires an argument\n",
-                       argv[i]);
-              exit (1);
-            }
-          i++;
-          limit = atoi (argv[i]);
-        }
-      else if (strcmp ("--output", argv[i]) == 0
-               || strcmp ("-o", argv[i]) == 0)
-        {
-          if (out)
-            {
-              fprintf (stderr, "error: more than one output file specified\n");
-              exit (1);
-            }
-          if (i + 1 >= argc)
-            {
-              fprintf (stderr, "error: %s flag requires an argument\n",
-                       argv[i]);
-              exit (1);
-            }
-          i++;
-          out = fopen (argv[i], "w");
-        }
-      else if (strcmp ("--verbose", argv[i]) == 0
-               || strcmp ("-v", argv[i]) == 0)
-        {
-          verbose = 1;
-        }
-      else if (strcmp ("--version", argv[i]) == 0
-               || strcmp ("-V", argv[i]) == 0)
-        {
-          fprintf (stdout, PACKAGE_STRING "\n");
-          exit (0);
-        }
-      else // we'll assume it's a filename
-        {
-          // protect against multiple uses of stdin
-          if (strcmp ("-", argv[i]) == 0)
-            {
-              if (already_using_stdin)
-                {
-                  continue;
-                }
-              else
-                {
-                  already_using_stdin = 1;
-                }
-            }
-          infiles[infile_count++] = argv[i];
-        }
-    }
 
   // max record size is 99999, and 10000 seems like a conservative upper bound
   // for the number of fields any given record is likely to to contain
@@ -350,4 +317,10 @@ main (int argc, const char *argv[])
 
   return rc ? rc : ((total_valid == total_count) ? 0 : 1);
   */
+
+  // clean up and exit
+  poptFreeContext (optCon);
+
+  // TODO maybe some better logic around specific return codes
+  return rc;
 }
