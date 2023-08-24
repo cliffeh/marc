@@ -47,8 +47,8 @@ main (int argc, const char *argv[])
 {
   int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
-  char *format = "human", *outfile = "-";
-  FILE *out = stdout;
+  char *format = "human", *outfile = "-", *logfile = 0;
+  FILE *out = stdout, *log = stderr;
 
   poptContext optCon;
 
@@ -56,10 +56,12 @@ main (int argc, const char *argv[])
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
     { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
       "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
-    { "limit", 'l', POPT_ARG_INT | POPT_ARGFLAG_SHOW_DEFAULT, &limit, 'l',
+    { "limit", 'L', POPT_ARG_INT | POPT_ARGFLAG_SHOW_DEFAULT, &limit, 'L',
       "maximum number of records to process; -1 means process all "
       "available records",
       0 },
+    { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
+      "log to FILE (default: stderr)", "FILE" },
     { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
       'o', "output to FILE", "FILE" },
     POPT_AUTOHELP POPT_TABLEEND
@@ -86,7 +88,39 @@ main (int argc, const char *argv[])
 
   if (strcmp ("-", outfile) != 0)
     {
-      out = fopen (outfile, "w");
+      if (!(out = fopen (outfile, "w")))
+        {
+          fprintf (stderr, "fatal: couldn't open output file '%s' (%s)\n", arg,
+                   strerror (errno));
+          // TODO cleanup
+          exit (1);
+        }
+    }
+
+  if (logfile)
+    {
+      if (strcmp (outfile, logfile) == 0)
+        {
+          fprintf (stderr,
+                   "warning: output and logs being written to the same file "
+                   "'%s'!\n",
+                   outfile);
+        }
+
+      if (strcmp ("-", logfile) == 0)
+        {
+          log = stdout;
+        }
+      else
+        {
+          if (!(log = fopen (logfile, "w")))
+            {
+              fprintf (stderr, "fatal: couldn't open log file '%s' (%s)\n",
+                       arg, strerror (errno));
+              // TODO cleanup
+              exit (1);
+            }
+        }
     }
 
   if ((strcmp ("h", format) == 0) || (strcmp ("human", format) == 0))
