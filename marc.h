@@ -22,6 +22,18 @@
 #define RECORD_NOT_ENOUGH_BYTES 2
 #define INVALID_MARC_RECORD_LENGTH 3
 
+// TODO consider using an XML library
+// XML constants
+#define MARC_XML_PREAMBLE                                                     \
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"                              \
+  "<collection\n"                                                             \
+  "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"               \
+  "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim "                    \
+  "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"            \
+  "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n"
+
+#define MARC_XML_POSTAMBLE "</collection>"
+
 typedef struct marcfile
 {
   int errnum;

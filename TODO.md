@@ -6,6 +6,8 @@
 * version bumps?
 * man page
 * error handling for file read errors
-* re-vamp CLI to have a single print command with a format flag
-  * i.e., -F,--format [marc|human|xml]
-  * also convert to using popt?
+* refactor valgrind tests (so they are actually valid/work)
+* use an XML library for XML output
+  * find a better way to handle outputting headers/footers
+* maybe a marc writer struct?
+* consolidate print functions into a single function with format flags?

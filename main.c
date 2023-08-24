@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OUTPUT_TYPE_NONE 0
 #define OUTPUT_TYPE_HUMAN 1
 #define OUTPUT_TYPE_MARC 2
-#define OUTPUT_TYPE_NONE 3
 #define OUTPUT_TYPE_XML 3
 
 static int
@@ -42,32 +42,14 @@ marc_validate (FILE *out, marcrec *rec, fieldspec specs[])
   return (marcrec_validate (rec) == 0) ? 1 : 0;
 }
 
-// TODO put this in marc.h/marc.c
-static void
-xml_preamble (FILE *out)
-{
-  fprintf (out,
-           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-           "<collection\n"
-           "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-           "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim "
-           "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
-           "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
-}
-
-// TODO put this in marc.h/marc.c
-static void
-xml_postamble (FILE *out)
-{
-  fprintf (out, "</collection>");
-}
-
 int
 main (int argc, const char *argv[])
 {
-  int rc, limit = -1, output_type = OUTPUT_TYPE_MARC, stdin_already_used = 0;
-  char *format = "marc";
+  int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0;
+  char *format = "human";
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
+  // TODO make this a parameter!
+  FILE *out = stdout;
 
   poptContext optCon;
 
@@ -128,11 +110,13 @@ main (int argc, const char *argv[])
   if (!(args = poptGetArgs (optCon)))
     args = defaultArgs;
 
+  if (output_type == OUTPUT_TYPE_XML)
+    fprintf (out, "%s", MARC_XML_PREAMBLE);
+
   for (; arg = *args; args++)
     {
       marcfile *in;
-      // TODO make this a parameter!
-      FILE *out = stdout;
+
       // max record size is 99999, and 10000 seems like a conservative upper
       // bound for the number of fields any given record is likely to to
       // contain
@@ -190,7 +174,11 @@ main (int argc, const char *argv[])
               }
               break;
 
-              // TODO xml
+            case OUTPUT_TYPE_XML:
+              {
+                marcrec_xml (out, rec);
+              }
+              break;
 
             case OUTPUT_TYPE_NONE: // no-op
             }
@@ -198,6 +186,10 @@ main (int argc, const char *argv[])
 
       marcfile_close (in);
     }
+
+  if (output_type == OUTPUT_TYPE_XML)
+    fprintf (out, "%s", MARC_XML_POSTAMBLE);
+
   /*
   void (*preamble) (FILE *) = 0;
   int (*action) (FILE *, marcrec *, fieldspec *) = 0;
