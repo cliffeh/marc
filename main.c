@@ -64,6 +64,8 @@ main (int argc, const char *argv[])
       "log to FILE (default: stderr)", "FILE" },
     { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
       'o', "output to FILE", "FILE" },
+    { "version", 'V', POPT_ARG_NONE, 0, 'V',
+      "show version information and exit", 0 },
     POPT_AUTOHELP POPT_TABLEEND
   };
 
@@ -73,7 +75,15 @@ main (int argc, const char *argv[])
 
   while ((rc = poptGetNextOpt (optCon)) > 0)
     {
-      // printf ("opt: %c\n", (char)rc);
+      switch (rc)
+        {
+        case 'V':
+          {
+            printf (PACKAGE_STRING);
+            poptFreeContext (optCon);
+            exit (0);
+          }
+        }
     }
 
   if (rc != -1)
@@ -229,142 +239,6 @@ main (int argc, const char *argv[])
 
   if (output_type == OUTPUT_TYPE_XML)
     fprintf (out, "%s\n", MARC_XML_POSTAMBLE);
-
-  /*
-  void (*preamble) (FILE *) = 0;
-  int (*action) (FILE *, marcrec *, fieldspec *) = 0;
-  void (*postamble) (FILE *) = 0;
-
-  if (argc == 1)
-    {
-      fprintf (stderr, USAGE);
-      exit (1);
-    }
-
-  if (strcmp ("dump", argv[1]) == 0)
-    {
-      action = marc_dump;
-    }
-  else if (strcmp ("help", argv[1]) == 0 || strcmp ("--help", argv[1]) == 0
-           || strcmp ("-h", argv[1]) == 0)
-    {
-      fprintf (stdout, USAGE);
-      exit (0);
-    }
-  else if (strcmp ("leaders", argv[1]) == 0)
-    {
-      action = marc_leaders;
-    }
-  else if (strcmp ("print", argv[1]) == 0)
-    {
-      action = marc_print;
-    }
-  else if (strcmp ("validate", argv[1]) == 0)
-    {
-      action = marc_validate;
-    }
-  else if (strcmp ("version", argv[1]) == 0
-           || strcmp ("--version", argv[1]) == 0
-           || strcmp ("-V", argv[1]) == 0)
-    {
-      fprintf (stdout, PACKAGE_STRING "\n");
-      exit (0);
-    }
-  else if (strcmp ("xml", argv[1]) == 0)
-    {
-      preamble = xml_preamble;
-      action = marc_xml;
-      postamble = xml_postamble;
-    }
-  else
-    {
-      fprintf (stderr, "error: unknown action '%s'\n", argv[1]);
-      exit (1);
-    }
-
-  int already_using_stdin = 0, limit = -1, infile_count = 0,
-      fieldspec_count = 0, verbose = 0;
-  FILE *out = 0, *log = 0;
-
-
-  // max record size is 99999, and 10000 seems like a conservative upper
-  bound
-  // for the number of fields any given record is likely to to contain
-  marcrec *rec = marcrec_alloc (100000, 10000);
-
-  if (fieldspec_count == 0)
-    {
-      free (specs);
-      specs = 0;
-    }
-  else if (action != marc_print)
-    {
-      fprintf (stderr, "warning: field specifiers are ignored by actions "
-                       "other than print\n");
-    }
-
-  if (!out)
-    out = stdout;
-  if (!log)
-    log = stderr;
-  if (infile_count == 0)
-    {
-      infiles[infile_count++] = "-";
-    }
-
-  if (preamble)
-    preamble (out);
-
-  int total_valid = 0, total_count = 0, rc = 0;
-  for (int i = 0; i < infile_count; i++)
-    {
-      marcfile *in = (strcmp ("-", infiles[i]) == 0)
-                         ? marcfile_from_FILE (stdin)
-                         : marcfile_open (infiles[i]);
-      if (!in)
-        {
-          fprintf (stderr, "error: could not open '%s': %s\n", infiles[i],
-                   strerror (errno));
-        }
-      else
-        {
-          int valid = 0, count = 0;
-          while (marcrec_read (rec, in) != 0 && (limit - count) != 0)
-            {
-              count++;
-              valid += action (out, rec, specs);
-            }
-          char errbuf[1024];
-          if (marcfile_error (in, errbuf))
-            {
-              rc = 1;
-              fprintf (stderr, "error: %s\n", errbuf);
-            }
-
-          marcfile_close (in);
-
-          total_valid += valid;
-          total_count += count;
-
-          if (verbose)
-            {
-              fprintf (log, "%s: %i/%i (total: %i/%i)\n", infiles[i],
-  valid, count, total_valid, total_count);
-            }
-        }
-    }
-
-  if (postamble)
-    postamble (out);
-
-  fclose (out);
-  free (infiles);
-  if (fieldspec_count > 0)
-    free (specs);
-  marcrec_free (rec);
-
-  return rc ? rc : ((total_valid == total_count) ? 0 : 1);
-  */
 
   // clean up and exit
   fclose (out);
