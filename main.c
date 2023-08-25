@@ -118,19 +118,19 @@ main (int argc, const char *argv[])
         }
     }
 
-  if ((strcmp ("h", format) == 0) || (strcmp ("human", format) == 0))
+  if ((strcasecmp ("h", format) == 0) || (strcasecmp ("human", format) == 0))
     {
       output_type = OUTPUT_TYPE_HUMAN;
     }
-  else if ((strcmp ("m", format) == 0) || (strcmp ("marc", format) == 0))
+  else if ((strcasecmp ("m", format) == 0) || (strcasecmp ("marc", format) == 0))
     {
       output_type = OUTPUT_TYPE_MARC;
     }
-  else if ((strcmp ("n", format) == 0) || (strcmp ("none", format) == 0))
+  else if ((strcasecmp ("n", format) == 0) || (strcasecmp ("none", format) == 0))
     {
       output_type = OUTPUT_TYPE_NONE;
     }
-  else if ((strcmp ("x", format) == 0) || (strcmp ("xml", format) == 0))
+  else if ((strcasecmp ("x", format) == 0) || (strcasecmp ("xml", format) == 0))
     {
       output_type = OUTPUT_TYPE_XML;
     }
