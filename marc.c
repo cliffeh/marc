@@ -188,11 +188,23 @@ marcrec_from_buffer (marcrec *rec, char *buf, int nBytes)
   // compute the number of fields based on directory size
   int field_count = (base_address - 24 - 1) / 12;
 
-  // we already have a buffer, need to allocaterecords and fields
+  // we already have a buffer, need to allocate records and fields
   rec = rec ? rec : marcrec_alloc (0, field_count);
+  rec->vflags = 0;
+
   rec->data = buf;
   rec->length = length;
+  if (rec->data[rec->length - 1] != RECORD_TERMINATOR)
+    {
+      rec->vflags |= MISSING_RECORD_TERMINATOR;
+    }
+
   rec->base_address = base_address;
+  if (rec->data[rec->base_address - 1] != FIELD_TERMINATOR)
+    {
+      rec->vflags |= MISSING_FIELD_TERMINATOR;
+    }
+
   rec->field_count = field_count;
 
   // process the directory
@@ -204,6 +216,10 @@ marcrec_from_buffer (marcrec *rec, char *buf, int nBytes)
       rec->fields[i].length = atoin (rec->fields[i].directory_entry + 3, 4);
       rec->fields[i].data = rec->data + rec->base_address
                             + atoin (rec->fields[i].directory_entry + 7, 5);
+      if (rec->fields[i].data[rec->fields[i].length - 1] != FIELD_TERMINATOR)
+        {
+          rec->vflags |= MISSING_FIELD_TERMINATOR;
+        }
     }
 
   // return a pointer to the newly-populated marcrec
@@ -271,30 +287,6 @@ marcrec_read (marcrec *rec, marcfile *in)
     }
 
   return marcrec_from_buffer (rec, p, nBytes);
-}
-
-int
-marcrec_validate (const marcrec *rec)
-{
-  int r = 0;
-  if (rec->data[rec->length - 1] != RECORD_TERMINATOR)
-    {
-      r |= MISSING_RECORD_TERMINATOR;
-    }
-  if (rec->data[rec->base_address - 1] != FIELD_TERMINATOR)
-    {
-      r |= MISSING_FIELD_TERMINATOR;
-    }
-
-  for (int i = 0; i < rec->field_count; i++)
-    {
-      if (rec->fields[i].data[rec->fields[i].length - 1] != FIELD_TERMINATOR)
-        {
-          r |= MISSING_FIELD_TERMINATOR;
-        }
-    }
-
-  return r;
 }
 
 int

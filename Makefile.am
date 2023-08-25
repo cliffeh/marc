@@ -8,11 +8,9 @@ marc_LDADD = libmarc.la popt/libpopt.a
 include_HEADERS = marc.h
 noinst_HEADERS = util.h
 
-check_PROGRAMS = test/dynamic-alloc
-
 UNIT_TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate test/marc-xml
-MEMORY_TESTS = test/test-dynamic-alloc test/valgrind-dump test/valgrind-leaders test/valgrind-print \
-    test/valgrind-validate test/valgrind-xml test/valgrind-dynamic-alloc
+MEMORY_TESTS = test/valgrind-dump test/valgrind-leaders test/valgrind-print \
+    test/valgrind-validate test/valgrind-xml
 
 # TODO re-enable memory tests once they're fixed
 check_SCRIPTS = $(UNIT_TESTS) # $(MEMORY_TESTS)
@@ -24,8 +22,6 @@ TEST_INPUTS = test/marc-leaders.txt.gz test/marc-print.txt.gz test/testfile.marc
 
 # tell our test scripts where to find their input
 TESTS_ENVIRONMENT = SRCDIR=$(srcdir)/test BUILDDIR=$(builddir)/test
-
-test_dynamic_alloc_LDADD = libmarc.la
 
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4

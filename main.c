@@ -14,39 +14,11 @@
 #define OUTPUT_TYPE_MARC 2
 #define OUTPUT_TYPE_XML 3
 
-static int
-marc_dump (FILE *out, marcrec *rec, fieldspec specs[])
-{
-  marcrec_write (out, rec);
-  return 1;
-}
-
-static int
-marc_leaders (FILE *out, marcrec *rec, fieldspec specs[])
-{
-  fprintf (out, "%.*s\n", 24, rec->data);
-  return 1;
-}
-
-static int
-marc_print (FILE *out, marcrec *rec, fieldspec specs[])
-{
-  marcrec_print (out, rec, specs);
-  return 1;
-}
-
-static int
-marc_validate (FILE *out, marcrec *rec, fieldspec specs[])
-{
-  // TODO have main pass in the verbose file, or make it a global var
-  return (marcrec_validate (rec) == 0) ? 1 : 0;
-}
-
 int
 main (int argc, const char *argv[])
 {
   int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0,
-          verbose = 0;
+          validate = 0, verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
   char *format = "human", *outfile = "-", *logfile = 0;
   FILE *out = stdout, *log = stderr;
@@ -65,10 +37,12 @@ main (int argc, const char *argv[])
       0 },
     { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
       'o', "output to FILE", "FILE" },
+    { "validate", 'V', POPT_ARG_NONE, &validate, 'V',
+      "log record validation statistics", 0 },
     { "verbose", 'v', POPT_ARG_NONE, &verbose, 'v', "enable verbose logging",
       0 },
-    { "version", 'V', POPT_ARG_NONE, 0, 'V',
-      "show version information and exit", 0 },
+    { "version", 0, POPT_ARG_NONE, 0, 'Z', "show version information and exit",
+      0 },
     POPT_AUTOHELP POPT_TABLEEND
   };
 
@@ -80,7 +54,7 @@ main (int argc, const char *argv[])
     {
       switch (rc)
         {
-        case 'V':
+        case 'Z':
           {
             printf (PACKAGE_STRING);
             poptFreeContext (optCon);
@@ -165,6 +139,7 @@ main (int argc, const char *argv[])
       fprintf (log, "verbose logging enabled\n");
       fprintf (log, "output file: %s\n", outfile);
       fprintf (log, "limit: %i\n", limit);
+      fprintf (log, "validate: %s\n", validate ? "yes" : "no");
     }
 
   if (!(args = poptGetArgs (optCon)))
@@ -181,7 +156,7 @@ main (int argc, const char *argv[])
       // bound for the number of fields any given record is likely to to
       // contain
       marcrec *rec = marcrec_alloc (100000, 10000);
-      int current_count, total_count = 0;
+      int current_count, total_count = 0, valid_records;
 
       rc = 0;
 
@@ -216,19 +191,23 @@ main (int argc, const char *argv[])
         }
 
       current_count = 0;
+      valid_records = 0;
       while (marcrec_read (rec, in) != 0 && (limit - total_count) != 0)
         {
           current_count++;
           total_count++;
 
-          // TODO implement validation
+          if (validate && rec->vflags == 0)
+            {
+              valid_records++;
+            }
 
           switch (output_type)
             {
             case OUTPUT_TYPE_HUMAN:
               {
-                // TODO allow specifying an output file!
-                marc_print (out, rec, 0);
+                // TODO include fieldspec (when available)
+                marcrec_print (out, rec, 0);
               }
               break;
 
@@ -246,6 +225,12 @@ main (int argc, const char *argv[])
 
             case OUTPUT_TYPE_NONE: // no-op
             }
+        }
+
+      if (validate)
+        {
+          fprintf (log, "%s: %i/%i valid records\n", arg, valid_records,
+                   current_count);
         }
 
       marcfile_close (in);

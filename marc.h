@@ -52,7 +52,7 @@ typedef struct marcfield
 
 typedef struct marcrec
 {
-  int length, base_address, field_count;
+  int length, base_address, field_count, vflags;
   char *data;
   marcfield *fields;
 } marcrec;
@@ -163,15 +163,6 @@ int marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[]);
  *                  was reached or there was an error
  */
 marcrec *marcrec_read (marcrec *rec, marcfile *in);
-
-/**
- * @brief validate a marc record
- *
- * @param rec the record to validate
- * @return int 0 if the marc record has all the appropriate field/record
- *             terminators; otherwise non-zero
- */
-int marcrec_validate (const marcrec *rec);
 
 /**
  * @brief write a marc record to a file
