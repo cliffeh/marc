@@ -4,6 +4,7 @@
 // clang-format on
 #include "marc.h"
 #include "util.h"
+#include <string.h>
 
 #define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 
@@ -129,7 +130,7 @@ marcfield_print (FILE *out, const marcfield *field, const fieldspec specs[])
 int
 marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[])
 {
-  if (!specs) // TODO update spec to include leader fields?
+  if (!specs)
     {
       fprintf (
           out,
@@ -154,6 +155,17 @@ marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[])
           "length of the staring-character-position portion: %c | length of "
           "the implementation-defined portion: %c\n",
           rec->data[21], rec->data[22]);
+    }
+  else // see whether we're supposed to print the leader
+    {
+      for (int i = 0; specs[i].tag; i++)
+        {
+          if (specs[i].tag == -1
+              && strcasecmp ("leader", specs[i].subfields) == 0)
+            {
+              fprintf (out, "%.24s\n", rec->data);
+            }
+        }
     }
 
   int n = 0;

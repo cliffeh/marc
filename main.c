@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef MAX_FIELDSPECS
+#define MAX_FIELDSPECS 256
+#endif
+
 #define OUTPUT_TYPE_NONE 0
 #define OUTPUT_TYPE_HUMAN 1
 #define OUTPUT_TYPE_MARC 2
@@ -17,10 +21,11 @@
 int
 main (int argc, const char *argv[])
 {
-  int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0,
-          validate = 0, verbose = 0;
+  int rc, field_count = 0, limit = -1, output_type = OUTPUT_TYPE_HUMAN,
+          stdin_already_used = 0, validate = 0, verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
   char *field, *format = "human", *outfile = "-", *logfile = 0;
+  fieldspec *specs = calloc (MAX_FIELDSPECS, sizeof (fieldspec));
   FILE *out = stdout, *log = stderr;
 
   poptContext optCon;
@@ -28,7 +33,9 @@ main (int argc, const char *argv[])
   struct poptOption options[] = {
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
     { "field", 'f', POPT_ARG_STRING, &field, 'f',
-      "only print fields adhering to FIELDSPEC", "FIELDSPEC" },
+      "only print fields adhering to FIELDSPEC (requires human-readable "
+      "output format)",
+      "FIELDSPEC" },
     { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
       "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
     { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
@@ -58,8 +65,27 @@ main (int argc, const char *argv[])
         {
         case 'f':
           {
-            // TODO actually implement!
-            fprintf (log, "warning: --field unimplemented (wants field: %s)\n", field);
+            if (field_count >= MAX_FIELDSPECS)
+              {
+                fprintf (log,
+                         "warning: maximum number of fields (%i) specified; "
+                         "dropping %s\n",
+                         MAX_FIELDSPECS, field);
+              }
+            else
+              {
+                if (strcasecmp ("leader", field) == 0)
+                  {
+                    specs[field_count].tag = -1;
+                    specs[field_count].subfields = field;
+                  }
+                else
+                  {
+                    specs[field_count].tag = atoin (field, 3);
+                    specs[field_count].subfields = field + 3;
+                  }
+                field_count++;
+              }
           }
           break;
         case 'Z':
@@ -122,15 +148,18 @@ main (int argc, const char *argv[])
     {
       output_type = OUTPUT_TYPE_HUMAN;
     }
-  else if ((strcasecmp ("m", format) == 0) || (strcasecmp ("marc", format) == 0))
+  else if ((strcasecmp ("m", format) == 0)
+           || (strcasecmp ("marc", format) == 0))
     {
       output_type = OUTPUT_TYPE_MARC;
     }
-  else if ((strcasecmp ("n", format) == 0) || (strcasecmp ("none", format) == 0))
+  else if ((strcasecmp ("n", format) == 0)
+           || (strcasecmp ("none", format) == 0))
     {
       output_type = OUTPUT_TYPE_NONE;
     }
-  else if ((strcasecmp ("x", format) == 0) || (strcasecmp ("xml", format) == 0))
+  else if ((strcasecmp ("x", format) == 0)
+           || (strcasecmp ("xml", format) == 0))
     {
       output_type = OUTPUT_TYPE_XML;
     }
@@ -148,6 +177,10 @@ main (int argc, const char *argv[])
       fprintf (log, "output file: %s\n", outfile);
       fprintf (log, "limit: %i\n", limit);
       fprintf (log, "validate: %s\n", validate ? "yes" : "no");
+      for (int i = 0; i < field_count; i++)
+        {
+          fprintf (log, "desired field: %s\n", specs[i].subfields);
+        }
     }
 
   if (!(args = poptGetArgs (optCon)))
@@ -155,6 +188,16 @@ main (int argc, const char *argv[])
 
   if (output_type == OUTPUT_TYPE_XML)
     fprintf (out, "%s\n", MARC_XML_PREAMBLE);
+
+  if (field_count == 0)
+    {
+      specs = 0;
+    }
+  else if (output_type != OUTPUT_TYPE_HUMAN)
+    {
+      fprintf (log, "warning: fields specified with non-human-readable output "
+                    "format; will be ignored...\n");
+    }
 
   for (; arg = *args; args++)
     {
@@ -215,7 +258,7 @@ main (int argc, const char *argv[])
             case OUTPUT_TYPE_HUMAN:
               {
                 // TODO include fieldspec (when available)
-                marcrec_print (out, rec, 0);
+                marcrec_print (out, rec, specs);
               }
               break;
 
@@ -249,6 +292,7 @@ main (int argc, const char *argv[])
 
   // clean up and exit
   fclose (out);
+  free (specs);
   poptFreeContext (optCon);
 
   // TODO maybe some better logic around specific return codes
