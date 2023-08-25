@@ -16,48 +16,42 @@ Depending on your environment this may require elevated privileges:
 
 ## Running
 ```
-usage: marc COMMAND [OPTIONS] [FILES]
+Usage: marc [OPTION...] [FILE...]
+Will read from stdin if no FILEs are provided.
+Options:
+  -f, --field=FIELDSPEC     only print fields adhering to FIELDSPEC (requires human-readable output format)
+  -F, --format=STRING       output format; can be one of: n[one], h[uman], m[arc], x[ml] (default: "human")
+  -l, --logfile=FILE        log to FILE (default: stderr)
+  -L, --limit=INT           maximum number of records to process; -1 means process all available records (default: -1)
+  -o, --output=FILE         output to FILE (default: "-")
+  -V, --validate            log record validation statistics
+  -v, --verbose             enable verbose logging
+      --version             show version information and exit
 
-COMMANDS:
-  dump      dump records in marc format
-  help      print a brief help message and exit
-  leaders   print marc leaders
-  print     print marc records/fields in a human-readable format
-  validate  validate marc records
-  xml       print marc records in XML format
-
-OPTIONS:
-  -h, --help         print a brief help message and exit
-  -f, --field SPEC   only output fields adhering to SPEC (note: this flag
-                     is only used by marc-print)
-  -l, --limit N      limit processing to the first N records per file
-                     (default: no limit)
-  -o, --output FILE  output to FILE (default: stdout)
-  -v, --verbose      turn on verbose logging
-  -V, --version      output version and exit
-
-Note: if no input files are provided this program will read from stdin
+Help options:
+  -?, --help                Show this help message
+      --usage               Display brief usage message
 ```
 
 ## Examples
 ```
   # validate records
-  marc validate foo.marc
+  marc --validate foo.marc
 
-  # print all records
-  marc print foo.marc
+  # print all records (human-readable)
+  marc -Fhuman foo.marc
 
   # print out the full 245 field of all records
-  marc print --field 245 foo.marc
+  marc -Fhuman --field 245 foo.marc
 
   # print out the 245a subfield of all records
-  marc print --field 245a foo.marc
+  marc -Fhuman --field 245a foo.marc
 
-  # print out the 245 field (subfields a and b)
-  marc print --field 245ab foo.marc
+  # print out the 245 field (subfields a, b, and c)
+  marc -Fhuman --field 245abc foo.marc
 
   # dump the first ten records of one file into another
-  marc dump --limit 10 -o bar.marc foo.marc
+  marc -Fmarc --limit 10 -o bar.marc foo.marc
 ```
 
 ## About
