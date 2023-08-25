@@ -7,4 +7,4 @@ DIR=$(dirname "$0")
 SRCDIR=${SRCDIR:-$DIR}
 BUILDDIR=${BUILDDIR:-$DIR}
 
-zcat < "$SRCDIR/testfile.marc.gz" | ./marc validate -v
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc -Fnone -o/dev/null -l- --validate | grep -e '-: 1010/1010 valid records'

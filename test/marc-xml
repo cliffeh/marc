@@ -5,5 +5,5 @@ DIR=$(dirname "$0")
 SRCDIR=${SRCDIR:-$DIR}
 BUILDDIR=${BUILDDIR:-$DIR}
 
-zcat < "$SRCDIR/testfile.marc.gz" | ./marc xml  > "$BUILDDIR/marc-xml.output"
+zcat < "$SRCDIR/testfile.marc.gz" | ./marc -Fxml  > "$BUILDDIR/marc-xml.output"
 zcat < "$SRCDIR/testfile.xml.gz" | diff "$BUILDDIR/marc-xml.output" -

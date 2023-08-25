@@ -1,5 +1,6 @@
 #include "config.h"
 #include "marc.h"
+#include "popt/popt.h"
 #include "util.h"
 #include <ctype.h>
 #include <errno.h>
@@ -8,229 +9,292 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USAGE                                                                  \
-  "usage: marc COMMAND [OPTIONS] [FILES]\n"                                    \
-  "\n"                                                                         \
-  "COMMANDS:\n"                                                                \
-  "  dump      dump records in marc format\n"                                  \
-  "  help      print a brief help message and exit\n"                          \
-  "  leaders   print marc leaders\n"                                           \
-  "  print     print marc records/fields in a human-readable format\n"         \
-  "  validate  validate marc records\n"                                        \
-  "  xml       print marc records in XML format\n"                             \
-  "\n"                                                                         \
-  "OPTIONS:\n"                                                                 \
-  "  -h, --help         print a brief help message and exit\n"                 \
-  "  -f, --field SPEC   only output fields adhering to SPEC (note: this "      \
-  "flag\n"                                                                     \
-  "                     is only used by `marc print`)\n"                       \
-  "  -l, --limit N      limit processing to the first N records per file\n"    \
-  "                     (default: no limit)\n"                                 \
-  "  -o, --output FILE  output to FILE (default: stdout)\n"                    \
-  "  -v, --verbose      turn on verbose logging\n"                             \
-  "  -V, --version      output version and exit\n"                             \
-  "\n"                                                                         \
-  "Note: if no input files are provided this program will read from stdin\n"
+#ifndef MAX_FIELDSPECS
+#define MAX_FIELDSPECS 256
+#endif
 
-static int marc_dump(FILE *out, marcrec *rec, fieldspec specs[]) {
-  marcrec_write(out, rec);
-  return 1;
-}
+#define OUTPUT_TYPE_NONE 0
+#define OUTPUT_TYPE_HUMAN 1
+#define OUTPUT_TYPE_MARC 2
+#define OUTPUT_TYPE_XML 3
 
-static int marc_leaders(FILE *out, marcrec *rec, fieldspec specs[]) {
-  fprintf(out, "%.*s\n", 24, rec->data);
-  return 1;
-}
+int
+main (int argc, const char *argv[])
+{
+  int rc, field_count = 0, limit = -1, output_type = OUTPUT_TYPE_HUMAN,
+          stdin_already_used = 0, validate = 0, verbose = 0;
+  const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
+  char *field, *format = "human", *outfile = "-", *logfile = 0;
+  fieldspec *specs = calloc (MAX_FIELDSPECS, sizeof (fieldspec));
+  FILE *out = stdout, *log = stderr;
 
-static int marc_print(FILE *out, marcrec *rec, fieldspec specs[]) {
-  marcrec_print(out, rec, specs);
-  return 1;
-}
+  poptContext optCon;
 
-static int marc_validate(FILE *out, marcrec *rec, fieldspec specs[]) {
-  // TODO have main pass in the verbose file, or make it a global var
-  return (marcrec_validate(rec) == 0) ? 1 : 0;
-}
+  struct poptOption options[] = {
+    /* longName, shortName, argInfo, arg, val, descrip, argDescript */
+    { "field", 'f', POPT_ARG_STRING, &field, 'f',
+      "only print fields adhering to FIELDSPEC (requires human-readable "
+      "output format)",
+      "FIELDSPEC" },
+    { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
+      "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
+    { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
+      "log to FILE (default: stderr)", "FILE" },
+    { "limit", 'L', POPT_ARG_INT | POPT_ARGFLAG_SHOW_DEFAULT, &limit, 'L',
+      "maximum number of records to process; -1 means process all "
+      "available records",
+      0 },
+    { "output", 'o', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &outfile,
+      'o', "output to FILE", "FILE" },
+    { "validate", 'V', POPT_ARG_NONE, &validate, 'V',
+      "log record validation statistics", 0 },
+    { "verbose", 'v', POPT_ARG_NONE, &verbose, 'v', "enable verbose logging",
+      0 },
+    { "version", 0, POPT_ARG_NONE, 0, 'Z', "show version information and exit",
+      0 },
+    POPT_AUTOHELP POPT_TABLEEND
+  };
 
-static void xml_preamble(FILE *out) {
-  fprintf(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-               "<collection\n"
-               "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-               "  xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim "
-               "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\"\n"
-               "  xmlns=\"http://www.loc.gov/MARC21/slim\">\n");
-}
+  optCon = poptGetContext (0, argc, argv, options, 0);
+  poptSetOtherOptionHelp (optCon, "[OPTION...] [FILE...]\nWill read from "
+                                  "stdin if no FILEs are provided.\nOptions:");
 
-static int marc_xml(FILE *out, marcrec *rec, fieldspec specs[]) {
-  marcrec_xml(out, rec);
-  return 1;
-}
-
-static void xml_postamble(FILE *out) { fprintf(out, "</collection>"); }
-
-int main(int argc, char *argv[]) {
-  void (*preamble)(FILE *) = 0;
-  int (*action)(FILE *, marcrec *, fieldspec *) = 0;
-  void (*postamble)(FILE *) = 0;
-
-  if (argc == 1) {
-    fprintf(stderr, USAGE);
-    exit(1);
-  }
-
-  if (strcmp("dump", argv[1]) == 0) {
-    action = marc_dump;
-  } else if (strcmp("help", argv[1]) == 0 || strcmp("--help", argv[1]) == 0 ||
-             strcmp("-h", argv[1]) == 0) {
-    fprintf(stdout, USAGE);
-    exit(0);
-  } else if (strcmp("leaders", argv[1]) == 0) {
-    action = marc_leaders;
-  } else if (strcmp("print", argv[1]) == 0) {
-    action = marc_print;
-  } else if (strcmp("validate", argv[1]) == 0) {
-    action = marc_validate;
-  } else if (strcmp("version", argv[1]) == 0 ||
-             strcmp("--version", argv[1]) == 0 || strcmp("-V", argv[1]) == 0) {
-    fprintf(stdout, PACKAGE_STRING "\n");
-    exit(0);
-  } else if (strcmp("xml", argv[1]) == 0) {
-    preamble = xml_preamble;
-    action = marc_xml;
-    postamble = xml_postamble;
-  } else {
-    fprintf(stderr, "error: unknown action '%s'\n", argv[1]);
-    exit(1);
-  }
-
-  int already_using_stdin = 0, limit = -1, infile_count = 0,
-      fieldspec_count = 0, verbose = 0;
-  FILE *out = 0, *log = 0;
-  char **infiles = calloc(
-      argc, sizeof(char *)); // more than we need, but not worth optimizing
-  fieldspec *specs = calloc(
-      argc, sizeof(fieldspec *)); // more than we need, but not worth optimizing
-
-  // process command line args
-  for (int i = 2; i < argc; i++) {
-    if (strcmp("--help", argv[i]) == 0 || strcmp("-h", argv[i]) == 0) {
-      fprintf(stdout, USAGE);
-      exit(0);
-    } else if (strcmp("--field", argv[i]) == 0 || strcmp("-f", argv[i]) == 0) {
-      if (i + 1 >= argc) {
-        fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
-        exit(1);
-      }
-      i++;
-      if (strlen(argv[i]) < 3 || !isdigit(argv[i][0]) || !isdigit(argv[i][1]) ||
-          !isdigit(argv[i][2])) {
-        fprintf(stderr, "error: '%s' is an invalid field specifier\n", argv[i]);
-        exit(1);
-      }
-      specs[fieldspec_count].tag = atoin(argv[i], 3);
-      specs[fieldspec_count++].subfields = argv[i] + 3;
-    } else if (strcmp("--limit", argv[i]) == 0 || strcmp("-l", argv[i]) == 0) {
-      if (i + 1 >= argc) {
-        fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
-        exit(1);
-      }
-      i++;
-      limit = atoi(argv[i]);
-    } else if (strcmp("--output", argv[i]) == 0 || strcmp("-o", argv[i]) == 0) {
-      if (out) {
-        fprintf(stderr, "error: more than one output file specified\n");
-        exit(1);
-      }
-      if (i + 1 >= argc) {
-        fprintf(stderr, "error: %s flag requires an argument\n", argv[i]);
-        exit(1);
-      }
-      i++;
-      out = fopen(argv[i], "w");
-    } else if (strcmp("--verbose", argv[i]) == 0 ||
-               strcmp("-v", argv[i]) == 0) {
-      verbose = 1;
-    } else if (strcmp("--version", argv[i]) == 0 ||
-               strcmp("-V", argv[i]) == 0) {
-      fprintf(stdout, PACKAGE_STRING "\n");
-      exit(0);
-    } else // we'll assume it's a filename
+  while ((rc = poptGetNextOpt (optCon)) > 0)
     {
-      // protect against multiple uses of stdin
-      if (strcmp("-", argv[i]) == 0) {
-        if (already_using_stdin) {
-          continue;
-        } else {
-          already_using_stdin = 1;
+      switch (rc)
+        {
+        case 'f':
+          {
+            if (field_count >= MAX_FIELDSPECS)
+              {
+                fprintf (log,
+                         "warning: maximum number of fields (%i) specified; "
+                         "dropping %s\n",
+                         MAX_FIELDSPECS, field);
+              }
+            else
+              {
+                if (strcasecmp ("leader", field) == 0)
+                  {
+                    specs[field_count].tag = -1;
+                    specs[field_count].subfields = field;
+                  }
+                else
+                  {
+                    specs[field_count].tag = atoin (field, 3);
+                    specs[field_count].subfields = field + 3;
+                  }
+                field_count++;
+              }
+          }
+          break;
+        case 'Z':
+          {
+            printf (PACKAGE_STRING);
+            poptFreeContext (optCon);
+            exit (0);
+          }
         }
-      }
-      infiles[infile_count++] = argv[i];
     }
-  }
 
-  // max record size is 99999, and 10000 seems like a conservative upper bound
-  // for the number of fields any given record is likely to to contain
-  marcrec *rec = marcrec_alloc(100000, 10000);
-
-  if (fieldspec_count == 0) {
-    free(specs);
-    specs = 0;
-  } else if (action != marc_print) {
-    fprintf(
-        stderr,
-        "warning: field specifiers are ignored by actions other than print\n");
-  }
-
-  if (!out)
-    out = stdout;
-  if (!log)
-    log = stderr;
-  if (infile_count == 0) {
-    infiles[infile_count++] = "-";
-  }
-
-  if (preamble)
-    preamble(out);
-
-  int total_valid = 0, total_count = 0, rc = 0;
-  for (int i = 0; i < infile_count; i++) {
-    marcfile *in = (strcmp("-", infiles[i]) == 0) ? marcfile_from_FILE(stdin)
-                                                  : marcfile_open(infiles[i]);
-    if (!in) {
-      fprintf(stderr, "error: could not open '%s': %s\n", infiles[i],
-              strerror(errno));
-    } else {
-      int valid = 0, count = 0;
-      while (marcrec_read(rec, in) != 0 && (limit - count) != 0) {
-        count++;
-        valid += action(out, rec, specs);
-      }
-      char errbuf[1024];
-      if (marcfile_error(in, errbuf)) {
-        rc = 1;
-        fprintf(stderr, "error: %s\n", errbuf);
-      }
-
-      marcfile_close(in);
-
-      total_valid += valid;
-      total_count += count;
-
-      if (verbose) {
-        fprintf(log, "%s: %i/%i (total: %i/%i)\n", infiles[i], valid, count,
-                total_valid, total_count);
-      }
+  if (rc != -1)
+    {
+      fprintf (stderr, "error: %s: %s\n",
+               poptBadOption (optCon, POPT_BADOPTION_NOALIAS),
+               poptStrerror (rc));
+      poptPrintHelp (optCon, stderr, 0);
+      poptFreeContext (optCon);
+      exit (1);
     }
-  }
 
-  if (postamble)
-    postamble(out);
+  if (strcmp ("-", outfile) != 0)
+    {
+      if (!(out = fopen (outfile, "w")))
+        {
+          fprintf (stderr, "fatal: couldn't open output file '%s' (%s)\n", arg,
+                   strerror (errno));
+          // TODO cleanup
+          exit (1);
+        }
+    }
 
-  fclose(out);
-  free(infiles);
-  if (fieldspec_count > 0)
-    free(specs);
-  marcrec_free(rec);
+  if (logfile)
+    {
+      if (strcmp (outfile, logfile) == 0)
+        {
+          fprintf (stderr,
+                   "warning: output and logs being written to the same file "
+                   "'%s'!\n",
+                   outfile);
+        }
 
-  return rc ? rc : ((total_valid == total_count) ? 0 : 1);
+      if (strcmp ("-", logfile) == 0)
+        {
+          log = stdout;
+        }
+      else
+        {
+          if (!(log = fopen (logfile, "w")))
+            {
+              fprintf (stderr, "fatal: couldn't open log file '%s' (%s)\n",
+                       arg, strerror (errno));
+              // TODO cleanup
+              exit (1);
+            }
+        }
+    }
+
+  if ((strcasecmp ("h", format) == 0) || (strcasecmp ("human", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_HUMAN;
+    }
+  else if ((strcasecmp ("m", format) == 0)
+           || (strcasecmp ("marc", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_MARC;
+    }
+  else if ((strcasecmp ("n", format) == 0)
+           || (strcasecmp ("none", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_NONE;
+    }
+  else if ((strcasecmp ("x", format) == 0)
+           || (strcasecmp ("xml", format) == 0))
+    {
+      output_type = OUTPUT_TYPE_XML;
+    }
+  else
+    {
+      fprintf (stderr, "error: unknown format type '%s'\n", format);
+      poptPrintHelp (optCon, stderr, 0);
+      poptFreeContext (optCon);
+      exit (1);
+    }
+
+  if (verbose)
+    {
+      fprintf (log, "verbose logging enabled\n");
+      fprintf (log, "output file: %s\n", outfile);
+      fprintf (log, "limit: %i\n", limit);
+      fprintf (log, "validate: %s\n", validate ? "yes" : "no");
+      for (int i = 0; i < field_count; i++)
+        {
+          fprintf (log, "desired field: %s\n", specs[i].subfields);
+        }
+    }
+
+  if (!(args = poptGetArgs (optCon)))
+    args = defaultArgs;
+
+  if (output_type == OUTPUT_TYPE_XML)
+    fprintf (out, "%s\n", MARC_XML_PREAMBLE);
+
+  if (field_count == 0)
+    {
+      specs = 0;
+    }
+  else if (output_type != OUTPUT_TYPE_HUMAN)
+    {
+      fprintf (log, "warning: fields specified with non-human-readable output "
+                    "format; will be ignored...\n");
+    }
+
+  for (; arg = *args; args++)
+    {
+      marcfile *in;
+
+      // max record size is 99999, and 10000 seems like a conservative upper
+      // bound for the number of fields any given record is likely to to
+      // contain
+      marcrec *rec = marcrec_alloc (100000, 10000);
+      int current_count, total_count = 0, valid_records;
+
+      rc = 0;
+
+      if (verbose)
+        fprintf (log, "processing file: %s\n", arg);
+
+      // protect against trying to read from stdin more than once
+      if (strcmp ("-", arg) == 0)
+        {
+          if (stdin_already_used)
+            {
+              if (verbose)
+                fprintf (log, "skipping %s (stdin already read)\n", arg);
+              continue;
+            }
+          else
+            {
+              in = marcfile_from_FILE (stdin);
+              stdin_already_used = 1;
+            }
+        }
+      else
+        {
+          if (!(in = marcfile_open (arg)))
+            {
+              fprintf (log,
+                       "error: couldn't open file '%s' (%s); skipping...\n",
+                       arg, strerror (errno));
+
+              continue;
+            }
+        }
+
+      current_count = 0;
+      valid_records = 0;
+      while (marcrec_read (rec, in) != 0 && (limit - total_count) != 0)
+        {
+          current_count++;
+          total_count++;
+
+          if (validate && rec->vflags == 0)
+            {
+              valid_records++;
+            }
+
+          switch (output_type)
+            {
+            case OUTPUT_TYPE_HUMAN:
+              {
+                // TODO include fieldspec (when available)
+                marcrec_print (out, rec, specs);
+              }
+              break;
+
+            case OUTPUT_TYPE_MARC:
+              {
+                marcrec_write (out, rec);
+              }
+              break;
+
+            case OUTPUT_TYPE_XML:
+              {
+                marcrec_xml (out, rec);
+              }
+              break;
+
+            case OUTPUT_TYPE_NONE: // no-op
+            }
+        }
+
+      if (validate)
+        {
+          fprintf (log, "%s: %i/%i valid records\n", arg, valid_records,
+                   current_count);
+        }
+
+      marcfile_close (in);
+    }
+
+  if (output_type == OUTPUT_TYPE_XML)
+    fprintf (out, "%s\n", MARC_XML_POSTAMBLE);
+
+  // clean up and exit
+  fclose (out);
+  free (specs);
+  poptFreeContext (optCon);
+
+  // TODO maybe some better logic around specific return codes
+  return rc;
 }

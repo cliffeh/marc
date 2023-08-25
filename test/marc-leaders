@@ -7,5 +7,5 @@ DIR=$(dirname "$0")
 SRCDIR=${SRCDIR:-$DIR}
 BUILDDIR=${BUILDDIR:-$DIR}
 
-zcat "$SRCDIR/testfile.marc.gz" | ./marc leaders > "$BUILDDIR/marc-leaders.output"
+zcat "$SRCDIR/testfile.marc.gz" | ./marc -Fhuman -fleader > "$BUILDDIR/marc-leaders.output"
 zcat "$SRCDIR/marc-leaders.txt.gz" | diff "$BUILDDIR/marc-leaders.output" -
