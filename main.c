@@ -20,13 +20,15 @@ main (int argc, const char *argv[])
   int rc, limit = -1, output_type = OUTPUT_TYPE_HUMAN, stdin_already_used = 0,
           validate = 0, verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
-  char *format = "human", *outfile = "-", *logfile = 0;
+  char *field, *format = "human", *outfile = "-", *logfile = 0;
   FILE *out = stdout, *log = stderr;
 
   poptContext optCon;
 
   struct poptOption options[] = {
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
+    { "field", 'f', POPT_ARG_STRING, &field, 'f',
+      "only print fields adhering to FIELDSPEC", "FIELDSPEC" },
     { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
       "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
     { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
@@ -54,6 +56,12 @@ main (int argc, const char *argv[])
     {
       switch (rc)
         {
+        case 'f':
+          {
+            // TODO actually implement!
+            fprintf (log, "warning: --field unimplemented (wants field: %s)\n", field);
+          }
+          break;
         case 'Z':
           {
             printf (PACKAGE_STRING);
