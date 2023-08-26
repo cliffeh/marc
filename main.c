@@ -302,11 +302,6 @@ main (int argc, const char *argv[])
   free (rec->data);
   free (rec->fields);
   free (rec);
-  for (int i = 0; i < field_count; i++)
-    {
-      if (specs[i].subfields)
-        free (specs[i].subfields);
-    }
   poptFreeContext (optCon);
 
   // TODO maybe some better logic around specific return codes
