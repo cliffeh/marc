@@ -12,8 +12,7 @@ UNIT_TESTS = test/marc-dump test/marc-leaders test/marc-print test/marc-validate
 MEMORY_TESTS = test/valgrind-dump test/valgrind-leaders test/valgrind-print \
     test/valgrind-validate test/valgrind-xml
 
-# TODO re-enable memory tests once they're fixed
-check_SCRIPTS = $(UNIT_TESTS) # $(MEMORY_TESTS)
+check_SCRIPTS = $(UNIT_TESTS) $(MEMORY_TESTS)
 
 SUBDIRS = popt
 

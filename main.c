@@ -25,7 +25,7 @@ main (int argc, const char *argv[])
           stdin_already_used = 0, validate = 0, verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
   char *field, *format = "human", *outfile = "-", *logfile = 0;
-  fieldspec *specs = calloc (MAX_FIELDSPECS, sizeof (fieldspec));
+  fieldspec *specs = 0;
   FILE *out = stdout, *log = stderr;
 
   poptContext optCon;
@@ -71,21 +71,97 @@ main (int argc, const char *argv[])
                          "warning: maximum number of fields (%i) specified; "
                          "dropping %s\n",
                          MAX_FIELDSPECS, field);
+                free (field);
+                continue;
+              }
+
+            specs = realloc (specs, (field_count + 2) * sizeof (fieldspec));
+            specs[field_count + 1].subfields = 0;
+            specs[field_count + 1].tag = 0;
+
+            if (strcasecmp ("leader", field) == 0)
+              {
+                specs[field_count].tag = -1;
+                specs[field_count].subfields = field;
               }
             else
               {
-                if (strcasecmp ("leader", field) == 0)
-                  {
-                    specs[field_count].tag = -1;
-                    specs[field_count].subfields = field;
-                  }
-                else
-                  {
-                    specs[field_count].tag = atoin (field, 3);
-                    specs[field_count].subfields = field + 3;
-                  }
-                field_count++;
+                specs[field_count].tag = atoin (field, 3);
+                specs[field_count].subfields = field + 3;
               }
+            field_count++;
+          }
+          break;
+        case 'F':
+          {
+            if ((strcasecmp ("h", format) == 0)
+                || (strcasecmp ("human", format) == 0))
+              {
+                output_type = OUTPUT_TYPE_HUMAN;
+              }
+            else if ((strcasecmp ("m", format) == 0)
+                     || (strcasecmp ("marc", format) == 0))
+              {
+                output_type = OUTPUT_TYPE_MARC;
+              }
+            else if ((strcasecmp ("n", format) == 0)
+                     || (strcasecmp ("none", format) == 0))
+              {
+                output_type = OUTPUT_TYPE_NONE;
+              }
+            else if ((strcasecmp ("x", format) == 0)
+                     || (strcasecmp ("xml", format) == 0))
+              {
+                output_type = OUTPUT_TYPE_XML;
+              }
+            else
+              {
+                fprintf (stderr, "error: unknown format type '%s'\n", format);
+                poptPrintHelp (optCon, stderr, 0);
+                poptFreeContext (optCon);
+                exit (1);
+              }
+            free (format);
+          }
+          break;
+        case 'l':
+          {
+            if (strcmp ("-", logfile) == 0)
+              {
+                log = stdout;
+              }
+            else
+              {
+                if (!(log = fopen (logfile, "w")))
+                  {
+                    fprintf (stderr,
+                             "fatal: couldn't open log file '%s' (%s)\n", arg,
+                             strerror (errno));
+                    // TODO cleanup
+                    exit (1);
+                  }
+              }
+            free (logfile);
+          }
+          break;
+        case 'o':
+          {
+            if (strcmp ("-", outfile) == 0)
+              {
+                out = stdout;
+              }
+            else
+              {
+                if (!(out = fopen (outfile, "w")))
+                  {
+                    fprintf (stderr,
+                             "fatal: couldn't open output file '%s' (%s)\n",
+                             arg, strerror (errno));
+                    // TODO cleanup
+                    exit (1);
+                  }
+              }
+            free (outfile);
           }
           break;
         case 'Z':
@@ -102,70 +178,6 @@ main (int argc, const char *argv[])
       fprintf (stderr, "error: %s: %s\n",
                poptBadOption (optCon, POPT_BADOPTION_NOALIAS),
                poptStrerror (rc));
-      poptPrintHelp (optCon, stderr, 0);
-      poptFreeContext (optCon);
-      exit (1);
-    }
-
-  if (strcmp ("-", outfile) != 0)
-    {
-      if (!(out = fopen (outfile, "w")))
-        {
-          fprintf (stderr, "fatal: couldn't open output file '%s' (%s)\n", arg,
-                   strerror (errno));
-          // TODO cleanup
-          exit (1);
-        }
-    }
-
-  if (logfile)
-    {
-      if (strcmp (outfile, logfile) == 0)
-        {
-          fprintf (stderr,
-                   "warning: output and logs being written to the same file "
-                   "'%s'!\n",
-                   outfile);
-        }
-
-      if (strcmp ("-", logfile) == 0)
-        {
-          log = stdout;
-        }
-      else
-        {
-          if (!(log = fopen (logfile, "w")))
-            {
-              fprintf (stderr, "fatal: couldn't open log file '%s' (%s)\n",
-                       arg, strerror (errno));
-              // TODO cleanup
-              exit (1);
-            }
-        }
-    }
-
-  if ((strcasecmp ("h", format) == 0) || (strcasecmp ("human", format) == 0))
-    {
-      output_type = OUTPUT_TYPE_HUMAN;
-    }
-  else if ((strcasecmp ("m", format) == 0)
-           || (strcasecmp ("marc", format) == 0))
-    {
-      output_type = OUTPUT_TYPE_MARC;
-    }
-  else if ((strcasecmp ("n", format) == 0)
-           || (strcasecmp ("none", format) == 0))
-    {
-      output_type = OUTPUT_TYPE_NONE;
-    }
-  else if ((strcasecmp ("x", format) == 0)
-           || (strcasecmp ("xml", format) == 0))
-    {
-      output_type = OUTPUT_TYPE_XML;
-    }
-  else
-    {
-      fprintf (stderr, "error: unknown format type '%s'\n", format);
       poptPrintHelp (optCon, stderr, 0);
       poptFreeContext (optCon);
       exit (1);
@@ -189,24 +201,19 @@ main (int argc, const char *argv[])
   if (output_type == OUTPUT_TYPE_XML)
     fprintf (out, "%s\n", MARC_XML_PREAMBLE);
 
-  if (field_count == 0)
-    {
-      specs = 0;
-    }
-  else if (output_type != OUTPUT_TYPE_HUMAN)
+  if (field_count > 0 && output_type != OUTPUT_TYPE_HUMAN)
     {
       fprintf (log, "warning: fields specified with non-human-readable output "
                     "format; will be ignored...\n");
     }
 
+  // max record size is 99999, and 10000 seems like a conservative upper
+  // bound for the number of fields any given record is likely to to
+  // contain
+  marcrec *rec = marcrec_alloc (100000, 10000);
   for (; arg = *args; args++)
     {
       marcfile *in;
-
-      // max record size is 99999, and 10000 seems like a conservative upper
-      // bound for the number of fields any given record is likely to to
-      // contain
-      marcrec *rec = marcrec_alloc (100000, 10000);
       int current_count, total_count = 0, valid_records;
 
       rc = 0;
@@ -257,7 +264,6 @@ main (int argc, const char *argv[])
             {
             case OUTPUT_TYPE_HUMAN:
               {
-                // TODO include fieldspec (when available)
                 marcrec_print (out, rec, specs);
               }
               break;
@@ -292,9 +298,16 @@ main (int argc, const char *argv[])
 
   // clean up and exit
   fclose (out);
-  free (specs);
+  free (rec->data);
+  free (rec->fields);
+  free (rec);
+  for (int i = 0; i < field_count; i++)
+    {
+      if (specs[i].subfields)
+        free (specs[i].subfields);
+    }
   poptFreeContext (optCon);
 
   // TODO maybe some better logic around specific return codes
-  return rc;
+  exit (rc);
 }

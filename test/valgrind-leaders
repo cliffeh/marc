@@ -1,1 +1,16 @@
-valgrind
+#!/bin/bash
+
+which valgrind >& /dev/null || { echo "can't find valgrind; skipping test..."; exit 77; }
+
+set -euxo pipefail
+
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR/..}
+BUILDDIR=${BUILDDIR:-$DIR/..}
+
+logfile="$BUILDDIR/test/marc-leaders.valgrind"
+zcat < "$SRCDIR/test/testfile.marc.gz" | "$BUILDDIR/libtool" --mode=execute \
+    valgrind --leak-check=full --log-file="$logfile" \
+    "$BUILDDIR/marc" -Fhuman -fleader -o /dev/null
+grep 'ERROR SUMMARY: 0' "$logfile" || { echo "leak detected!"; exit 1; }
