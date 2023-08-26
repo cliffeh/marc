@@ -23,7 +23,7 @@ main (int argc, const char *argv[])
 {
   int rc, field_count = 0, limit = -1, output_type = OUTPUT_TYPE_HUMAN,
           stdin_already_used = 0, validate = 0, verbose = 0;
-  const char *defaultArgs[2] = { "-", 0 }, **args, *arg;
+  const char *defaultArgs[2] = { "-", 0 }, **infiles, *infile;
   char *field, *format = "human", *outfile = "-", *logfile = 0;
   fieldspec *specs = 0;
   FILE *out = stdout, *log = stderr;
@@ -135,8 +135,8 @@ main (int argc, const char *argv[])
                 if (!(log = fopen (logfile, "w")))
                   {
                     fprintf (stderr,
-                             "fatal: couldn't open log file '%s' (%s)\n", arg,
-                             strerror (errno));
+                             "fatal: couldn't open log file '%s' (%s)\n",
+                             logfile, strerror (errno));
                     // TODO cleanup
                     exit (1);
                   }
@@ -156,7 +156,7 @@ main (int argc, const char *argv[])
                   {
                     fprintf (stderr,
                              "fatal: couldn't open output file '%s' (%s)\n",
-                             arg, strerror (errno));
+                             outfile, strerror (errno));
                     // TODO cleanup
                     exit (1);
                   }
@@ -195,8 +195,8 @@ main (int argc, const char *argv[])
         }
     }
 
-  if (!(args = poptGetArgs (optCon)))
-    args = defaultArgs;
+  if (!(infiles = poptGetArgs (optCon)))
+    infiles = defaultArgs;
 
   if (output_type == OUTPUT_TYPE_XML)
     fprintf (out, "%s\n", MARC_XML_PREAMBLE);
@@ -211,7 +211,7 @@ main (int argc, const char *argv[])
   // bound for the number of fields any given record is likely to to
   // contain
   marcrec *rec = marcrec_alloc (100000, 10000);
-  for (; arg = *args; args++)
+  for (; infile = *infiles; infiles++)
     {
       marcfile *in;
       int current_count, total_count = 0, valid_records;
@@ -219,15 +219,15 @@ main (int argc, const char *argv[])
       rc = 0;
 
       if (verbose)
-        fprintf (log, "processing file: %s\n", arg);
+        fprintf (log, "processing file: %s\n", infile);
 
       // protect against trying to read from stdin more than once
-      if (strcmp ("-", arg) == 0)
+      if (strcmp ("-", infile) == 0)
         {
           if (stdin_already_used)
             {
               if (verbose)
-                fprintf (log, "skipping %s (stdin already read)\n", arg);
+                fprintf (log, "skipping %s (stdin already read)\n", infile);
               continue;
             }
           else
@@ -238,11 +238,11 @@ main (int argc, const char *argv[])
         }
       else
         {
-          if (!(in = marcfile_open (arg)))
+          if (!(in = marcfile_open (infile)))
             {
               fprintf (log,
                        "error: couldn't open file '%s' (%s); skipping...\n",
-                       arg, strerror (errno));
+                       infile, strerror (errno));
 
               continue;
             }
@@ -286,7 +286,7 @@ main (int argc, const char *argv[])
 
       if (validate)
         {
-          fprintf (log, "%s: %i/%i valid records\n", arg, valid_records,
+          fprintf (log, "%s: %i/%i valid records\n", infile, valid_records,
                    current_count);
         }
 
@@ -298,6 +298,7 @@ main (int argc, const char *argv[])
 
   // clean up and exit
   fclose (out);
+  fclose (log);
   free (rec->data);
   free (rec->fields);
   free (rec);
