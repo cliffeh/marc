@@ -4,8 +4,8 @@ set -euxo pipefail
 
 # if unset we'll expect our input to reside in the directory alongside our script
 DIR=$(dirname "$0")
-SRCDIR=${SRCDIR:-$DIR}
-BUILDDIR=${BUILDDIR:-$DIR}
+SRCDIR=${SRCDIR:-$DIR/..}
+BUILDDIR=${BUILDDIR:-$DIR/..}
 
-zcat < "$SRCDIR/testfile.marc.gz" | ./marc -Fmarc > "$BUILDDIR/marc-dump.output"
-zcat < "$SRCDIR/testfile.marc.gz" | diff "$BUILDDIR/marc-dump.output" -
+zcat < "$SRCDIR/test/testfile.marc.gz" | "$BUILDDIR/marc" -Fmarc > "$BUILDDIR/test/marc-dump.output"
+zcat < "$SRCDIR/test/testfile.marc.gz" | diff "$BUILDDIR/test/marc-dump.output" -

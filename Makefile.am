@@ -21,7 +21,7 @@ TESTS = $(check_SCRIPTS)
 TEST_INPUTS = test/marc-leaders.txt.gz test/marc-print.txt.gz test/testfile.marc.gz test/testfile.xml.gz
 
 # tell our test scripts where to find their input
-TESTS_ENVIRONMENT = SRCDIR=$(srcdir)/test BUILDDIR=$(builddir)/test
+TESTS_ENVIRONMENT = SRCDIR=$(srcdir) BUILDDIR=$(builddir)
 
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4

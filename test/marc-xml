@@ -2,8 +2,8 @@
 
 # if unset we'll expect our input to reside in the directory alongside our script
 DIR=$(dirname "$0")
-SRCDIR=${SRCDIR:-$DIR}
-BUILDDIR=${BUILDDIR:-$DIR}
+SRCDIR=${SRCDIR:-$DIR/..}
+BUILDDIR=${BUILDDIR:-$DIR/..}
 
-zcat < "$SRCDIR/testfile.marc.gz" | ./marc -Fxml  > "$BUILDDIR/marc-xml.output"
-zcat < "$SRCDIR/testfile.xml.gz" | diff "$BUILDDIR/marc-xml.output" -
+zcat < "$SRCDIR/test/testfile.marc.gz" | "$BUILDDIR/marc" -Fxml  > "$BUILDDIR/test/marc-xml.output"
+zcat < "$SRCDIR/test/testfile.xml.gz" | diff "$BUILDDIR/test/marc-xml.output" -
