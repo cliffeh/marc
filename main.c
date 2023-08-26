@@ -191,6 +191,7 @@ main (int argc, const char *argv[])
       fprintf (log, "validate: %s\n", validate ? "yes" : "no");
       for (int i = 0; i < field_count; i++)
         {
+          // TODO FIXME (output tag + subfields)
           fprintf (log, "desired field: %s\n", specs[i].subfields);
         }
     }
