@@ -23,9 +23,9 @@ main (int argc, const char *argv[])
 {
   int rc, field_count = 0, limit = -1, output_type = OUTPUT_TYPE_HUMAN,
           stdin_already_used = 0, validate = 0, verbose = 0;
-  const char *defaultArgs[2] = { "-", 0 }, **infiles, *infile;
+  const char *defaultArgs[2] = { "-", 0 }, *specs[MAX_FIELDSPECS + 1] = { 0 },
+             **infiles, *infile;
   char *field, *format = "human", *outfile = "-", *logfile = 0;
-  fieldspec *specs = 0;
   FILE *out = stdout, *log = stderr;
 
   poptContext optCon;
@@ -75,21 +75,8 @@ main (int argc, const char *argv[])
                 continue;
               }
 
-            specs = realloc (specs, (field_count + 2) * sizeof (fieldspec));
-            specs[field_count + 1].subfields = 0;
-            specs[field_count + 1].tag = 0;
-
-            if (strcasecmp ("leader", field) == 0)
-              {
-                specs[field_count].tag = -1;
-                specs[field_count].subfields = field;
-              }
-            else
-              {
-                specs[field_count].tag = atoin (field, 3);
-                specs[field_count].subfields = field + 3;
-              }
-            field_count++;
+            // TODO validate the spec?
+            specs[field_count++] = field;
           }
           break;
         case 'F':
@@ -183,6 +170,9 @@ main (int argc, const char *argv[])
       exit (1);
     }
 
+  // ensure null termination (paranoia?)
+  specs[field_count] = 0;
+
   if (verbose)
     {
       fprintf (log, "verbose logging enabled\n");
@@ -191,8 +181,7 @@ main (int argc, const char *argv[])
       fprintf (log, "validate: %s\n", validate ? "yes" : "no");
       for (int i = 0; i < field_count; i++)
         {
-          // TODO FIXME (output tag + subfields)
-          fprintf (log, "desired field: %s\n", specs[i].subfields);
+          fprintf (log, "desired field: %s\n", specs[i]);
         }
     }
 

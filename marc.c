@@ -6,7 +6,9 @@
 #include "util.h"
 #include <string.h>
 
-#define IS_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
+#define MARC_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
+#define MARC_MATCH_TAG(t1, t2)                                                \
+  ((*(t1) == *(t2)) && (*(t1 + 1) == *(t2 + 1)) && (*(t1 + 2) == *(t2 + 2)))
 
 static void
 marcfield_print_subfields (FILE *out, const marcfield *field,
@@ -14,7 +16,7 @@ marcfield_print_subfields (FILE *out, const marcfield *field,
 {
   // we don't need to do any additional matching to tease out subfields;
   // let's just print and get out of here
-  if (IS_CONTROL_FIELD (field->directory_entry))
+  if (MARC_CONTROL_FIELD (field->directory_entry))
     {
       fprintf (out, "    %.*s", field->length - 1, field->data);
       return;
@@ -99,10 +101,10 @@ marcrec_free (marcrec *rec)
 }
 
 int
-marcfield_print (FILE *out, const marcfield *field, const fieldspec specs[])
+marcfield_print (FILE *out, const marcfield *field, const char *specs[])
 {
   int n = 0;
-  if (!specs)
+  if (!specs || !(*specs))
     {
       // indent (assuming we're pretty-printing entire record)
       fprintf (out, "\t%.3s", field->directory_entry);
@@ -112,13 +114,13 @@ marcfield_print (FILE *out, const marcfield *field, const fieldspec specs[])
     }
   else // only print if we match the spec
     {
-      for (int i = 0; specs[i].tag != 0; i++)
+      for (int i = 0; specs[i]; i++)
         {
-          if (specs[i].tag == field->tag)
+          if (MARC_MATCH_TAG (field->directory_entry, specs[i]))
             {
               // no indent since we're only printing specific fields
               fprintf (out, "%.3s", field->directory_entry);
-              marcfield_print_subfields (out, field, specs[i].subfields);
+              marcfield_print_subfields (out, field, specs[i] + 3);
               fprintf (out, "\n");
               n = 1;
             }
@@ -128,9 +130,9 @@ marcfield_print (FILE *out, const marcfield *field, const fieldspec specs[])
 }
 
 int
-marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[])
+marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
 {
-  if (!specs)
+  if (!specs || !(*specs))
     {
       fprintf (
           out,
@@ -158,10 +160,9 @@ marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[])
     }
   else // see whether we're supposed to print the leader
     {
-      for (int i = 0; specs[i].tag; i++)
+      for (int i = 0; specs[i]; i++)
         {
-          if (specs[i].tag == -1
-              && strcasecmp ("leader", specs[i].subfields) == 0)
+          if (strcasecmp ("leader", specs[i]) == 0)
             {
               fprintf (out, "%.24s\n", rec->data);
             }
@@ -224,7 +225,6 @@ marcrec_from_buffer (marcrec *rec, char *buf, int nBytes)
     {
       // TODO handle bad directory data
       rec->fields[i].directory_entry = rec->data + 24 + i * 12;
-      rec->fields[i].tag = atoin (rec->fields[i].directory_entry, 3);
       rec->fields[i].length = atoin (rec->fields[i].directory_entry + 3, 4);
       rec->fields[i].data = rec->data + rec->base_address
                             + atoin (rec->fields[i].directory_entry + 7, 5);
@@ -387,7 +387,7 @@ marcfield_xml_subfield (FILE *out, const marcfield *field, int pos)
 static void
 marcfield_xml (FILE *out, const marcfield *field)
 {
-  if (IS_CONTROL_FIELD (field->directory_entry))
+  if (MARC_CONTROL_FIELD (field->directory_entry))
     {
       fprintf (out, "  <controlfield tag=\"%.3s\">", field->directory_entry);
       marcfield_xml_escape (out, field->data, field->length - 1);

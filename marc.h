@@ -47,7 +47,7 @@ typedef struct marcfile
 typedef struct marcfield
 {
   char *directory_entry, *data;
-  int tag, length;
+  int length;
 } marcfield;
 
 typedef struct marcrec
@@ -56,12 +56,6 @@ typedef struct marcrec
   char *data;
   marcfield *fields;
 } marcrec;
-
-typedef struct fieldspec
-{
-  int tag;
-  char *subfields;
-} fieldspec;
 
 /**
  * @brief open a file for reading marc records
@@ -150,7 +144,7 @@ marcrec *marcrec_from_buffer (marcrec *rec, char *buf, int nBytes);
  * the entire record
  * @return int the number of fields written
  */
-int marcrec_print (FILE *out, const marcrec *rec, const fieldspec specs[]);
+int marcrec_print (FILE *out, const marcrec *rec, const char *specs[]);
 
 /**
  * @brief read a marcrec from a file
@@ -192,7 +186,6 @@ int marcrec_xml (FILE *out, const marcrec *rec);
  * @return int 0 if the field wasn't printed (i.e., didn't match any of the
  *             specs); 1 otherwise
  */
-int marcfield_print (FILE *out, const marcfield *field,
-                     const fieldspec specs[]);
+int marcfield_print (FILE *out, const marcfield *field, const char *specs[]);
 
 #endif
