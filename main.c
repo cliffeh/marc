@@ -128,7 +128,6 @@ main (int argc, const char *argv[])
                     fprintf (stderr,
                              "fatal: couldn't open log file '%s' (%s)\n",
                              logfile, strerror (errno));
-                    // TODO cleanup
                     exit (1);
                   }
               }
@@ -148,7 +147,6 @@ main (int argc, const char *argv[])
                     fprintf (stderr,
                              "fatal: couldn't open output file '%s' (%s)\n",
                              outfile, strerror (errno));
-                    // TODO cleanup
                     exit (1);
                   }
               }
