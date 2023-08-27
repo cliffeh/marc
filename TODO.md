@@ -10,6 +10,5 @@
 * maybe a marc writer struct?
 * consolidate print functions into a single function with format flags?
 * test cases for other field filters
-* field spec validation (and documentation)
 * add option for filtering
   * e.g., "only print records whose 245a match these criteria"

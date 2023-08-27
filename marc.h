@@ -6,6 +6,7 @@
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
+#include <string.h>
 
 // terminator constants
 #define FIELD_TERMINATOR 0x1e
@@ -33,6 +34,21 @@
   " http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">"
 
 #define MARC_XML_POSTAMBLE "</collection>"
+
+/**
+ * @brief validate a field spec
+ *
+ * a valid fieldspec either consists of the single word "leader" (case
+ * insensitive), OR three digits representing a desired field tag (possibly
+ * followed by an arbitrary number of subfield delimiters)
+ *
+ * in a regex: leader|\d\d\d.*
+ *
+ */
+#define MARC_VALID_FIELDSPEC(spec)                                            \
+  ((strcasecmp ("leader", spec) == 0)                                         \
+   || ((strlen (spec) >= 3) && isdigit (*spec) && isdigit (*(spec + 1))       \
+       && isdigit (*(spec + 2))))
 
 typedef struct marcfile
 {

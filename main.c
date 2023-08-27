@@ -79,7 +79,11 @@ main (int argc, const char *argv[])
                 continue;
               }
 
-            // TODO validate the spec?
+            if (!MARC_VALID_FIELDSPEC (field))
+              {
+                fprintf (stderr, "error: invalid fieldspec: %s\n", field);
+                exit (1);
+              }
             specs[field_count++] = field;
           }
           break;

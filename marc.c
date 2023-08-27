@@ -4,7 +4,6 @@
 // clang-format on
 #include "marc.h"
 #include "util.h"
-#include <string.h>
 
 #define MARC_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
 #define MARC_MATCH_TAG(t1, t2)                                                \
