@@ -125,8 +125,8 @@ void marcrec_free (marcrec *rec);
  * a marcrec with pointers to `buf`
  *
  * @param rec a pointer to an allocated marcrec object to be populated; if
- * null, and there is data remaining in buf, a new marcrec will be allocated
- * that the caller is responsible for freeing
+ *            null, and there is data remaining in buf, a new marcrec will be
+ *            allocated that the caller is responsible for freeing
  * @param buf a pointer to a buffer containing a marc record
  * @param nBytes the number of bytes in the marc record, or 0 if the length is
  *               unknown and should be computed
@@ -141,7 +141,7 @@ marcrec *marcrec_from_buffer (marcrec *rec, char *buf, int nBytes);
  * @param out the file to write to
  * @param rec the marc record to write
  * @param specs specification of the desired fields to print; if null, print
- * the entire record
+ *              the entire record
  * @return int the number of fields written
  */
 int marcrec_print (FILE *out, const marcrec *rec, const char *specs[]);
@@ -163,18 +163,22 @@ marcrec *marcrec_read (marcrec *rec, marcfile *in);
  *
  * @param out the file to write to
  * @param rec the marc record to write
+ * @param specs ignored; may be used in future, but is currently just here to
+ *              match the function signature of the other print functions
  * @return int the number of bytes written
  */
-int marcrec_write (FILE *out, const marcrec *rec);
+int marcrec_write (FILE *out, const marcrec *rec, const char *specs[]);
 
 /**
  * @brief print a marc record in XML format
  *
  * @param out the file to write to
  * @param rec the marc record to write
+ * @param specs ignored; may be used in future, but is currently just here to
+ *              match the function signature of the other print functions
  * @return int the number of records written
  */
-int marcrec_xml (FILE *out, const marcrec *rec);
+int marcrec_xml (FILE *out, const marcrec *rec, const char *specs[]);
 
 /**
  * @brief print a marc field in human-readable format

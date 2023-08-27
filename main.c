@@ -13,20 +13,24 @@
 #define MAX_FIELDSPECS 256
 #endif
 
-#define OUTPUT_TYPE_NONE 0
-#define OUTPUT_TYPE_HUMAN 1
-#define OUTPUT_TYPE_MARC 2
-#define OUTPUT_TYPE_XML 3
+int
+marcrec_print_noop (FILE *out, const marcrec *rec, const char *specs[])
+{
+  return 0;
+}
 
 int
 main (int argc, const char *argv[])
 {
-  int rc, field_count = 0, limit = -1, output_type = OUTPUT_TYPE_HUMAN,
-          stdin_already_used = 0, validate = 0, verbose = 0;
+  int rc, field_count = 0, limit = -1, stdin_already_used = 0, validate = 0,
+          verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, *specs[MAX_FIELDSPECS + 1] = { 0 },
              **infiles, *infile;
   char *field, *format = "human", *outfile = "-", *logfile = 0;
   FILE *out = stdout, *log = stderr;
+
+  int (*print_action) (FILE *, const marcrec *, const char **)
+      = &marcrec_print;
 
   poptContext optCon;
 
@@ -84,22 +88,22 @@ main (int argc, const char *argv[])
             if ((strcasecmp ("h", format) == 0)
                 || (strcasecmp ("human", format) == 0))
               {
-                output_type = OUTPUT_TYPE_HUMAN;
+                print_action = &marcrec_print;
               }
             else if ((strcasecmp ("m", format) == 0)
                      || (strcasecmp ("marc", format) == 0))
               {
-                output_type = OUTPUT_TYPE_MARC;
+                print_action = &marcrec_write;
               }
             else if ((strcasecmp ("n", format) == 0)
                      || (strcasecmp ("none", format) == 0))
               {
-                output_type = OUTPUT_TYPE_NONE;
+                print_action = &marcrec_print_noop;
               }
             else if ((strcasecmp ("x", format) == 0)
                      || (strcasecmp ("xml", format) == 0))
               {
-                output_type = OUTPUT_TYPE_XML;
+                print_action = &marcrec_xml;
               }
             else
               {
@@ -188,10 +192,10 @@ main (int argc, const char *argv[])
   if (!(infiles = poptGetArgs (optCon)))
     infiles = defaultArgs;
 
-  if (output_type == OUTPUT_TYPE_XML)
+  if (print_action == &marcrec_xml)
     fprintf (out, "%s\n", MARC_XML_PREAMBLE);
 
-  if (field_count > 0 && output_type != OUTPUT_TYPE_HUMAN)
+  if (field_count > 0 && print_action != &marcrec_print)
     {
       fprintf (log, "warning: fields specified with non-human-readable output "
                     "format; will be ignored...\n");
@@ -250,28 +254,7 @@ main (int argc, const char *argv[])
               valid_records++;
             }
 
-          switch (output_type)
-            {
-            case OUTPUT_TYPE_HUMAN:
-              {
-                marcrec_print (out, rec, specs);
-              }
-              break;
-
-            case OUTPUT_TYPE_MARC:
-              {
-                marcrec_write (out, rec);
-              }
-              break;
-
-            case OUTPUT_TYPE_XML:
-              {
-                marcrec_xml (out, rec);
-              }
-              break;
-
-            case OUTPUT_TYPE_NONE: // no-op
-            }
+          print_action (out, rec, specs);
         }
 
       if (validate)
@@ -283,7 +266,7 @@ main (int argc, const char *argv[])
       marcfile_close (in);
     }
 
-  if (output_type == OUTPUT_TYPE_XML)
+  if (print_action == &marcrec_xml)
     fprintf (out, "%s\n", MARC_XML_POSTAMBLE);
 
   // clean up and exit

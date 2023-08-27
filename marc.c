@@ -302,7 +302,7 @@ marcrec_read (marcrec *rec, marcfile *in)
 }
 
 int
-marcrec_write (FILE *out, const marcrec *rec)
+marcrec_write (FILE *out, const marcrec *rec, const char *specs[])
 {
   return fwrite (rec->data, sizeof (char), rec->length, out);
 }
@@ -385,7 +385,7 @@ marcfield_xml_subfield (FILE *out, const marcfield *field, int pos)
 }
 
 static void
-marcfield_xml (FILE *out, const marcfield *field)
+marcfield_xml (FILE *out, const marcfield *field, const char *specs[])
 {
   if (MARC_CONTROL_FIELD (field->directory_entry))
     {
@@ -407,13 +407,13 @@ marcfield_xml (FILE *out, const marcfield *field)
 }
 
 int
-marcrec_xml (FILE *out, const marcrec *rec)
+marcrec_xml (FILE *out, const marcrec *rec, const char *specs[])
 {
   fprintf (out, "<record>\n");
   fprintf (out, "  <leader>%.24s</leader>\n", rec->data);
   for (int i = 0; i < rec->field_count; i++)
     {
-      marcfield_xml (out, &rec->fields[i]);
+      marcfield_xml (out, &rec->fields[i], specs);
     }
   fprintf (out, "</record>\n");
 
