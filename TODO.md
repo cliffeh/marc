@@ -1,7 +1,6 @@
 * enable writes!
 * error checking/recovery
 * json output?
-* max width/formatting?
 * version bumps?
 * man page
 * error handling for file read errors
