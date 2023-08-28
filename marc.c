@@ -5,7 +5,42 @@
 #include "marc.h"
 #include "util.h"
 
+#ifdef HAVE_ZLIB_H
+#include <zlib.h>
+#endif
+
+struct marcfile
+{
+  int errnum;
+#ifdef USE_ZLIB
+  gzFile gzf;
+#else
+  FILE *f;
+#endif
+};
+
+struct marcfield
+{
+  char *directory_entry, *data;
+  int length;
+};
+
+struct marcrec
+{
+  int length, base_address, field_count, vflags;
+  char *data;
+  marcfield *fields;
+};
+
+/**
+ * @brief determine whether a given tag represents a control field (00X)
+ *
+ */
 #define MARC_CONTROL_FIELD(tag) ((*(tag) == '0') && (*(tag + 1) == '0'))
+/**
+ * @brief determine whether 2 tags match
+ *
+ */
 #define MARC_MATCH_TAG(t1, t2)                                                \
   ((*(t1) == *(t2)) && (*(t1 + 1) == *(t2 + 1)) && (*(t1 + 2) == *(t2 + 2)))
 
@@ -506,4 +541,10 @@ marcfile_error (marcfile *mf, char *msg)
 #endif
 
   return mf->errnum;
+}
+
+int
+marcrec_validate (marcrec *rec)
+{
+  return rec->vflags;
 }

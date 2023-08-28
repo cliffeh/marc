@@ -251,7 +251,7 @@ main (int argc, const char *argv[])
           current_count++;
           total_count++;
 
-          if (validate && rec->vflags == 0)
+          if (validate && marcrec_validate (rec) == 0)
             {
               valid_records++;
             }
@@ -274,9 +274,7 @@ main (int argc, const char *argv[])
   // clean up and exit
   fclose (out);
   fclose (log);
-  free (rec->data);
-  free (rec->fields);
-  free (rec);
+  marcrec_free (rec);
   poptFreeContext (optCon);
 
   // TODO maybe some better logic around specific return codes

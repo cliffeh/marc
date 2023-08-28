@@ -50,28 +50,11 @@
    || ((strlen (spec) >= 3) && isdigit (*spec) && isdigit (*(spec + 1))       \
        && isdigit (*(spec + 2))))
 
-typedef struct marcfile
-{
-  int errnum;
-#ifdef USE_ZLIB
-  gzFile gzf;
-#else
-  FILE *f;
-#endif
-} marcfile;
+typedef struct marcfile marcfile;
 
-typedef struct marcfield
-{
-  char *directory_entry, *data;
-  int length;
-} marcfield;
+typedef struct marcfield marcfield;
 
-typedef struct marcrec
-{
-  int length, base_address, field_count, vflags;
-  char *data;
-  marcfield *fields;
-} marcrec;
+typedef struct marcrec marcrec;
 
 /**
  * @brief open a file for reading marc records
@@ -207,5 +190,14 @@ int marcrec_xml (FILE *out, const marcrec *rec, const char *specs[]);
  *             specs); 1 otherwise
  */
 int marcfield_print (FILE *out, const marcfield *field, const char *specs[]);
+
+/**
+ * @brief determines whether a marc record is valid
+ *
+ * @param rec the record to validate
+ * @return int 0 if the record is valid, non-zero if the record has issues
+ * (e.g., missing terminator(s), invalid characters, etc.)
+ */
+int marcrec_validate (marcrec *rec);
 
 #endif
