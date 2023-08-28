@@ -44,16 +44,41 @@ struct marcrec
 #define MARC_MATCH_TAG(t1, t2)                                                \
   ((*(t1) == *(t2)) && (*(t1 + 1) == *(t2 + 1)) && (*(t1 + 2) == *(t2 + 2)))
 
-static void
-marcfield_print_subfields (FILE *out, const marcfield *field,
-                           const char *subfields)
+marcrec *
+marcrec_alloc (int nBytes, int nFields)
 {
+  marcrec *rec = calloc (1, sizeof (marcrec));
+  if (nBytes)
+    rec->data = calloc (nBytes, sizeof (char));
+  if (nFields)
+    rec->fields = calloc (nFields, sizeof (marcfield));
+  return rec;
+}
+
+void
+marcrec_free (marcrec *rec)
+{
+  if (!rec) // just in case
+    return;
+  if (rec->fields)
+    free (rec->fields);
+  if (rec->data)
+    free (rec->data);
+  free (rec);
+}
+
+int
+marcfield_print (FILE *out, const marcfield *field, const char *subfields)
+{
+  int n = 0;
+  fprintf (out, "%.3s", field->directory_entry);
+
   // we don't need to do any additional matching to tease out subfields;
   // let's just print and get out of here
   if (MARC_CONTROL_FIELD (field->directory_entry))
     {
       fprintf (out, "    %.*s", field->length - 1, field->data);
-      return;
+      return 1;
     }
 
   // if we have no spec we're going to print the whole thing
@@ -84,6 +109,7 @@ marcfield_print_subfields (FILE *out, const marcfield *field,
                     if (subfields[j] == field->data[i])
                       {
                         printing = 1;
+                        n++;
                         break;
                       }
                   }
@@ -109,65 +135,16 @@ marcfield_print_subfields (FILE *out, const marcfield *field,
           fprintf (out, "%c", field->data[i++]);
         }
     }
-}
 
-marcrec *
-marcrec_alloc (int nBytes, int nFields)
-{
-  marcrec *rec = calloc (1, sizeof (marcrec));
-  if (nBytes)
-    rec->data = calloc (nBytes, sizeof (char));
-  if (nFields)
-    rec->fields = calloc (nFields, sizeof (marcfield));
-  return rec;
-}
-
-void
-marcrec_free (marcrec *rec)
-{
-  if (!rec) // just in case
-    return;
-  if (rec->fields)
-    free (rec->fields);
-  if (rec->data)
-    free (rec->data);
-  free (rec);
-}
-
-int
-marcfield_print (FILE *out, const marcfield *field, const char *specs[])
-{
-  int n = 0;
-  if (!specs || !(*specs))
-    {
-      // indent (assuming we're pretty-printing entire record)
-      fprintf (out, "\t%.3s", field->directory_entry);
-      marcfield_print_subfields (out, field, 0);
-      fprintf (out, "\n");
-      n = 1;
-    }
-  else // only print if we match the spec
-    {
-      for (int i = 0; specs[i]; i++)
-        {
-          if (MARC_MATCH_TAG (field->directory_entry, specs[i]))
-            {
-              // no indent since we're only printing specific fields
-              fprintf (out, "%.3s", field->directory_entry);
-              marcfield_print_subfields (out, field, specs[i] + 3);
-              fprintf (out, "\n");
-              n = 1;
-            }
-        }
-    }
   return n;
 }
 
 int
 marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
 {
+  int n = 0;
   if (!specs || !(*specs))
-    {
+    { // we're printing the whole shebang
       fprintf (
           out,
           "length: %.5s | status: %c | type: %c | bibliographic level: %c | "
@@ -191,23 +168,39 @@ marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
           "length of the staring-character-position portion: %c | length of "
           "the implementation-defined portion: %c\n",
           rec->data[21], rec->data[22]);
+
+      for (int i = 0; i < rec->field_count; i++)
+        {
+          fprintf (out, "\t");
+          marcfield_print (out, &rec->fields[i], 0);
+          fprintf (out, "\n");
+          n++;
+        }
     }
-  else // see whether we're supposed to print the leader
-    {
+  else
+    { // we're only printing specific fields
       for (int i = 0; specs[i]; i++)
         {
           if (strcasecmp ("leader", specs[i]) == 0)
             {
               fprintf (out, "%.24s\n", rec->data);
             }
+          else
+            {
+              for (int j = 0; j < rec->field_count; j++)
+                {
+                  if (MARC_MATCH_TAG (specs[i],
+                                      rec->fields[j].directory_entry))
+                    {
+                      marcfield_print (out, &rec->fields[j], specs[i] + 3);
+                      fprintf (out, "\n");
+                      n++;
+                    }
+                }
+            }
         }
     }
 
-  int n = 0;
-  for (int i = 0; i < rec->field_count; i++)
-    {
-      n += marcfield_print (out, &rec->fields[i], specs);
-    }
   return n;
 }
 

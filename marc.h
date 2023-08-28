@@ -3,9 +3,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef HAVE_ZLIB_H
-#include <zlib.h>
-#endif
 #include <string.h>
 
 // terminator constants
@@ -186,10 +183,9 @@ int marcrec_xml (FILE *out, const marcrec *rec, const char *specs[]);
  * @param field the marc field to write
  * @param specs specification of the desired subfields to print; if null, print
  *              the entire field
- * @return int 0 if the field wasn't printed (i.e., didn't match any of the
- *             specs); 1 otherwise
+ * @return int the number of subfields printed
  */
-int marcfield_print (FILE *out, const marcfield *field, const char *specs[]);
+int marcfield_print (FILE *out, const marcfield *field, const char *subfields);
 
 /**
  * @brief determines whether a marc record is valid
