@@ -9,6 +9,5 @@
   * find a better way to handle outputting headers/footers
 * maybe a marc writer struct?
 * consolidate print functions into a single function with format flags?
-* test cases for other field filters
 * add option for filtering
   * e.g., "only print records whose 245a match these criteria"

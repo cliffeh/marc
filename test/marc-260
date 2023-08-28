@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -euxo pipefail
+
+# if unset we'll expect our input to reside in the directory alongside our script
+DIR=$(dirname "$0")
+SRCDIR=${SRCDIR:-$DIR/..}
+BUILDDIR=${BUILDDIR:-$DIR/..}
+
+zcat "$SRCDIR/test/testfile.marc.gz" | "$BUILDDIR/marc" -Fhuman -f260 > "$BUILDDIR/test/marc-260.output"
+zcat "$SRCDIR/test/marc-260.txt.gz" | diff "$BUILDDIR/test/marc-260.output" -
