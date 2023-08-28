@@ -29,4 +29,3 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = README.md LICENSE $(check_SCRIPTS) $(TEST_INPUTS)
 
 CLEANFILES = test/*.output test/*.valgrind
-
