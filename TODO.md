@@ -1,9 +1,7 @@
 * enable writes!
-* error checking/recovery
 * json output?
 * version bumps?
 * man page
-* error handling for file read errors
 * use an XML library for XML output
   * find a better way to handle outputting headers/footers
 * maybe a marc writer struct?

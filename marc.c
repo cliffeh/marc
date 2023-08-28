@@ -325,6 +325,8 @@ marcrec_read (marcrec *rec, marcfile *in)
       return 0;
     }
 
+  in->errnum = 0;
+
   return marcrec_from_buffer (rec, p, nBytes);
 }
 

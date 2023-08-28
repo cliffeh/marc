@@ -26,7 +26,7 @@ main (int argc, const char *argv[])
           verbose = 0;
   const char *defaultArgs[2] = { "-", 0 }, *specs[MAX_FIELDSPECS + 1] = { 0 },
              **infiles, *infile;
-  char *field, *format = "human", *outfile = "-", *logfile = 0;
+  char *field, *format = "human", *outfile = "-", *logfile = 0, errmsg[4096];
   FILE *out = stdout, *log = stderr;
 
   int (*print_action) (FILE *, const marcrec *, const char **)
@@ -257,6 +257,11 @@ main (int argc, const char *argv[])
             }
 
           print_action (out, rec, specs);
+        }
+
+      if (marcfile_error (in, errmsg))
+        {
+          fprintf (log, "error: %s: %s\n", infile, errmsg);
         }
 
       if (validate)
