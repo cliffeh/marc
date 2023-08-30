@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef MAX_FIELDSPECS
-#define MAX_FIELDSPECS 256
+#ifndef MAX_FILTERS
+#define MAX_FILTERS 256
 #endif
 
 int
@@ -22,11 +22,11 @@ marcrec_print_noop (FILE *out, const marcrec *rec, const char *specs[])
 int
 main (int argc, const char *argv[])
 {
-  int rc, field_count = 0, limit = -1, stdin_already_used = 0, validate = 0,
+  int rc, filter_count = 0, limit = -1, stdin_already_used = 0, validate = 0,
           verbose = 0;
-  const char *defaultArgs[2] = { "-", 0 }, *specs[MAX_FIELDSPECS + 1] = { 0 },
+  const char *defaultArgs[2] = { "-", 0 }, *filters[MAX_FILTERS + 1] = { 0 },
              **infiles, *infile;
-  char *field, *format = "human", *outfile = "-", *logfile = 0, errmsg[4096];
+  char *filter, *format = "human", *outfile = "-", *logfile = 0, errmsg[4096];
   FILE *out = stdout, *log = stderr;
 
   int (*print_action) (FILE *, const marcrec *, const char **)
@@ -36,10 +36,8 @@ main (int argc, const char *argv[])
 
   struct poptOption options[] = {
     /* longName, shortName, argInfo, arg, val, descrip, argDescript */
-    { "field", 'f', POPT_ARG_STRING, &field, 'f',
-      "only print fields adhering to FIELDSPEC (requires human-readable "
-      "output format)",
-      "FIELDSPEC" },
+    { "filter", 'f', POPT_ARG_STRING, &filter, 'f',
+      "only print records adhering to FILTER", "FILTER" },
     { "format", 'F', POPT_ARG_STRING | POPT_ARGFLAG_SHOW_DEFAULT, &format, 'F',
       "output format; can be one of: n[one], h[uman], m[arc], x[ml]", 0 },
     { "logfile", 'l', POPT_ARG_STRING, &logfile, 'l',
@@ -69,22 +67,22 @@ main (int argc, const char *argv[])
         {
         case 'f':
           {
-            if (field_count >= MAX_FIELDSPECS)
+            if (filter_count >= MAX_FILTERS)
               {
                 fprintf (log,
-                         "warning: maximum number of fields (%i) specified; "
+                         "warning: maximum number of filters (%i) specified; "
                          "dropping %s\n",
-                         MAX_FIELDSPECS, field);
-                free (field);
+                         MAX_FILTERS, filter);
+                free (filter);
                 continue;
               }
 
-            if (!MARC_VALID_FIELDSPEC (field))
+            if (!MARC_VALID_FILTER (filter))
               {
-                fprintf (stderr, "error: invalid fieldspec: %s\n", field);
+                fprintf (stderr, "error: invalid filter: %s\n", filter);
                 exit (1);
               }
-            specs[field_count++] = field;
+            filters[filter_count++] = filter;
           }
           break;
         case 'F':
@@ -177,7 +175,7 @@ main (int argc, const char *argv[])
     }
 
   // ensure null termination (paranoia?)
-  specs[field_count] = 0;
+  filters[filter_count] = 0;
 
   if (verbose)
     {
@@ -185,9 +183,9 @@ main (int argc, const char *argv[])
       fprintf (log, "output file: %s\n", outfile);
       fprintf (log, "limit: %i\n", limit);
       fprintf (log, "validate: %s\n", validate ? "yes" : "no");
-      for (int i = 0; i < field_count; i++)
+      for (int i = 0; i < filter_count; i++)
         {
-          fprintf (log, "desired field: %s\n", specs[i]);
+          fprintf (log, "desired field: %s\n", filters[i]);
         }
     }
 
@@ -197,7 +195,7 @@ main (int argc, const char *argv[])
   if (print_action == &marcrec_xml)
     fprintf (out, "%s\n", MARC_XML_PREAMBLE);
 
-  if (field_count > 0 && print_action != &marcrec_print)
+  if (filter_count > 0 && print_action != &marcrec_print)
     {
       fprintf (log, "warning: fields specified with non-human-readable output "
                     "format; will be ignored...\n");
@@ -256,7 +254,7 @@ main (int argc, const char *argv[])
               valid_records++;
             }
 
-          print_action (out, rec, specs);
+          print_action (out, rec, filters);
         }
 
       if (marcfile_error (in, errmsg))

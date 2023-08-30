@@ -19,18 +19,18 @@ Depending on your environment this may require elevated privileges:
 Usage: marc [OPTION...] [FILE...]
 Will read from stdin if no FILEs are provided.
 Options:
-  -f, --field=FIELDSPEC     only print fields adhering to FIELDSPEC (requires human-readable output format)
-  -F, --format=STRING       output format; can be one of: n[one], h[uman], m[arc], x[ml] (default: "human")
-  -l, --logfile=FILE        log to FILE (default: stderr)
-  -L, --limit=INT           maximum number of records to process; -1 means process all available records (default: -1)
-  -o, --output=FILE         output to FILE (default: "-")
-  -V, --validate            log record validation statistics
-  -v, --verbose             enable verbose logging
-      --version             show version information and exit
+  -f, --filter=FILTER     only print records adhering to FILTER
+  -F, --format=STRING     output format; can be one of: n[one], h[uman], m[arc], x[ml] (default: "human")
+  -l, --logfile=FILE      log to FILE (default: stderr)
+  -L, --limit=INT         maximum number of records to process; -1 means process all available records (default: -1)
+  -o, --output=FILE       output to FILE (default: "-")
+  -V, --validate          log record validation statistics
+  -v, --verbose           enable verbose logging
+      --version           show version information and exit
 
 Help options:
-  -?, --help                Show this help message
-      --usage               Display brief usage message
+  -?, --help              Show this help message
+      --usage             Display brief usage message
 ```
 
 ## Examples

@@ -33,16 +33,16 @@
 #define MARC_XML_POSTAMBLE "</collection>"
 
 /**
- * @brief validate a field spec
+ * @brief validate a marc filter
  *
- * a valid fieldspec either consists of the single word "leader" (case
+ * a valid filter either consists of the single word "leader" (case
  * insensitive), OR three digits representing a desired field tag (possibly
  * followed by an arbitrary number of subfield delimiters)
  *
  * in a regex: leader|\d\d\d.*
  *
  */
-#define MARC_VALID_FIELDSPEC(spec)                                            \
+#define MARC_VALID_FILTER(spec)                                               \
   ((strcasecmp ("leader", spec) == 0)                                         \
    || ((strlen (spec) >= 3) && isdigit (*spec) && isdigit (*(spec + 1))       \
        && isdigit (*(spec + 2))))
@@ -140,7 +140,7 @@ marcrec *marcrec_from_buffer (marcrec *rec, char *buf, int nBytes);
  *              the entire record
  * @return int the number of fields written
  */
-int marcrec_print (FILE *out, const marcrec *rec, const char *specs[]);
+int marcrec_print (FILE *out, const marcrec *rec, const char *filters[]);
 
 /**
  * @brief read a marcrec from a file
@@ -163,7 +163,7 @@ marcrec *marcrec_read (marcrec *rec, marcfile *in);
  *              match the function signature of the other print functions
  * @return int the number of bytes written
  */
-int marcrec_write (FILE *out, const marcrec *rec, const char *specs[]);
+int marcrec_write (FILE *out, const marcrec *rec, const char *filters[]);
 
 /**
  * @brief print a marc record in XML format
@@ -174,7 +174,7 @@ int marcrec_write (FILE *out, const marcrec *rec, const char *specs[]);
  *              match the function signature of the other print functions
  * @return int the number of records written
  */
-int marcrec_xml (FILE *out, const marcrec *rec, const char *specs[]);
+int marcrec_xml (FILE *out, const marcrec *rec, const char *filters[]);
 
 /**
  * @brief print a marc field in human-readable format

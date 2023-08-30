@@ -140,10 +140,10 @@ marcfield_print (FILE *out, const marcfield *field, const char *subfields)
 }
 
 int
-marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
+marcrec_print (FILE *out, const marcrec *rec, const char *filters[])
 {
   int n = 0;
-  if (!specs || !(*specs))
+  if (!filters || !(*filters))
     { // we're printing the whole shebang
       fprintf (
           out,
@@ -179,9 +179,9 @@ marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
     }
   else
     { // we're only printing specific fields
-      for (int i = 0; specs[i]; i++)
+      for (int i = 0; filters[i]; i++)
         {
-          if (strcasecmp ("leader", specs[i]) == 0)
+          if (strcasecmp ("leader", filters[i]) == 0)
             {
               fprintf (out, "%.24s\n", rec->data);
             }
@@ -189,10 +189,10 @@ marcrec_print (FILE *out, const marcrec *rec, const char *specs[])
             {
               for (int j = 0; j < rec->field_count; j++)
                 {
-                  if (MARC_MATCH_TAG (specs[i],
+                  if (MARC_MATCH_TAG (filters[i],
                                       rec->fields[j].directory_entry))
                     {
-                      marcfield_print (out, &rec->fields[j], specs[i] + 3);
+                      marcfield_print (out, &rec->fields[j], filters[i] + 3);
                       fprintf (out, "\n");
                       n++;
                     }
@@ -331,7 +331,7 @@ marcrec_read (marcrec *rec, marcfile *in)
 }
 
 int
-marcrec_write (FILE *out, const marcrec *rec, const char *specs[])
+marcrec_write (FILE *out, const marcrec *rec, const char *filters[])
 {
   return fwrite (rec->data, sizeof (char), rec->length, out);
 }
@@ -414,7 +414,7 @@ marcfield_xml_subfield (FILE *out, const marcfield *field, int pos)
 }
 
 static void
-marcfield_xml (FILE *out, const marcfield *field, const char *specs[])
+marcfield_xml (FILE *out, const marcfield *field, const char *filters[])
 {
   if (MARC_CONTROL_FIELD (field->directory_entry))
     {
@@ -436,13 +436,13 @@ marcfield_xml (FILE *out, const marcfield *field, const char *specs[])
 }
 
 int
-marcrec_xml (FILE *out, const marcrec *rec, const char *specs[])
+marcrec_xml (FILE *out, const marcrec *rec, const char *filters[])
 {
   fprintf (out, "<record>\n");
   fprintf (out, "  <leader>%.24s</leader>\n", rec->data);
   for (int i = 0; i < rec->field_count; i++)
     {
-      marcfield_xml (out, &rec->fields[i], specs);
+      marcfield_xml (out, &rec->fields[i], filters);
     }
   fprintf (out, "</record>\n");
 
