@@ -44,6 +44,17 @@ struct marcrec
 #define MARC_MATCH_TAG(t1, t2)                                                \
   ((*(t1) == *(t2)) && (*(t1 + 1) == *(t2 + 1)) && (*(t1 + 2) == *(t2 + 2)))
 
+#define MARCREC_PRINT_FMT_STRING                                              \
+  "record length: %c%c%c%c%c   | record status: %c | type of record: %c\n"    \
+  "bibliographic level: %c     | type of control: %c\n"                       \
+  "character coding scheme: %c | indicator count: %c\n"                       \
+  "subfield code count: %c     | base address of data: %c%c%c%c%c\n"          \
+  "encoding level: %c          | descriptive cataloging form: %c\n"           \
+  "multipart resource record level: %c\n"                                     \
+  "length of the length-of-field portion: %c\n"                               \
+  "length of the starting-character-position portion: %c\n"                   \
+  "length of the implementation-defined portion: %c\n"
+
 marcrec *
 marcrec_alloc (int nBytes, int nFields)
 {
@@ -145,29 +156,13 @@ marcrec_print (FILE *out, const marcrec *rec, const char *filters[])
   int n = 0;
   if (!filters || !(*filters))
     { // we're printing the whole shebang
-      fprintf (
-          out,
-          "length: %.5s | status: %c | type: %c | bibliographic level: %c | "
-          "type of control: %c\n",
-          rec->data, rec->data[5], rec->data[6], rec->data[7], rec->data[9]);
-      fprintf (
-          out,
-          "character coding scheme: %c | indicator count: %c | subfield code "
-          "count: %c\n",
-          rec->data[10], rec->data[11], rec->data[12]);
-      fprintf (out,
-               "base address of data: %.5s | encoding level: %c | descriptive "
-               "cataloging form: %c\n",
-               rec->data + 12, rec->data[17], rec->data[18]);
-      fprintf (out,
-               "multipart resource record level: %c | length of the "
-               "length-of-field portion: %c\n",
-               rec->data[19], rec->data[20]);
-      fprintf (
-          out,
-          "length of the staring-character-position portion: %c | length of "
-          "the implementation-defined portion: %c\n",
-          rec->data[21], rec->data[22]);
+      fprintf (out, MARCREC_PRINT_FMT_STRING, rec->data[0], rec->data[1],
+               rec->data[2], rec->data[3], rec->data[4], rec->data[5],
+               rec->data[6], rec->data[7], rec->data[8], rec->data[9],
+               rec->data[10], rec->data[11], rec->data[12], rec->data[13],
+               rec->data[14], rec->data[15], rec->data[16], rec->data[17],
+               rec->data[18], rec->data[19], rec->data[20], rec->data[21],
+               rec->data[22] /*, rec->data[23]*/);
 
       for (int i = 0; i < rec->field_count; i++)
         {
