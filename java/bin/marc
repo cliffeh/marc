@@ -1,5 +1,0 @@
-#!/bin/bash
-
-VERSION=$(cat ../VERSION | tr -d '\n')
-
-java -jar dist/lib/marc-"${VERSION}".jar "$@"

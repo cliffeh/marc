@@ -1,5 +1,0 @@
-#!/bin/bash
-
-TESTFILE="../test/testfile.marc.gz"
-
-bin/marc "$TESTFILE" > tmpfil && zcat < "$TESTFILE" | diff tmpfil -
