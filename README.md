@@ -3,8 +3,16 @@
 A library and a set of command-line tools for manipulating MARC records.
 
 ## Building
+You'll need to have zlib development headers installed; e.g., on Ubuntu:
+
+`sudo apt install zlib1g-dev`  # TODO make this truly optional...
+
 To build the marc library and command-line tool:
 > `./configure && make`
+
+If you're trying to regenerate the `configure` script using `autogen.sh`, you'll also need autoconf and libtool; e.g., on Ubuntu:
+
+`sudo apt install autoconf libtool`
 
 ## Testing
 To run unit tests:
